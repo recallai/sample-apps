@@ -10,16 +10,15 @@ export const verifyRequestFromRecall = (args: {
     payload: string | null,
 }) => {
     const { secret, headers, payload } = args;
-    const {
-        "webhook-id": msgId,
-        "webhook-timestamp": msgTimestamp,
-        "webhook-signature": msgSignature,
-    } = headers;
+    const msgId = headers["webhook-id"] ?? headers["svix-id"];
+    const msgTimestamp = headers["webhook-timestamp"] ?? headers["svix-timestamp"];
+    const msgSignature = headers["webhook-signature"] ?? headers["svix-signature"];
+
     if (!secret || !secret.startsWith("whsec_")) {
-        throw new Error("Verification secret is missing or invalid");
+        throw new Error(`Verification secret (${secret}is missing or invalid`);
     }
     if (!msgId || !msgTimestamp || !msgSignature) {
-        throw new Error("Missing webhook ID, timestamp, or signature");
+        throw new Error(`Missing webhook ID (${msgId}), timestamp (${msgTimestamp}), or signature (${msgSignature})`);
     }
 
     // Create the expected signature
