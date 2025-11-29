@@ -1,4 +1,4 @@
-# Download separate audio streams per participant audio files
+# Verifying requests from Recall.ai
 
 ## Pre-requisites
 
@@ -30,22 +30,29 @@ curl --request POST \
 --header 'accept: application/json' \
 --header 'content-type: application/json' \
 --data '{
-  "meeting_url": "YOUR_MEETING_URL",
+  "meeting_url": "MEETING_URL",
   "recording_config": {
     "realtime_endpoints": [
+      {
+        "type": "webhook",
+        "url": "https://YOUR_NGROK_URL",
+        "events": [
+          "participant_events.join"
+        ]
+      },
       {
         "type": "websocket",
         "url": "wss://YOUR_NGROK_URL",
         "events": [
-          "audio_separate_raw.data"
+          "participant_events.join"
         ]
       }
-    ],
-    "audio_separate_raw": {}
+    ]
+  },
+  "zoom": {
+    "zak_url": "https://YOUR_NGROK_URL"
   }
 }'
 ```
 
-** \*\*NOTE: ngrok will give you a url like `https://somehash.ngrok.app`. Make sure you replace `https://` with `wss://` as you are using WebSockets instead of HTTP **
-
-5. After the call ends, you can see the audio in the newly-generated output folder
+** \*\*NOTE: ngrok will give you a url like `https://somehash.ngrok.app`. Make sure you replace `https://` with `wss://` for the WebSocket URL since you are using WebSockets instead of HTTP **

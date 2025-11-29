@@ -3,7 +3,7 @@ import { WebSocketServer, WebSocket } from "ws";
 import { separateAudioStreamsEventHandler, closeAudioStreamsEventHandler } from "./separate-audio-streams-event-handler";
 import { env } from "./config/env";
 
-const server = http.createServer((_, res) => res.end("Hello, HTTP!"));
+const server = http.createServer();
 
 const wss = new WebSocketServer({ noServer: true });
 wss.on("connection", (socket: WebSocket & { recordingId: string }) => {
@@ -36,9 +36,6 @@ wss.on("connection", (socket: WebSocket & { recordingId: string }) => {
 });
 
 server.on("upgrade", (req, socket, head) => {
-    if (req.url !== "/ws") {
-        return socket.destroy();
-    }
     wss.handleUpgrade(req, socket, head, (ws) => {
         wss.emit("connection", ws, req);
     });
