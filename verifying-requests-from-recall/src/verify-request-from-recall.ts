@@ -6,7 +6,7 @@ export const verifyRequestFromRecall = (args: {
     secret: string,
     // Incoming request header
     headers: Record<string, string>,
-    // Incoming requeset payload (if present). Use null if not applicable (e.g. GET or UPGRADE requests)
+    // Incoming raw request payload (if present). Use null if not applicable (e.g. GET or UPGRADE requests)
     payload: string | null,
 }) => {
     const { secret, headers, payload } = args;
