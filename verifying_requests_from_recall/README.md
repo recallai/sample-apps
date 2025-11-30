@@ -1,5 +1,7 @@
 # Verifying requests from Recall.ai
 
+This example demonstrates how to verify that incoming webhook and WebSocket requests are actually from Recall.ai.
+
 ## Pre-requisites
 
 - [ngrok](https://ngrok.com/)
@@ -8,51 +10,85 @@
 
 ## Quickstart
 
-** Before running, make sure you don't have any apps running on port 4000 **
+**Before running, make sure you don't have any apps running on port 4000**
 
-1. Open this directory in a terminal
+### 1. Start the server
 
-2. In the same terminal, run the following to start a server on port 4000:
+Open this directory in a terminal and run:
 
-```
+```bash
 npm install
 npm run dev
 ```
 
-3. In a new terminal window, run `ngrok http 4000`. After its running, copy the URL that is ngrok is hosting (e.g. https://somehash.ngrok.app)
+This will start a server on port 4000.
 
-4. In a new terminal window, create a bot:
+### 2. Start ngrok
 
+In a new terminal window, run:
+
+```bash
+ngrok http 4000
 ```
+
+After it's running, copy the ngrok URL (e.g. `somehash.ngrok.app`). You'll need just the domain without the `https://` prefix.
+
+### 3. Create a bot
+
+A bot is what joins the meeting and streams audio data to your server. You can create one using the `run.sh` script or manually with curl.
+
+#### Option A: Using run.sh (recommended)
+
+1. Copy the `.env.sample` and rename it to `.env`. Then fill out the variables listed in the file.
+
+2. Create a new terminal and run the script:
+
+```bash
+chmod +x run.sh
+./run.sh
+```
+
+This will create a bot and paste the response in the terminal
+
+#### Option B: Using curl
+
+```bash
 curl --request POST \
---url https://us-west-2.recall.ai/api/v1/bot/ \
---header 'Authorization: RECALL_API_KEY' \
---header 'accept: application/json' \
---header 'content-type: application/json' \
---data '{
-  "meeting_url": "MEETING_URL",
-  "recording_config": {
-    "realtime_endpoints": [
-      {
-        "type": "webhook",
-        "url": "https://YOUR_NGROK_URL",
-        "events": [
-          "participant_events.join"
-        ]
-      },
-      {
-        "type": "websocket",
-        "url": "wss://YOUR_NGROK_URL",
-        "events": [
-          "participant_events.join"
-        ]
-      }
-    ]
-  },
-  "zoom": {
-    "zak_url": "https://YOUR_NGROK_URL"
-  }
-}'
+  --url https://RECALL_REGION.recall.ai/api/v1/bot/ \
+  --header 'Authorization: RECALL_API_KEY' \
+  --header 'accept: application/json' \
+  --header 'content-type: application/json' \
+  --data '{
+    "meeting_url": "YOUR_MEETING_URL",
+    "recording_config": {
+      "realtime_endpoints": [
+        {
+          "type": "webhook",
+          "url": "https://YOUR_NGROK_DOMAIN",
+          "events": [
+            "participant_events.join"
+          ]
+        },
+        {
+          "type": "websocket",
+          "url": "wss://YOUR_NGROK_DOMAIN",
+          "events": [
+            "participant_events.join"
+          ]
+        }
+      ]
+    },
+    "zoom": {
+      "zak_url": "https://${NGROK_DOMAIN}"
+    }
+  }'
 ```
 
-** \*\*NOTE: ngrok will give you a url like `https://somehash.ngrok.app`. Make sure you replace `https://` with `wss://` for the WebSocket URL since you are using WebSockets instead of HTTP **
+**Note:**
+
+- Replace `RECALL_REGION`, `RECALL_API_KEY`, and `YOUR_MEETING_URL` with your own values.
+- Replace `YOUR_NGROK_DOMAIN` with your ngrok domain (e.g. `somehash.ngrok.app`). Use `wss://` instead of `https://` since this is a WebSocket connection.
+
+### 4. Verify requests
+
+When the bot joins the meeting and participants join/leave, you'll see verification logs in your server terminal. The server validates each request using the `VERIFICATION_SECRET` and the HMAC signature in the request headers.
