@@ -1,10 +1,6 @@
-import { z } from "zod";
 import dotenv from "dotenv";
+import { EnvSchema } from "../schemas/EnvSchema";
 
 dotenv.config();
-
-const EnvSchema = z.object({
-    PORT: z.number().default(4000),
-});
 
 export const env = EnvSchema.parse(process.env);

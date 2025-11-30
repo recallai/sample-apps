@@ -1,16 +1,16 @@
 import http from "http";
-import { WebSocketServer, WebSocket } from "ws";
-import { separateAudioStreamsEventHandler, closeAudioStreamsEventHandler } from "./separate-audio-streams-event-handler";
+import { WebSocketServer, type WebSocket } from "ws";
 import { env } from "./config/env";
+import { separate_audio_streams_event_handler, close_audio_streams_event_handler } from "./separate_audio_streams_event_handler";
 
 const server = http.createServer();
 
 const wss = new WebSocketServer({ noServer: true });
-wss.on("connection", (socket: WebSocket & { recordingId: string }) => {
-    socket.on("message", rawMsg => {
+wss.on("connection", (socket: WebSocket & { recording_id: string }) => {
+    socket.on("message", (raw_msg) => {
         let msg: Record<string, any> | undefined;
         try {
-            msg = JSON.parse(rawMsg.toString());
+            msg = JSON.parse(raw_msg.toString());
         } catch (error) { }
         if (!msg) {
             return;
@@ -21,17 +21,17 @@ wss.on("connection", (socket: WebSocket & { recordingId: string }) => {
         if (!msg.data.recording?.id) {
             console.log("No recording id found in message");
             return;
-        } else if (!socket.recordingId) {
+        } else if (!socket.recording_id) {
             console.log(`Recording id: ${msg.data.recording.id}`);
-            socket.recordingId = msg.data.recording.id;
+            socket.recording_id = msg.data.recording.id;
         }
 
         // Handle the audio stream event.
-        separateAudioStreamsEventHandler({ msg });
+        separate_audio_streams_event_handler({ msg });
     });
 
     socket.on("close", () => {
-        closeAudioStreamsEventHandler({ recordingId: socket.recordingId });
+        close_audio_streams_event_handler({ recording_id: socket.recording_id });
     });
 });
 
