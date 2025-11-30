@@ -72,7 +72,7 @@ wss.on("connection", (socket) => {
     });
 
     socket.on("close", () => {
-        console.log("Socket closed");
+        console.log("WebSocket connection closed");
     });
 });
 
