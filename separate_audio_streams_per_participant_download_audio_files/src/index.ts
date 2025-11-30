@@ -32,6 +32,7 @@ wss.on("connection", (socket: WebSocket & { recording_id: string }) => {
 
     socket.on("close", () => {
         close_audio_streams_event_handler({ recording_id: socket.recording_id });
+        console.log(`WebSocket connection closed for recording id: ${socket.recording_id}`);
     });
 });
 

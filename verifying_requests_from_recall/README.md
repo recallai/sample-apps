@@ -12,7 +12,17 @@ This example demonstrates how to verify that incoming webhook and WebSocket requ
 
 **Before running, make sure you don't have any apps running on port 4000**
 
-### 1. Start the server
+### 1. Set up environment variables
+
+Copy the `.env.sample` file and rename it to `.env`:
+
+```bash
+cp .env.sample .env
+```
+
+Then fill out the variables in the `.env` file.
+
+### 2. Start the server
 
 Open this directory in a terminal and run:
 
@@ -23,7 +33,7 @@ npm run dev
 
 This will start a server on port 4000.
 
-### 2. Start ngrok
+### 3. Start ngrok
 
 In a new terminal window, run:
 
@@ -33,15 +43,13 @@ ngrok http 4000
 
 After it's running, copy the ngrok URL (e.g. `somehash.ngrok.app`). You'll need just the domain without the `https://` prefix.
 
-### 3. Create a bot
+### 4. Create a bot
 
 A bot is what joins the meeting and streams audio data to your server. You can create one using the `run.sh` script or manually with curl.
 
 #### Option A: Using run.sh (recommended)
 
-1. Copy the `.env.sample` and rename it to `.env`. Then fill out the variables listed in the file.
-
-2. Create a new terminal and run the script:
+In a new terminal, run the script:
 
 ```bash
 chmod +x run.sh
@@ -89,6 +97,6 @@ curl --request POST \
 - Replace `RECALL_REGION`, `RECALL_API_KEY`, and `YOUR_MEETING_URL` with your own values.
 - Replace `YOUR_NGROK_DOMAIN` with your ngrok domain (e.g. `somehash.ngrok.app`). Use `wss://` instead of `https://` since this is a WebSocket connection.
 
-### 4. Verify requests
+### 5. Verify requests
 
 When the bot joins the meeting and participants join/leave, you'll see verification logs in your server terminal. The server validates each request using the `VERIFICATION_SECRET` and the HMAC signature in the request headers.
