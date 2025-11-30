@@ -55,6 +55,5 @@ export function verify_request_from_recall(args: {
         }
     }
 
-    // If no matching signature is found, throw an error
     throw new Error("No matching signature found");
 }
