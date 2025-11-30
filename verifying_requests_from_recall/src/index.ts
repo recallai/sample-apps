@@ -1,7 +1,7 @@
 import http from "http";
 import { WebSocketServer } from "ws";
 import { env } from "./config/env";
-import { verifyRequestFromRecall } from "./verify-request-from-recall";
+import { verify_request_from_recall } from "./verify_request_from_recall";
 
 const server = http.createServer();
 
@@ -15,14 +15,14 @@ server.on("request", async (req, res) => {
             Object.entries(req.headers)
                 .map(([key, value]) => [
                     key.toLowerCase(),
-                    typeof value === "string" ? value : value?.join(",") ?? ''
-                ])
-        )
+                    typeof value === "string" ? value : value?.join(",") ?? "",
+                ]),
+        );
 
         switch (req.method) {
             // Verify GET requests which don't have a body/payload
             case "GET": {
-                verifyRequestFromRecall({
+                verify_request_from_recall({
                     secret: env.VERIFICATION_SECRET,
                     headers,
                     payload: null,
@@ -32,17 +32,17 @@ server.on("request", async (req, res) => {
             }
             // Verify requests which have a body/payload
             case "POST": {
-                const bodyChunks: Buffer[] = [];
+                const body_chunks: Buffer[] = [];
                 for await (const chunk of req) {
-                    bodyChunks.push(chunk);
+                    body_chunks.push(chunk);
                 }
                 // Must be the raw body from the request
-                const rawBody = Buffer.concat(bodyChunks).toString("utf-8");
+                const raw_body = Buffer.concat(body_chunks).toString("utf-8");
 
-                verifyRequestFromRecall({
+                verify_request_from_recall({
                     secret: env.VERIFICATION_SECRET,
                     headers,
-                    payload: rawBody,
+                    payload: raw_body,
                 });
 
                 break;
@@ -67,8 +67,8 @@ server.on("request", async (req, res) => {
  */
 const wss = new WebSocketServer({ noServer: true });
 wss.on("connection", (socket) => {
-    socket.on("message", rawMsg => {
-        console.log("Message received", rawMsg.toString());
+    socket.on("message", (raw_msg) => {
+        console.log("Message received", raw_msg.toString());
     });
 
     socket.on("close", () => {
@@ -80,11 +80,11 @@ server.on("upgrade", (req, socket, head) => {
     try {
         const headers = Object.fromEntries(
             Object.entries(req.headers)
-                .map(([key, value]) => [key.toLowerCase(), typeof value === "string" ? value : value?.join(",") ?? ''])
-        )
+                .map(([key, value]) => [key.toLowerCase(), typeof value === "string" ? value : value?.join(",") ?? ""]),
+        );
 
         // Verify WebSocket requests on upgrade
-        verifyRequestFromRecall({
+        verify_request_from_recall({
             secret: env.VERIFICATION_SECRET,
             headers,
             payload: null,

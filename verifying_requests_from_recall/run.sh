@@ -10,7 +10,7 @@ fi
 : "${RECALL_REGION:?REGION is required (us-west-2, us-east-1, eu-central-1, ap-northeast-1)}"
 : "${RECALL_API_KEY:?RECALL_API_KEY is required (e.g. whsec_...)}"
 : "${MEETING_URL:?MEETING_URL is required (Zoom/Meet URL)}"
-: "${NGROK_BASE_DOMAIN:?NGROK_BASE_DOMAIN is required (ngrok.io host without scheme)}"
+: "${NGROK_DOMAIN:?NGROK_DOMAIN is required (ngrok.io host without scheme)}"
 
 curl --request POST \
   --url https://${RECALL_REGION}.recall.ai/api/v1/bot/ \
@@ -23,14 +23,23 @@ curl --request POST \
   "recording_config": {
     "realtime_endpoints": [
       {
-        "type": "websocket",
-        "url": "wss://${NGROK_BASE_DOMAIN}",
+        "type": "webhook",
+        "url": "https://${NGROK_DOMAIN}",
         "events": [
-          "audio_separate_raw.data"
+          "participant_events.join"
+        ]
+      },
+      {
+        "type": "websocket",
+        "url": "wss://${NGROK_DOMAIN}",
+        "events": [
+          "participant_events.join"
         ]
       }
-    ],
-    "audio_separate_raw": {}
+    ]
+  },
+  "zoom": {
+    "zak_url": "https://${NGROK_DOMAIN}"
   }
 }
 EOF
