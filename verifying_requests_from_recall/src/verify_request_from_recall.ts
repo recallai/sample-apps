@@ -1,8 +1,12 @@
 import { Buffer } from "buffer";
 import crypto from "crypto";
 
+/**
+ * Verify a request from Recall.ai using the verification secret and the HMAC signature in the request headers.
+ * This will throw an error if the request is not verified.
+ */
 export function verify_request_from_recall(args: {
-    // Workspace verification secret                             
+    // Workspace verification secret or Svix webhook secret                     
     secret: string,
     // Incoming request header
     headers: Record<string, string>,
@@ -51,6 +55,7 @@ export function verify_request_from_recall(args: {
         const sig_bytes = Buffer.from(signature, "base64");
         const expected_sig_bytes = Buffer.from(expected_sig, "base64");
         if (expected_sig_bytes.length === sig_bytes.length && crypto.timingSafeEqual(new Uint8Array(expected_sig_bytes), new Uint8Array(sig_bytes))) {
+            // Signature verified since we found a match.
             return;
         }
     }
