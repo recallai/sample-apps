@@ -1,7 +1,7 @@
 {
-    "name": "separate-audio-streams-per-participant",
+    "name": "verify_requests_from_recall",
     "version": "1.0.0",
-    "description": "Separate audio streams per participant",
+    "description": "Verify requests from Recall.ai via webhook and WebSocket",
     "main": "index.ts",
     "scripts": {
         "dev": "ts-node src/index.ts"
