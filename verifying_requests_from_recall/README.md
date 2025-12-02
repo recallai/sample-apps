@@ -45,7 +45,7 @@ After it's running, copy the ngrok URL (e.g. `somehash.ngrok.app`). You'll need 
 
 ### 4. Create a bot
 
-A bot is what joins the meeting and streams audio data to your server. You can create one using the `run.sh` script or manually with curl.
+You can create a bot using the `run.sh` script or manually with curl.
 
 #### Option A: Using run.sh (recommended)
 
