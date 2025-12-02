@@ -1,7 +1,7 @@
 {
-    "name": "separate-audio-streams-per-participant-download-audio-files",
+    "name": "separate_audio_streams_per_participant_realtime_write_to_audio_files",
     "version": "1.0.0",
-    "description": "Download separate audio streams per participant audio files",
+    "description": "Receive separate audio streams per participant and write to audio files in real-time",
     "main": "index.ts",
     "scripts": {
         "dev": "ts-node src/index.ts"
