@@ -6,7 +6,7 @@
     "scripts": {
         "dev": "ts-node src/index.ts"
     },
-    "author": "John Doe",
+    "author": "Gerry Saporito",
     "license": "MIT",
     "devDependencies": {
         "@types/is-base64": "^1.1.3",
