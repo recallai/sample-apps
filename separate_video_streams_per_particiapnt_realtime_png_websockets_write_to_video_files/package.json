@@ -1,0 +1,28 @@
+{
+    "name": "separate_video_streams_per_particiapnt_realtime_png_websockets_write_to_video_files",
+    "version": "1.0.0",
+    "description": "Receive separate png video streams per participant and write to mp4 video files in real-time",
+    "main": "index.ts",
+    "scripts": {
+        "dev": "ts-node src/index.ts"
+    },
+    "author": "John Doe",
+    "license": "MIT",
+    "devDependencies": {
+        "@types/fluent-ffmpeg": "^2.1.28",
+        "@types/node": "^24.10.1",
+        "@types/pngjs": "^6.0.5",
+        "@types/ws": "^8.18.1",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.9.3"
+    },
+    "dependencies": {
+        "@ffmpeg-installer/ffmpeg": "^1.1.0",
+        "dotenv": "^17.2.3",
+        "fluent-ffmpeg": "^2.1.3",
+        "http": "^0.0.1-security",
+        "pngjs": "^7.0.0",
+        "ws": "^8.18.3",
+        "zod": "^4.1.13"
+    }
+}

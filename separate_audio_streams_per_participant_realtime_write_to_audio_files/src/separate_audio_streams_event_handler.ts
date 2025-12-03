@@ -7,18 +7,8 @@ import { AudioSeparateRawDataSchema } from "./schemas/AudioSeparateRawDataSchema
 
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
-/**
- * A stream pipeline is a pipeline that takes in a raw audio stream and outputs an MP3 file.
- * It is used to store the open pipelines so we can reuse them for the same recording and participant.
- */
-type AudioStreamPipeline = {
-    passthrough: PassThrough;
-    ffmpeg_command: ReturnType<typeof ffmpeg>;
-    write_stream: fs.WriteStream;
-};
-
-/* Store the open pipelines so we can reuse them for the same recording and participant. */
-const audio_stream_pipelines = new Map<string, AudioStreamPipeline>(); // stream_key -> pipeline
+/* Store the open streams so we can reuse them for the same recording and participant. */
+const audio_stream_passthroughs = new Map<string, PassThrough>(); // stream_key -> passthrough
 
 /* Store the last relative timestamp for each stream_key to fill in silence gaps in audio stream. */
 const audio_stream_previous_chunk_ends = new Map<string, number>(); // stream_key -> last relative timestamp
@@ -26,7 +16,7 @@ const audio_stream_previous_chunk_ends = new Map<string, number>(); // stream_ke
 /* Store the pending buffers for each stream_key to batch write them. */
 const audio_stream_pending_buffers = new Map<string, Buffer[]>();
 
-/* Number of chunks to buffer before writing to the audio pipeline. */
+/* Number of chunks to buffer before writing to the audio passthrough. */
 const WRITE_THRESHOLD = 5;
 
 /* Interval in milliseconds to flush the pending buffers. */
@@ -37,11 +27,12 @@ const FLUSH_INTERVAL_MS = 40;
  * This will run if the FLUSH_INTERVAL_MS has passed and the number of chunks received is less than the write threshold,
  * to ensure we don't miss any chunks.
  */
-const schedule_flush = (stream_key: string, pipeline: AudioStreamPipeline) => {
+const schedule_flush = (args: { stream_key: string, passthrough: PassThrough }) => {
+    const { stream_key, passthrough } = args;
     setTimeout(() => {
         const buffered = audio_stream_pending_buffers.get(stream_key);
         if (!buffered?.length) return;
-        pipeline.passthrough.write(Buffer.concat(buffered));
+        passthrough.write(Buffer.concat(buffered));
         audio_stream_pending_buffers.set(stream_key, []);
     }, FLUSH_INTERVAL_MS);
 };
@@ -55,14 +46,14 @@ function get_stream_key(args: { recording_id: string, participant_id: number }) 
 }
 
 /**
- * Get the audio pipeline for a given recording and participant.
- * If the pipeline does not exist, create it.
+ * Get the audio passthrough for a given recording and participant.
+ * If the passthrough does not exist, create it.
  */
-function get_audio_pipeline(args: { recording_id: string, participant_id: number }) {
+function get_audio_passthrough(args: { recording_id: string, participant_id: number }) {
     const { recording_id, participant_id } = args;
     const stream_key = get_stream_key({ recording_id, participant_id });
 
-    if (!audio_stream_pipelines.has(stream_key)) {
+    if (!audio_stream_passthroughs.has(stream_key)) {
         const output_path = path.join(
             process.cwd(),
             `output/recording-${recording_id}/participant-${participant_id}.mp3`,
@@ -70,8 +61,7 @@ function get_audio_pipeline(args: { recording_id: string, participant_id: number
         fs.mkdirSync(path.dirname(output_path), { recursive: true });
 
         const passthrough = new PassThrough();
-        const write_stream = fs.createWriteStream(output_path, { flags: "a" });
-        const command = ffmpeg()
+        ffmpeg()
             .input(passthrough)
             .inputFormat("s16le") // Input format is S16LE (16-bit PCM LE).
             .inputOptions([
@@ -79,20 +69,15 @@ function get_audio_pipeline(args: { recording_id: string, participant_id: number
                 "-ac", "1", // Audio channels is 1.
             ])
             .format("mp3")
-            .on("error", (err) => console.error("ffmpeg failed", err));
+            .on("error", (err) => console.error("ffmpeg failed", err))
+            .save(output_path);
 
-        command.pipe(write_stream, { end: false });
-
-        audio_stream_pipelines.set(stream_key, {
-            passthrough,
-            ffmpeg_command: command,
-            write_stream,
-        });
+        audio_stream_passthroughs.set(stream_key, passthrough);
     }
 
-    const pipeline = audio_stream_pipelines.get(stream_key);
-    if (!pipeline) throw new Error(`No audio pipeline found for stream key: ${stream_key}`);
-    return pipeline;
+    const passthrough = audio_stream_passthroughs.get(stream_key);
+    if (!passthrough) throw new Error(`No audio passthrough found for stream key: ${stream_key}`);
+    return passthrough;
 }
 
 /**
@@ -125,9 +110,9 @@ export function separate_audio_streams_event_handler(args: { msg: Record<string,
     }
     audio_stream_previous_chunk_ends.set(stream_key, current_chunk_end);
 
-    // Get the audio pipeline for the stream.
+    // Get the audio passthrough for the stream.
     console.log(`Writing to ${stream_key} with size ${padded_buffer.length} bytes`);
-    const pipeline = get_audio_pipeline({
+    const passthrough = get_audio_passthrough({
         recording_id: msg.data.recording.id,
         participant_id: msg.data.data.participant.id,
     });
@@ -139,23 +124,22 @@ export function separate_audio_streams_event_handler(args: { msg: Record<string,
 
     // If the number of buffers is greater than the write threshold, flush them.
     if (buffers.length >= WRITE_THRESHOLD) {
-        pipeline.passthrough.write(Buffer.concat(buffers));
+        passthrough.write(Buffer.concat(buffers));
         audio_stream_pending_buffers.set(stream_key, []);
     } else {
-        schedule_flush(stream_key, pipeline);
+        schedule_flush({ stream_key, passthrough });
     }
 }
 
 /**
- * Event handler for closing the audio pipeline and cleanup.
+ * Event handler for closing the audio passthrough and cleanup.
  */
 export function close_audio_streams_event_handler(args: { recording_id: string }) {
     const { recording_id } = args;
-    audio_stream_pipelines.forEach((pipeline, stream_key) => {
+    audio_stream_passthroughs.forEach((passthrough, stream_key) => {
         if (stream_key.includes(recording_id)) {
-            pipeline.passthrough.end();
-            pipeline.write_stream.end();
-            audio_stream_pipelines.delete(stream_key);
+            passthrough.end();
+            audio_stream_passthroughs.delete(stream_key);
         }
     });
     audio_stream_previous_chunk_ends.forEach((_, key) => {
