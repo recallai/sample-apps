@@ -27,7 +27,8 @@ const FLUSH_INTERVAL_MS = 40;
  * This will run if the FLUSH_INTERVAL_MS has passed and the number of chunks received is less than the write threshold,
  * to ensure we don't miss any chunks.
  */
-const schedule_flush = (stream_key: string, passthrough: PassThrough) => {
+const schedule_flush = (args: { stream_key: string, passthrough: PassThrough }) => {
+    const { stream_key, passthrough } = args;
     setTimeout(() => {
         const buffered = audio_stream_pending_buffers.get(stream_key);
         if (!buffered?.length) return;
@@ -126,7 +127,7 @@ export function separate_audio_streams_event_handler(args: { msg: Record<string,
         passthrough.write(Buffer.concat(buffers));
         audio_stream_pending_buffers.set(stream_key, []);
     } else {
-        schedule_flush(stream_key, passthrough);
+        schedule_flush({ stream_key, passthrough });
     }
 }
 
