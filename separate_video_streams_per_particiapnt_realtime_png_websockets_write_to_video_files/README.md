@@ -78,7 +78,8 @@ curl --request POST \
           ]
         }
       ],
-      "video_separate_raw": {}
+      "video_separate_raw": {},
+      "video_mixed_layout": "gallery_view_v2"
     }
   }'
 ```
