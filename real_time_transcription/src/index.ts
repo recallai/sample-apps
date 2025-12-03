@@ -15,7 +15,7 @@ server.on("request", async (req, res) => {
             body_chunks.push(chunk);
         }
         const raw_body = Buffer.concat(body_chunks).toString("utf-8");
-        const body = JSON.parse(raw_body)
+        const body = JSON.parse(raw_body);
         await transcript_data_event_handler({ msg: body });
     } catch (error) {
         console.error(`Error handling transcript data: ${req.method} ${req.url}`, error);
