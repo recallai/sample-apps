@@ -8,7 +8,8 @@ import { AudioSeparateRawDataSchema } from "./schemas/AudioSeparateRawDataSchema
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
 /* Store the open streams so we can reuse them for the same recording and participant. */
-const audio_stream_passthroughs = new Map<string, PassThrough>(); // stream_key -> passthrough
+const audio_stream_passthroughs_raw = new Map<string, PassThrough>();
+const audio_stream_passthroughs_mp3 = new Map<string, PassThrough>();
 
 /* Store the last relative timestamp for each stream_key to fill in silence gaps in audio stream. */
 const audio_stream_previous_chunk_ends = new Map<string, number>(); // stream_key -> last relative timestamp
@@ -23,21 +24,6 @@ const WRITE_THRESHOLD = 5;
 const FLUSH_INTERVAL_MS = 40;
 
 /**
- * Schedule a flush of the pending buffers.
- * This will run if the FLUSH_INTERVAL_MS has passed and the number of chunks received is less than the write threshold,
- * to ensure we don't miss any chunks.
- */
-const schedule_flush = (args: { stream_key: string, passthrough: PassThrough }) => {
-    const { stream_key, passthrough } = args;
-    setTimeout(() => {
-        const buffered = audio_stream_pending_buffers.get(stream_key);
-        if (!buffered?.length) return;
-        passthrough.write(Buffer.concat(buffered));
-        audio_stream_pending_buffers.set(stream_key, []);
-    }, FLUSH_INTERVAL_MS);
-};
-
-/**
  * Generate a unique key for the audio stream.
  */
 function get_stream_key(args: { recording_id: string, participant_id: number }) {
@@ -46,14 +32,42 @@ function get_stream_key(args: { recording_id: string, participant_id: number }) 
 }
 
 /**
- * Get the audio passthrough for a given recording and participant.
+ * Get the audio passthrough for a given recording and participant raw audio.
  * If the passthrough does not exist, create it.
  */
-function get_audio_passthrough(args: { recording_id: string, participant_id: number }) {
+function get_audio_passthrough_raw(args: { recording_id: string, participant_id: number }) {
     const { recording_id, participant_id } = args;
     const stream_key = get_stream_key({ recording_id, participant_id });
 
-    if (!audio_stream_passthroughs.has(stream_key)) {
+    if (!audio_stream_passthroughs_raw.has(stream_key)) {
+        const output_path = path.join(
+            process.cwd(),
+            `output/recording-${recording_id}/participant-${participant_id}.raw`,
+        );
+        fs.mkdirSync(path.dirname(output_path), { recursive: true });
+
+        const passthrough = new PassThrough();
+        const write_stream = fs.createWriteStream(output_path, { flags: "a" });
+        passthrough.pipe(write_stream);
+
+        audio_stream_passthroughs_raw.set(stream_key, passthrough);
+    }
+
+    const passthrough = audio_stream_passthroughs_raw.get(stream_key);
+    if (!passthrough) throw new Error(`No audio passthrough found for stream key: ${stream_key}`);
+    return passthrough;
+}
+
+
+/**
+ * Get the audio passthrough for a given recording and participant mp3 audio.
+ * If the passthrough does not exist, create it.
+ */
+function get_audio_passthrough_mp3(args: { recording_id: string, participant_id: number }) {
+    const { recording_id, participant_id } = args;
+    const stream_key = get_stream_key({ recording_id, participant_id });
+
+    if (!audio_stream_passthroughs_mp3.has(stream_key)) {
         const output_path = path.join(
             process.cwd(),
             `output/recording-${recording_id}/participant-${participant_id}.mp3`,
@@ -72,10 +86,10 @@ function get_audio_passthrough(args: { recording_id: string, participant_id: num
             .on("error", (err) => console.error("ffmpeg failed", err))
             .save(output_path);
 
-        audio_stream_passthroughs.set(stream_key, passthrough);
+        audio_stream_passthroughs_mp3.set(stream_key, passthrough);
     }
 
-    const passthrough = audio_stream_passthroughs.get(stream_key);
+    const passthrough = audio_stream_passthroughs_mp3.get(stream_key);
     if (!passthrough) throw new Error(`No audio passthrough found for stream key: ${stream_key}`);
     return passthrough;
 }
@@ -110,24 +124,37 @@ export function separate_audio_streams_event_handler(args: { msg: Record<string,
     }
     audio_stream_previous_chunk_ends.set(stream_key, current_chunk_end);
 
-    // Get the audio passthrough for the stream.
     console.log(`Writing to ${stream_key} with size ${padded_buffer.length} bytes`);
-    const passthrough = get_audio_passthrough({
+
+    // Write the raw audio to a file.
+    const passthrough_raw = get_audio_passthrough_raw({
+        recording_id: msg.data.recording.id,
+        participant_id: msg.data.data.participant.id,
+    });
+    passthrough_raw.write(padded_buffer);
+
+    // Write the raw audio to an MP3 file.
+    const passthrough_mp3 = get_audio_passthrough_mp3({
         recording_id: msg.data.recording.id,
         participant_id: msg.data.data.participant.id,
     });
 
-    // Choppiness/clicking noise can occur if the buffers are flushed in small chunks so we batch them up to a write threshold.
+    // Store the raw audio buffers in the pending buffers to batch write them over a certain threshold
+    // This is required because the mp3 encoder will produce choppiness/clicking noise if the buffers are flushed in small chunks.
+    // This only applies to the MP3 passthrough since the raw audio is written directly to a file.
     const buffers = audio_stream_pending_buffers.get(stream_key) ?? [];
     buffers.push(padded_buffer);
     audio_stream_pending_buffers.set(stream_key, buffers);
-
-    // If the number of buffers is greater than the write threshold, flush them.
     if (buffers.length >= WRITE_THRESHOLD) {
-        passthrough.write(Buffer.concat(buffers));
+        passthrough_mp3.write(Buffer.concat(buffers));
         audio_stream_pending_buffers.set(stream_key, []);
     } else {
-        schedule_flush({ stream_key, passthrough });
+        setTimeout(() => {
+            const buffered = audio_stream_pending_buffers.get(stream_key);
+            if (!buffered?.length) return;
+            passthrough_mp3.write(Buffer.concat(buffered));
+            audio_stream_pending_buffers.set(stream_key, []);
+        }, FLUSH_INTERVAL_MS);
     }
 }
 
@@ -136,10 +163,21 @@ export function separate_audio_streams_event_handler(args: { msg: Record<string,
  */
 export function close_audio_streams_event_handler(args: { recording_id: string }) {
     const { recording_id } = args;
-    audio_stream_passthroughs.forEach((passthrough, stream_key) => {
+    audio_stream_passthroughs_raw.forEach((passthrough, stream_key) => {
         if (stream_key.includes(recording_id)) {
             passthrough.end();
-            audio_stream_passthroughs.delete(stream_key);
+            audio_stream_passthroughs_raw.delete(stream_key);
+        }
+    });
+    audio_stream_passthroughs_mp3.forEach((passthrough, stream_key) => {
+        if (stream_key.includes(recording_id)) {
+            passthrough.end();
+            audio_stream_passthroughs_mp3.delete(stream_key);
+        }
+    });
+    audio_stream_pending_buffers.forEach((_, key) => {
+        if (key.includes(recording_id)) {
+            audio_stream_pending_buffers.delete(key);
         }
     });
     audio_stream_previous_chunk_ends.forEach((_, key) => {
