@@ -7,12 +7,15 @@ const server = http.createServer();
 
 const wss = new WebSocketServer({ noServer: true });
 wss.on("connection", (socket: WebSocket & { recording_id: string }) => {
+    console.log("WebSocket connection established");
+
     socket.on("message", (raw_msg) => {
         let msg: Record<string, any> | undefined;
         try {
             msg = JSON.parse(raw_msg.toString());
         } catch (error) { }
         if (!msg) {
+            console.log(`Invalid message received: ${raw_msg.toString()}`);
             return;
         }
 

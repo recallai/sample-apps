@@ -10,8 +10,8 @@ export const VideoSeparatePngDataSchema = z.object({
             "buffer": z.string(), // base64 encoded png at 2fps with resolution 360x640
             "type": z.enum(["webcam", "screenshare"]), // Type of video stream (webcam or screenshare)
             "timestamp": z.object({ // Timestamp of the first byte in the buffer. More info about timestamps: https://docs.recall.ai/docs/download-schemas#/schema-timestamps
-                "relative": z.number(), // "Timestamp in seconds"),
-                "absolute": z.string(), // "ISO 8601 absolute timestamp (e.g. 2025-01-01 00:00:00)")
+                "relative": z.number(), // Timestamp in seconds
+                "absolute": z.string(), // ISO 8601 absolute timestamp (e.g. 2025-01-01 00:00:00)
             }),
             "participant": z.object({
                 "id": z.number(), // Recall.ai assigned participant id (e.g. 100, 200, 300)

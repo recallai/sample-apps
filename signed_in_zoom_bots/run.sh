@@ -20,24 +20,8 @@ curl --request POST \
   --data @- <<EOF
 {
   "meeting_url": "${MEETING_URL}",
-  "recording_config": {
-    "transcript": {
-      "provider": {
-        "recallai_streaming": {
-          "mode": "prioritize_low_latency",
-          "language_code": "en"
-        }
-      }
-    },
-    "realtime_endpoints": [
-      {
-        "type": "webhook",
-        "url": "https://${NGROK_DOMAIN}",
-        "events": [
-          "transcript.data"
-        ]
-      }
-    ]
+  "zoom": {
+    "zak_url": "https://${NGROK_DOMAIN}/zoom/zak"
   }
 }
 EOF
