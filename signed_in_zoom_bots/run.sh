@@ -20,18 +20,8 @@ curl --request POST \
   --data @- <<EOF
 {
   "meeting_url": "${MEETING_URL}",
-  "recording_config": {
-    "realtime_endpoints": [
-      {
-        "type": "websocket",
-        "url": "wss://${NGROK_DOMAIN}",
-        "events": [
-          "video_separate_png.data"
-        ]
-      }
-    ],
-    "video_separate_png": {},
-    "video_mixed_layout": "gallery_view_v2"
+  "zoom": {
+    "zak_url": "https://${NGROK_DOMAIN}/zoom/zak"
   }
 }
 EOF
