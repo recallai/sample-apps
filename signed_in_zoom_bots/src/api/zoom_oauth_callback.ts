@@ -32,21 +32,21 @@ export async function zoom_oauth_callback(args: { authorization_code: string }):
 /**
  * Generate Zoom OAuth access and refresh tokens from an authorization code.
  */
-const generate_oauth_tokens_from_authorization_code = async (args: {
+async function generate_oauth_tokens_from_authorization_code(args: {
     authorization_code: string,
     zoom_oauth_app_client_id: string,
     zoom_oauth_app_client_secret: string,
-    zoom_oauth_app_redirect_uri: string
-}): Promise<{ access_token: string, refresh_token: string }> => {
+    zoom_oauth_app_redirect_uri: string,
+}): Promise<{ access_token: string, refresh_token: string }> {
     const { authorization_code,
         zoom_oauth_app_client_id,
         zoom_oauth_app_client_secret,
-        zoom_oauth_app_redirect_uri
+        zoom_oauth_app_redirect_uri,
     } = z.object({
         authorization_code: z.string(),
         zoom_oauth_app_client_id: z.string(),
         zoom_oauth_app_client_secret: z.string(),
-        zoom_oauth_app_redirect_uri: z.string()
+        zoom_oauth_app_redirect_uri: z.string(),
     }).parse(args);
 
     const url = new URL("https://zoom.us/oauth/token");

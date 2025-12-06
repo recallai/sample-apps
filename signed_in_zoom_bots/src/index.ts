@@ -1,5 +1,5 @@
-import dotenv from "dotenv";
 import http from "http";
+import dotenv from "dotenv";
 import z from "zod";
 import { zoom_oauth } from "./api/zoom_oauth";
 import { zoom_oauth_callback } from "./api/zoom_oauth_callback";
@@ -23,7 +23,7 @@ server.on("request", async (req, res) => {
                 if (req.method !== "GET") throw new Error(`Method not allowed: ${req.method}`);
 
                 const zoom_oauth_url = zoom_oauth();
-                console.log(`Created Zoom OAuth URL`);
+                console.log(`Created Zoom OAuth URL: ${zoom_oauth_url}`);
 
                 // redirect to the Zoom OAuth URL
                 res.writeHead(302, { Location: zoom_oauth_url });
@@ -36,7 +36,7 @@ server.on("request", async (req, res) => {
                 const { code: authorization_code } = z.object({ code: z.string() })
                     .parse(Object.fromEntries(url.searchParams.entries()));
                 const { access_token, refresh_token } = await zoom_oauth_callback({ authorization_code });
-                console.log(`Zoom OAuth callback called`);
+                console.log(`Zoom OAuth callback called with authorization code access_token: ${access_token} and refresh_token: ${refresh_token}`);
 
                 res.writeHead(200, { "Content-Type": "application/json" });
                 res.end(JSON.stringify({
@@ -50,13 +50,18 @@ server.on("request", async (req, res) => {
                 if (req.method !== "GET") throw new Error(`Method not allowed: ${req.method}`);
 
                 const { zak_token } = await zoom_zak();
-                console.log(`Generated Zoom ZAK token`);
+                console.log(`Generated Zoom ZAK token: ${zak_token}`);
 
                 res.writeHead(200, { "Content-Type": "text/plain" });
                 res.end(zak_token);
                 return;
             }
             default: {
+                if (url.pathname === "/favicon.ico") {
+                    res.writeHead(200, { "Content-Type": "image/x-icon" });
+                    res.end(Buffer.from(""));
+                    return;
+                }
                 throw new Error(`Endpoint not found: ${req.method} ${url.pathname}`);
             }
         }
@@ -73,7 +78,7 @@ server.on("request", async (req, res) => {
 server.listen(env.PORT, "0.0.0.0", () => {
     // Quick check to verify
     if (new URL(env.ZOOM_OAUTH_APP_REDIRECT_URI).pathname !== "/zoom/oauth/callback") {
-        throw new Error(`Zoom OAuth App Redirect URI path is not correct. 
+        throw new Error(`Zoom OAuth App Redirect URI path is not correct.
 Expected: "/zoom/oauth/callback"
 Received: "${new URL(env.ZOOM_OAUTH_APP_REDIRECT_URI).pathname}"
 
@@ -83,8 +88,9 @@ Make sure that your Redirect URI in your Zoom OAuth is also set to: https://${pr
 
     console.log(`Server is running on port ${env.PORT}
 
-        To get started, open the following URL in your browser: https://${process.env.NGROK_DOMAIN ?? "NGROK_DOMAIN"}/zoom/oauth
+To get started, open the following URL in your browser: https://${process.env.NGROK_DOMAIN ?? "NGROK_DOMAIN"}/zoom/oauth
         
-        After you complete the OAuth flow, you can then create a bot. Ensure that \`zoom.zak_url="https://${process.env.NGROK_DOMAIN ?? "NGROK_DOMAIN"}/zoom/zak"\` is set in the bot's configuration.
-    `);
+After you complete the OAuth flow, you can then create a bot.
+  - Ensure that \`zoom.zak_url="https://${process.env.NGROK_DOMAIN ?? "NGROK_DOMAIN"}/zoom/zak"\` is set in the bot's configuration.
+  - You can create a bot using the \`run.sh\` script. See the README for more details.`);
 });

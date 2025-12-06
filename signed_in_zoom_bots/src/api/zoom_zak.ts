@@ -12,7 +12,7 @@ import { env } from "../config/env";
  */
 export async function zoom_zak(): Promise<{ zak_token: string }> {
     const { access_token } = await get_zoom_oauth_access_token();
-    return await generate_zoom_zak({ access_token });
+    return generate_zoom_zak({ access_token });
 }
 
 /**
@@ -27,16 +27,16 @@ export async function get_zoom_oauth_access_token(): Promise<any> {
     if (!refresh_token) throw new Error("No refresh token found. Generate a new one by calling the /zoom/oauth endpoint.");
 
     // Refresh the access token
-    const basicAuth = Buffer
+    const token = Buffer
         .from(`${env.ZOOM_OAUTH_APP_CLIENT_ID}:${env.ZOOM_OAUTH_APP_CLIENT_SECRET}`)
         .toString("base64");
     const response = await fetch("https://zoom.us/oauth/token", {
         method: "POST",
         headers: {
-            Authorization: `Basic ${basicAuth}`,
+            Authorization: `Basic ${token}`,
             "Content-Type": "application/x-www-form-urlencoded",
         },
-        body: new URLSearchParams({ grant_type: "refresh_token", refresh_token, }).toString(),
+        body: new URLSearchParams({ grant_type: "refresh_token", refresh_token }).toString(),
     });
     if (!response.ok) throw new Error(await response.text());
 
@@ -51,10 +51,10 @@ export async function get_zoom_oauth_access_token(): Promise<any> {
  * This is the token that is used to start a Zoom meeting and/or authenticate a participant in a Zoom meeting, 
  * allowing them to join meetings as authenticated participants (e.g. signed-in users).
  */
-const generate_zoom_zak = async (args: { access_token: string }): Promise<{ zak_token: string }> => {
+async function generate_zoom_zak(args: { access_token: string }): Promise<{ zak_token: string }> {
     const { access_token } = z.object({ access_token: z.string() }).parse(args);
-    const response = await fetch(`https://api.zoom.us/v2/users/me/token?type=zak`, {
-        headers: { "Authorization": `Bearer ${access_token}`, },
+    const response = await fetch("https://api.zoom.us/v2/users/me/token?type=zak", {
+        headers: { "Authorization": `Bearer ${access_token}` },
     });
     if (!response.ok) throw new Error(await response.text());
 

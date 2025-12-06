@@ -8,9 +8,9 @@ import { env } from "../config/env";
  * You can then use this authorization code to generate an access token and refresh token.
  */
 export function zoom_oauth(): string {
-    const authorization_url = generateAuthorizationUrl({
+    const authorization_url = generate_zoom_oauth_authorization_url({
         zoom_oauth_app_client_id: env.ZOOM_OAUTH_APP_CLIENT_ID,
-        zoom_oauth_app_redirect_uri: env.ZOOM_OAUTH_APP_REDIRECT_URI
+        zoom_oauth_app_redirect_uri: env.ZOOM_OAUTH_APP_REDIRECT_URI,
     });
     return authorization_url;
 }
@@ -18,10 +18,10 @@ export function zoom_oauth(): string {
 /**
  * Generates a Zoom OAuth authorization URL.
  */
-const generateAuthorizationUrl = (args: { zoom_oauth_app_client_id: string, zoom_oauth_app_redirect_uri: string }): string => {
+function generate_zoom_oauth_authorization_url(args: { zoom_oauth_app_client_id: string, zoom_oauth_app_redirect_uri: string }): string {
     const { zoom_oauth_app_client_id, zoom_oauth_app_redirect_uri } = z.object({
         zoom_oauth_app_client_id: z.string(),
-        zoom_oauth_app_redirect_uri: z.string()
+        zoom_oauth_app_redirect_uri: z.string(),
     }).parse(args);
 
     const url = new URL("https://zoom.us/oauth/authorize");
