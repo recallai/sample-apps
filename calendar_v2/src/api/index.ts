@@ -142,16 +142,16 @@ body=${JSON.stringify(body)}
  */
 server.listen(env.PORT, "0.0.0.0", () => {
     console.log(`
-Server is running on port ${env.PORT}
 
 To get started:
 - Open an ngrok tunnel to the server on port ${env.PORT}
-- open the following URL in your browser: http://localhost:5678/
+- Open the following URL in your browser: http://localhost:5173/
 
 To access the OAuth URLs directly:
 - Google: https://${process.env.NGROK_DOMAIN ?? "NGROK_DOMAIN"}/api/calendar/oauth?platform=google_calendar
 - Outlook: https://${process.env.NGROK_DOMAIN ?? "NGROK_DOMAIN"}/api/calendar/oauth?platform=microsoft_outlook
 
-Ensure the Redirect URI in your Google/Outlook Calendar OAuth is set to: https://${process.env.NGROK_DOMAIN ?? "NGROK_DOMAIN"}/api/calendar/oauth/callback
+Ensure that:
+- The redirect URI in your Google/Outlook Calendar OAuth is set to: https://${process.env.NGROK_DOMAIN ?? "NGROK_DOMAIN"}/api/calendar/oauth/callback
     `);
 });
