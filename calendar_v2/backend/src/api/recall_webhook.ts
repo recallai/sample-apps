@@ -1,11 +1,11 @@
 import { z } from "zod";
-import { CalendarSyncEventsPayloadSchema } from "../schemas/CalendarSyncEventsPayloadSchema";
-import { CalendarUpdatePayloadSchema } from "../schemas/CalendarUpdatePayloadSchema";
+import { CalendarSyncEventsEventSchema } from "../schemas/CalendarSyncEventsEventSchema";
+import { CalendarUpdateEventSchema } from "../schemas/CalendarUpdateEventSchema";
 
 export async function recall_webhook(payload: any): Promise<void> {
     const { event, data } = z.union([
-        CalendarUpdatePayloadSchema,
-        CalendarSyncEventsPayloadSchema,
+        CalendarUpdateEventSchema,
+        CalendarSyncEventsEventSchema,
     ]).parse(payload);
 
     switch (event) {
