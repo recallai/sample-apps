@@ -7,4 +7,17 @@ export async function recall_webhook(payload: any): Promise<void> {
         CalendarUpdatePayloadSchema,
         CalendarSyncEventsPayloadSchema,
     ]).parse(payload);
+
+    switch (event) {
+        case "calendar.update": {
+            console.log(`Calendar update event received: ${JSON.stringify(data)}`);
+            break;
+        }
+        case "calendar.sync_events": {
+            console.log(`Calendar sync events event received: ${JSON.stringify(data)}`);
+            break;
+        }
+    }
+
+    return;
 }

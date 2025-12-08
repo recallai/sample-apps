@@ -7,3 +7,5 @@ export const CalendarEventSchema = z.object({
     end_time: z.string(),
     raw: z.any(),
 });
+
+export type CalendarEventType = z.infer<typeof CalendarEventSchema>;

@@ -10,3 +10,5 @@ export const CalendarUpdatePayloadSchema = z.object({
         calendar_id: z.string(),
     }),
 });
+
+export type CalendarUpdatePayloadType = z.infer<typeof CalendarUpdatePayloadSchema>;

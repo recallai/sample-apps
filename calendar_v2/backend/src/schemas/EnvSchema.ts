@@ -5,11 +5,11 @@ export const EnvSchema = z.object({
     RECALL_REGION: z.string(),
     RECALL_API_KEY: z.string(),
 
-    GOOGLE_OAUTH_CLIENT_ID: z.string(),
-    GOOGLE_OAUTH_CLIENT_SECRET: z.string(),
-    GOOGLE_OAUTH_REDIRECT_URI: z.string(),
+    GOOGLE_OAUTH_CLIENT_ID: z.string().optional(),
+    GOOGLE_OAUTH_CLIENT_SECRET: z.string().optional(),
+    GOOGLE_OAUTH_REDIRECT_URI: z.string().optional(),
 
-    OUTLOOK_OAUTH_CLIENT_ID: z.string(),
-    OUTLOOK_OAUTH_CLIENT_SECRET: z.string(),
-    OUTLOOK_OAUTH_REDIRECT_URI: z.string(),
+    OUTLOOK_OAUTH_CLIENT_ID: z.string().optional(),
+    OUTLOOK_OAUTH_CLIENT_SECRET: z.string().optional(),
+    OUTLOOK_OAUTH_REDIRECT_URI: z.string().optional(),
 });

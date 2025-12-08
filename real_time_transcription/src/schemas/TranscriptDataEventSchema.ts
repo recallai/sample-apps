@@ -3,7 +3,7 @@ import { z } from "zod";
 /**
  * Schema for the transcription.data event
  */
-export const TranscriptDataSchema = z.object({
+export const TranscriptDataEventSchema = z.object({
     "event": z.literal("transcript.data"),
     "data": z.object({
         "data": z.object({
@@ -45,3 +45,5 @@ export const TranscriptDataSchema = z.object({
         }).nullish(),
     }),
 });
+
+export type TranscriptDataEventType = z.infer<typeof TranscriptDataEventSchema>;
