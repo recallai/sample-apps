@@ -15,10 +15,12 @@ usage() {
     echo ""
     echo "Commands:"
     echo "  list <platform_email>         List calendars for a user"
+    echo "  events <calendar_id>          List events for a calendar"
     echo "  delete <calendar_id>          Delete a calendar by ID"
     echo ""
     echo "Examples:"
     echo "  ./run.sh list user@example.com"
+    echo "  ./run.sh events cal_abc123"
     echo "  ./run.sh delete cal_abc123"
     exit 1
 }
@@ -41,6 +43,18 @@ case "$COMMAND" in
         
         echo "Listing calendars for: $PLATFORM_EMAIL"
         curl -s "${BASE_URL}/api/calendar?platform_email=${PLATFORM_EMAIL}" | jq .
+        ;;
+    
+    events)
+        if [ $# -lt 1 ]; then
+            echo "Error: calendar_id is required"
+            echo "Usage: ./run.sh events <calendar_id>"
+            exit 1
+        fi
+        CALENDAR_ID="$1"
+        
+        echo "Listing events for calendar: $CALENDAR_ID"
+        curl -s "${BASE_URL}/api/calendar/events?calendar_id=${CALENDAR_ID}" | jq .
         ;;
     
     delete)

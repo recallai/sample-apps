@@ -1,10 +1,11 @@
 import http from "http";
 import dotenv from "dotenv";
-import { calendar_oauth } from "./api/calendar_oauth";
-import { calendar_oauth_callback } from "./api/calendar_oauth_callback";
-import { calendars_delete } from "./api/calendars_delete";
-import { calendars_list } from "./api/calendars_list";
-import { recall_webhook } from "./api/recall_webhook";
+import { calendar_oauth } from "./handlers/calendar_oauth";
+import { calendar_oauth_callback } from "./handlers/calendar_oauth_callback";
+import { calendars_delete } from "./handlers/calendars_delete";
+import { calendars_list } from "./handlers/calendars_list";
+import { recall_webhook } from "./handlers/recall_webhook";
+import { calendar_events_list } from "./handlers/calendar_events_list";
 import { env } from "./config/env";
 
 dotenv.config();
@@ -102,6 +103,23 @@ body=${JSON.stringify(body)}
                     }
                 }
             }
+            case "/api/calendar/events": {
+                switch (req.method?.toUpperCase()) {
+                    case "GET": {
+                        if (!search_params.calendar_id) throw new Error("calendar_id is required");
+
+                        const result = await calendar_events_list(search_params);
+                        console.log(`Listed Calendar Events: ${JSON.stringify(result)}`);
+
+                        res.writeHead(200, { "Content-Type": "application/json" });
+                        res.end(JSON.stringify(result));
+                        return;
+                    }
+                    default: {
+                        throw new Error(`Method not allowed: ${req.method}`);
+                    }
+                }
+            }
             default: {
                 if (url.pathname.startsWith("/api/")) {
                     throw new Error(`Endpoint not found: ${req.method} ${url.pathname}`);
@@ -126,7 +144,11 @@ server.listen(env.PORT, "0.0.0.0", () => {
     console.log(`
 Server is running on port ${env.PORT}
 
-To get started, open the following URL in your browser: 
+To get started:
+- Open an ngrok tunnel to the server on port ${env.PORT}
+- open the following URL in your browser: http://localhost:5678/
+
+To access the OAuth URLs directly:
 - Google: https://${process.env.NGROK_DOMAIN ?? "NGROK_DOMAIN"}/api/calendar/oauth?platform=google_calendar
 - Outlook: https://${process.env.NGROK_DOMAIN ?? "NGROK_DOMAIN"}/api/calendar/oauth?platform=microsoft_outlook
 

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { env } from "../config/env";
-import { CalendarSchema, type CalendarType } from "../schemas/CalendarSchema";
-import { OAuthStateSchema } from "../schemas/OAuthStateSchema";
+import { CalendarSchema, type CalendarType } from "../../schemas/CalendarSchema";
+import { OAuthStateSchema } from "../../schemas/OAuthStateSchema";
 import { calendars_list } from "./calendars_list";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention

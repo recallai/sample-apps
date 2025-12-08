@@ -124,7 +124,7 @@ export function separate_audio_streams_event_handler(args: { msg: Record<string,
     }
     audio_stream_previous_chunk_ends.set(stream_key, current_chunk_end);
 
-    console.log(`Writing to ${stream_key} with size ${padded_buffer.length} bytes`);
+    console.log(`Writing to ${stream_key} with size ${padded_buffer.length} bytes. relative=${msg.data.data.timestamp.relative}, absolute=${msg.data.data.timestamp.absolute}`);
 
     // Write the raw audio to a file.
     const passthrough_raw = get_audio_passthrough_raw({

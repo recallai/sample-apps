@@ -1,5 +1,5 @@
 import { env } from "../config/env";
-import { CalendarSchema, type CalendarType } from "../schemas/CalendarSchema";
+import { CalendarSchema, type CalendarType } from "../../schemas/CalendarSchema";
 
 /**
  * List calendars saved in Recall.
