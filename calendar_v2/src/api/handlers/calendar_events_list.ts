@@ -28,7 +28,10 @@ export async function calendar_events_list(args: {
     if (!response.ok) throw new Error(await response.text());
 
     const data = await response.json();
-    const calendar_events = CalendarEventSchema.array().parse(data.results)
+    const calendar_events = CalendarEventSchema
+        .array()
+        .parse(data.results)
+        .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime());
     const next = z.string().nullable().parse(data.next);
 
     return { calendar_events, next };

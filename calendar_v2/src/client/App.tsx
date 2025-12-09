@@ -23,6 +23,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/Tabs";
 import { Calendar } from "./components/ui/Calendar";
 import { ScrollArea } from "./components/ui/ScrollArea";
+import { Badge } from "./components/ui/Badge";
 import {
   Dialog,
   DialogContent,
@@ -218,31 +219,12 @@ function CalendarDetails({ calendar }: { calendar: CalendarType }) {
         {/* Calendar Status Card */}
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
+            <div className="flex flex-col w-full">
+              <div className="flex items-center justify-between w-full gap-3">
                 <CardTitle className="text-base">
                   {calendar.platform_email}
                 </CardTitle>
-                <CardDescription>
-                  {calendar.status_changes.length} status change
-                  {calendar.status_changes.length !== 1 ? "s" : ""}
-                </CardDescription>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`size-2 rounded-full ${
-                      lastStatus?.status === "connected"
-                        ? "bg-green-500"
-                        : lastStatus?.status === "connecting"
-                        ? "bg-yellow-500"
-                        : "bg-gray-400"
-                    }`}
-                  />
-                  <span className="text-sm text-gray-600 capitalize">
-                    {lastStatus?.status || "Unknown"}
-                  </span>
-                </div>
+
                 <Button
                   variant="ghost"
                   size="sm"
@@ -297,28 +279,34 @@ function CalendarDetails({ calendar }: { calendar: CalendarType }) {
                 Status History
               </h4>
               <div className="space-y-1 max-h-48 overflow-y-auto">
-                {[...calendar.status_changes].reverse().map((change, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between text-sm py-1.5 px-2 rounded bg-gray-50"
-                  >
-                    <div className="flex items-center gap-2">
+                {[...calendar.status_changes].reverse().map((change, index) => {
+                  const isConnected = change.status === "connected";
+                  return (
+                    <div
+                      key={index}
+                      className={`flex items-center justify-between text-sm py-1.5 px-2 rounded ${
+                        isConnected ? "bg-green-50" : "bg-gray-50"
+                      }`}
+                    >
                       <span
-                        className={`size-2 rounded-full ${
-                          change.status === "connected"
-                            ? "bg-green-500"
-                            : change.status === "connecting"
-                            ? "bg-yellow-500"
-                            : "bg-gray-400"
+                        className={`capitalize ${
+                          isConnected
+                            ? "text-green-700 font-medium"
+                            : "text-gray-400"
                         }`}
-                      />
-                      <span className="capitalize">{change.status}</span>
+                      >
+                        {change.status}
+                      </span>
+                      <span
+                        className={`text-xs ${
+                          isConnected ? "text-green-600" : "text-gray-400"
+                        }`}
+                      >
+                        {new Date(change.created_at).toLocaleString()}
+                      </span>
                     </div>
-                    <span className="text-gray-500 text-xs">
-                      {new Date(change.created_at).toLocaleString()}
-                    </span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </CardContent>

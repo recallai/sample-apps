@@ -19,6 +19,12 @@ export async function calendars_list(args: Partial<CalendarType>): Promise<{ cal
 
     const data = await response.json();
     return {
-        calendars: CalendarSchema.array().parse(data.results),
+        calendars: CalendarSchema
+            .array()
+            .parse(data.results).map(v => ({
+                ...v,
+                status_changes: v.status_changes
+                    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+            })),
     };
 }
