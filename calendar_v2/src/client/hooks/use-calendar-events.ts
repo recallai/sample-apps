@@ -34,7 +34,7 @@ export function useCalendarEvents(props: {
             try {
                 if (!calendarId) {
                     console.log("calendar_id is required");
-                    return { calendarEvents: [], next: null };
+                    return { calendar_events: [], next: null };
                 }
 
                 const url = new URL("/api/calendar/events", window.location.origin);

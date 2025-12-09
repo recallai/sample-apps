@@ -11,6 +11,7 @@ import { env } from "./config/env";
 dotenv.config();
 
 const server = http.createServer();
+const client_domain = `http://localhost:5173`;
 
 /**
  * HTTP server for handling HTTP requests from Recall.ai
@@ -59,7 +60,7 @@ body=${JSON.stringify(body)}`);
                 const { calendar } = await calendar_oauth_callback(search_params);
                 console.log(`Created Calendar: ${JSON.stringify(calendar)}`);
 
-                res.writeHead(302, { Location: `http://localhost:5173/dashboard/calendar?platform_email=${calendar.platform_email}` });
+                res.writeHead(302, { Location: `${client_domain}/dashboard/calendar?platform_email=${calendar.platform_email}` });
                 res.end();
                 return;
             }
@@ -150,7 +151,7 @@ server.listen(env.PORT, "0.0.0.0", () => {
 
 To get started:
 - Open an ngrok tunnel to the server on port ${env.PORT}
-- Open the following URL in your browser: http://localhost:5173/
+- Open the following URL in your browser: ${client_domain}
 
 To access the OAuth URLs directly:
 - Google: https://${process.env.NGROK_DOMAIN ?? "NGROK_DOMAIN"}/api/calendar/oauth?platform=google_calendar

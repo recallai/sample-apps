@@ -9,7 +9,9 @@ export function useCalendar(props: { email: string | null }) {
         queryKey: ["calendars", email],
         queryFn: async () => {
             try {
-                const res = await fetch(`/api/calendar?platform_email=${email}`);
+                const url = new URL("/api/calendar", window.location.origin);
+                if (email) url.searchParams.set("platform_email", email);
+                const res = await fetch(url.toString());
                 if (!res.ok) {
                     throw new Error(`Failed to fetch calendar: ${res.statusText}`);
                 }

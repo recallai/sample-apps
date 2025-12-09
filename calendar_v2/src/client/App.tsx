@@ -21,7 +21,6 @@ function App() {
   const [searchParams] = useSearchParams();
   const email = searchParams.get("platform_email");
   const { calendars } = useCalendar({ email });
-  console.log(calendars);
 
   return (
     <>
@@ -155,17 +154,18 @@ function CalendarDetails({ calendar }: { calendar: CalendarType }) {
 
   const handleDateSelect = useCallback(
     (date: Date) => {
-      // Create dates at local midnight for the selected date.
-      // Then it will be converted to UTC using toISOString() (e.g., midnight PST -> 08:00 UTC)
+      // Create dates at local midnight for the selected date and next day
+      const y = date.getFullYear();
+      const m = date.getMonth();
+      const d = date.getDate();
+      const startDate = new Date(y, m, d, 0, 0, 0, 0);
+      const endDate = new Date(y, m, d + 1, 0, 0, 0, 0);
+
       setSearchParams(
         new URLSearchParams({
           ...Object.fromEntries(searchParams.entries()),
-          start_time__gte: new Date(
-            new Date(date).setHours(0, 0, 0, 0)
-          ).toISOString(),
-          start_time__lte: new Date(
-            new Date(date).setHours(23, 59, 59, 999)
-          ).toISOString(),
+          start_time__gte: startDate.toISOString(),
+          start_time__lte: endDate.toISOString(),
         })
       );
     },
