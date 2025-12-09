@@ -4,7 +4,7 @@ import { CalendarSchema, type CalendarType } from "../../schemas/CalendarSchema"
 /**
  * List calendars saved in Recall.
  */
-export async function calendars_list(args: Partial<CalendarType>): Promise<{ results: CalendarType[] }> {
+export async function calendars_list(args: Partial<CalendarType>): Promise<{ calendars: CalendarType[] }> {
     const { platform_email, platform } = CalendarSchema.partial().parse(args);
 
     const url = new URL(`https://${env.RECALL_REGION}.recall.ai/api/v2/calendars`);
@@ -19,6 +19,6 @@ export async function calendars_list(args: Partial<CalendarType>): Promise<{ res
 
     const data = await response.json();
     return {
-        results: CalendarSchema.array().parse(data.results),
+        calendars: CalendarSchema.array().parse(data.results),
     };
 }

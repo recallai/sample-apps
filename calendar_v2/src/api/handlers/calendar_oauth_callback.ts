@@ -78,7 +78,7 @@ export async function calendar_oauth_callback(args: {
         platform_email: calendar_config.platform_email,
         platform: platform,
     });
-    const calendar = calendars.results[0];
+    const calendar = calendars.calendars[0];
     const latest_status = calendar?.status_changes.at(-1)?.status;
     switch (latest_status) {
         // If no calendar is found, create a new one.
@@ -90,7 +90,7 @@ export async function calendar_oauth_callback(args: {
         // If the calendar is disconnected, reconnect it.
         case "disconnected": {
             const result = await reconnect_calendar({
-                calendar_id: calendars.results[0].id,
+                calendar_id: calendars.calendars[0].id,
                 calendar_config,
             });
             console.log(`Successfully reconnected ${platform} Calendar: ${JSON.stringify(result)}`);

@@ -38,10 +38,10 @@ server.on("request", async (req, res) => {
         console.log(`
 Incoming HTTP request: ${req.method} ${pathname} 
 search_params=${JSON.stringify(search_params)} 
-body=${JSON.stringify(body)}
-        `);
+body=${JSON.stringify(body)}`);
 
         switch (pathname) {
+            /** OAuth endpoints */
             case "/api/calendar/oauth": {
                 if (req.method?.toUpperCase() !== "GET") throw new Error(`Method not allowed: ${req.method}`);
 
@@ -59,13 +59,12 @@ body=${JSON.stringify(body)}
                 const { calendar } = await calendar_oauth_callback(search_params);
                 console.log(`Created Calendar: ${JSON.stringify(calendar)}`);
 
-                res.writeHead(200, { "Content-Type": "application/json" });
-                res.end(JSON.stringify({
-                    message: "Calendar OAuth callback received",
-                    calendar,
-                }));
+                res.writeHead(302, { Location: `http://localhost:5173/dashboard/calendar?platform_email=${calendar.platform_email}` });
+                res.end();
                 return;
             }
+
+            /** Webhoook endpoints */
             case "/api/recall/webhook": {
                 if (req.method?.toUpperCase() !== "POST") throw new Error(`Method not allowed: ${req.method}`);
 
@@ -76,18 +75,22 @@ body=${JSON.stringify(body)}
                 res.end(JSON.stringify({ message: "Recall webhook received" }));
                 return;
             }
+
+            /** Dashboard endpoints */
             case "/api/calendar": {
                 switch (req.method?.toUpperCase()) {
+                    /** List calendars */
                     case "GET": {
                         if (!search_params.platform_email) throw new Error("platform_email is required");
 
-                        const calendars = await calendars_list(search_params);
-                        console.log(`Listed Calendars: ${JSON.stringify(calendars)}`);
+                        const results = await calendars_list(search_params);
+                        console.log(`Listed Calendars: ${JSON.stringify(results)}`);
 
                         res.writeHead(200, { "Content-Type": "application/json" });
-                        res.end(JSON.stringify({ calendars }));
+                        res.end(JSON.stringify(results));
                         return;
                     }
+                    /** Delete calendar */
                     case "DELETE": {
                         if (!search_params.calendar_id) throw new Error("calendar_id is required");
 
@@ -108,11 +111,11 @@ body=${JSON.stringify(body)}
                     case "GET": {
                         if (!search_params.calendar_id) throw new Error("calendar_id is required");
 
-                        const result = await calendar_events_list(search_params);
-                        console.log(`Listed Calendar Events: ${JSON.stringify(result)}`);
+                        const results = await calendar_events_list(search_params);
+                        console.log(`Listed Calendar Events: ${results.calendar_events.length}`);
 
                         res.writeHead(200, { "Content-Type": "application/json" });
-                        res.end(JSON.stringify(result));
+                        res.end(JSON.stringify(results));
                         return;
                     }
                     default: {
@@ -120,6 +123,8 @@ body=${JSON.stringify(body)}
                     }
                 }
             }
+
+            /** Default endpoints */
             default: {
                 if (url.pathname.startsWith("/api/")) {
                     throw new Error(`Endpoint not found: ${req.method} ${url.pathname}`);
@@ -133,7 +138,7 @@ body=${JSON.stringify(body)}
     } catch (error) {
         console.error(`${req.method} ${req.url}`, error);
         res.writeHead(400, { "Content-Type": "text/plain" });
-        res.end(JSON.stringify({ error: error instanceof Error ? error.message : String(error) }));
+        res.end(JSON.stringify({ error: error instanceof Error ? error.message : error }));
     }
 });
 
