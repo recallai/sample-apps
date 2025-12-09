@@ -1,9 +1,16 @@
 import { useSearchParams } from "react-router-dom";
-import { Calendar as CalendarIcon, Clock, Video } from "lucide-react";
-import { useCallback, useMemo } from "react";
+import {
+  Calendar as CalendarIcon,
+  Clock,
+  Video,
+  Trash2,
+  Loader2,
+} from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
 import { Button } from "./components/ui/Button";
 import { useCalendar } from "./hooks/use-calendar";
 import { useCalendarEvents } from "./hooks/use-calendar-events";
+import { useDeleteCalendar } from "./hooks/use-delete-calendar";
 import { CalendarType } from "../schemas/CalendarSchema";
 import { CalendarEventType } from "../schemas/CalendarEventSchema";
 import {
@@ -16,6 +23,14 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/Tabs";
 import { Calendar } from "./components/ui/Calendar";
 import { ScrollArea } from "./components/ui/ScrollArea";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "./components/ui/Dialog";
 
 function App() {
   const [searchParams] = useSearchParams();
@@ -52,6 +67,7 @@ function ConnectCalendar() {
       <div className="flex flex-col sm:flex-row gap-2 w-full">
         <Button
           className="flex-1"
+          variant="outline"
           onClick={() => {
             window.location.href =
               "/api/calendar/oauth?platform=google_calendar";
@@ -102,14 +118,14 @@ function CalendarList({ calendars }: { calendars: CalendarType[] }) {
       <TabsList>
         {platforms.map((platform) => (
           <TabsTrigger key={platform.id} value={platform.id}>
-            {platform.label} ({platform.calendars.length})
+            {platform.label}
           </TabsTrigger>
         ))}
       </TabsList>
 
       {platforms.map((platform) => (
         <TabsContent key={platform.id} value={platform.id}>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+          <div className="flex flex-col gap-6 mt-4">
             {platform.calendars.map((calendar) => (
               <CalendarDetails key={calendar.id} calendar={calendar} />
             ))}
@@ -122,6 +138,10 @@ function CalendarList({ calendars }: { calendars: CalendarType[] }) {
 
 function CalendarDetails({ calendar }: { calendar: CalendarType }) {
   const [searchParams, setSearchParams] = useSearchParams();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const { deleteCalendar, isDeleting } = useDeleteCalendar({
+    calendarId: calendar.id,
+  });
 
   // Helper to get local midnight as UTC ISO string
   const getLocalMidnightAsUTC = useCallback((dayOffset: number = 0) => {
@@ -178,9 +198,9 @@ function CalendarDetails({ calendar }: { calendar: CalendarType }) {
   );
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="flex flex-col lg:flex-row gap-4">
       {/* Left Column - Calendar Details */}
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 min-w-[320px] shrink-0">
         {/* Calendar Date Picker */}
         <Card>
           <CardContent className="p-4 flex justify-center">
@@ -208,19 +228,66 @@ function CalendarDetails({ calendar }: { calendar: CalendarType }) {
                   {calendar.status_changes.length !== 1 ? "s" : ""}
                 </CardDescription>
               </div>
-              <div className="flex items-center gap-2">
-                <span
-                  className={`size-2 rounded-full ${
-                    lastStatus?.status === "connected"
-                      ? "bg-green-500"
-                      : lastStatus?.status === "connecting"
-                      ? "bg-yellow-500"
-                      : "bg-gray-400"
-                  }`}
-                />
-                <span className="text-sm text-gray-600 capitalize">
-                  {lastStatus?.status || "Unknown"}
-                </span>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`size-2 rounded-full ${
+                      lastStatus?.status === "connected"
+                        ? "bg-green-500"
+                        : lastStatus?.status === "connecting"
+                        ? "bg-yellow-500"
+                        : "bg-gray-400"
+                    }`}
+                  />
+                  <span className="text-sm text-gray-600 capitalize">
+                    {lastStatus?.status || "Unknown"}
+                  </span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={isDeleting}
+                  onClick={() => setShowDeleteDialog(true)}
+                  className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+
+                <Dialog
+                  open={showDeleteDialog}
+                  onOpenChange={setShowDeleteDialog}
+                >
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Disconnect Calendar</DialogTitle>
+                      <DialogDescription>
+                        Are you sure you want to disconnect{" "}
+                        <span className="font-medium">
+                          {calendar.platform_email}
+                        </span>
+                        ? This will stop syncing events from this calendar.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowDeleteDialog(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        disabled={isDeleting}
+                        onClick={() => {
+                          deleteCalendar();
+                          setShowDeleteDialog(false);
+                        }}
+                      >
+                        {isDeleting ? "Disconnecting..." : "Disconnect"}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </div>
             </div>
           </CardHeader>
@@ -259,7 +326,7 @@ function CalendarDetails({ calendar }: { calendar: CalendarType }) {
       </div>
 
       {/* Right Column - Events List */}
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 flex-1 min-w-0">
         <CalendarEventsList
           calendar={calendar}
           startTimeGte={selectedStartDate}
@@ -279,6 +346,9 @@ function CalendarEventsList({
   startTimeGte: string;
   startTimeLte: string;
 }) {
+  const latestStatus = calendar.status_changes.at(-1)?.status;
+  const isConnecting = latestStatus === "connecting";
+
   const { calendar_events } = useCalendarEvents({
     calendarId: calendar.id,
     startTimeGte: startTimeGte,
@@ -310,26 +380,39 @@ function CalendarEventsList({
             : "all time"}
         </CardTitle>
         <CardDescription>
-          {calendar_events.length} event
-          {calendar_events.length !== 1 ? "s" : ""} scheduled
+          {isConnecting
+            ? "Syncing calendar..."
+            : `${calendar_events.length} event${
+                calendar_events.length !== 1 ? "s" : ""
+              } scheduled`}
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <ScrollArea className="h-[200px]">
-          {calendar_events.length === 0 ? (
+        <ScrollArea className="h-[400px] lg:h-[500px]">
+          {isConnecting ? (
+            <div className="flex flex-col items-center justify-center h-full text-center py-8">
+              <Loader2 className="size-8 text-yellow-500 mb-3 animate-spin" />
+              <p className="text-sm font-medium text-gray-700">
+                Connecting calendar...
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                Please reload the page in a few seconds
+              </p>
+            </div>
+          ) : calendar_events.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center py-8">
               <CalendarIcon className="size-8 text-gray-300 mb-2" />
               <p className="text-sm text-gray-500">No events for this day</p>
             </div>
           ) : (
-            <div className="space-y-2 pr-4">
+            <div className="space-y-3 pr-4">
               {calendar_events.map((event) => (
                 <div
                   key={event.id}
-                  className="flex flex-col gap-1 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
+                  className="flex flex-col gap-1.5 p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <h4 className="text-sm font-medium truncate flex-1">
+                    <h4 className="text-sm font-medium flex-1">
                       {getEventTitle(event)}
                     </h4>
                     {event.bots.length > 0 && (

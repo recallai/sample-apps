@@ -99,7 +99,12 @@ export async function calendar_oauth_callback(args: {
         // If the calendar is connecting or connected, return the calendar.
         default: {
             console.log(`${platform} Calendar already exists and is ${latest_status}`);
-            return { calendar };
+            return {
+                calendar: {
+                    ...calendar,
+                    platform_email: calendar.platform_email || calendar_config.platform_email,
+                }
+            };
         }
     }
 }

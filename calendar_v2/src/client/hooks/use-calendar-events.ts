@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
+import { toast } from "sonner";
 import { CalendarEventSchema } from "../../schemas/CalendarEventSchema";
 
 export function useCalendarEvents(props: {
@@ -43,9 +44,8 @@ export function useCalendarEvents(props: {
                 if (startTimeLte) url.searchParams.set("start_time__lte", formatDateTime(startTimeLte));
 
                 const res = await fetch(url.toString());
-                if (!res.ok) {
-                    throw new Error(`Failed to fetch calendar: ${res.statusText}`);
-                }
+                if (!res.ok) throw new Error(await res.text());
+
                 const data = z
                     .object({
                         calendar_events: CalendarEventSchema.array(),
@@ -55,6 +55,7 @@ export function useCalendarEvents(props: {
                 return { calendar_events: data.calendar_events, next: data.next };
             } catch (error) {
                 console.error("Error fetching calendar events:", error);
+                toast.error(`Failed to fetch calendar events. See console for details.`);
                 return { calendar_events: [], next: null };
             }
         },
