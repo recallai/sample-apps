@@ -4,9 +4,9 @@ import { fetch_with_retry } from "./fetch_with_retry";
 import { BotSchema } from "./schemas/BotSchema";
 
 /**
- * Delete scheduled bots after a given date.
+ * Delete bot's recording media after a given date.
  */
-export async function delete_scheduled_bots(args: any) {
+export async function delete_bot_recording_media(args: any) {
     const { start_date_utc, end_date_utc, metadata } = z.object({
         start_date_utc: z.string(),
         end_date_utc: z.string().optional(),
@@ -25,8 +25,8 @@ export async function delete_scheduled_bots(args: any) {
         console.log({ pageCount: page.results.length, nextPage: page.next });
 
         await Promise.all(page.results.map(async (bot) => {
-            await delete_scheduled_bot_by_id({ bot_id: bot.id });
-            console.log(`Deleted bot: ${bot.id}`);
+            await delete_bot_media_by_id({ bot_id: bot.id });
+            console.log(`Deleted bot's recording media: ${bot.id}`);
         }));
         count += page.results.length;
         next = page.next;
@@ -56,6 +56,10 @@ async function list_bots(args: {
         ? new URL(next)
         : new URL(`https://${env.RECALL_REGION}.recall.ai/api/v1/bot`);
     if (!next) {
+        // Only include bots that have finished (have recording media to delete)
+        ["done", "analysis_done", "analysis_failed", "fatal"].forEach(status => {
+            url.searchParams.append("status", status);
+        });
         if (join_at_after) url.searchParams.set("join_at_after", join_at_after);
         if (join_at_before) url.searchParams.set("join_at_before", join_at_before);
         if (metadata) {
@@ -81,15 +85,15 @@ async function list_bots(args: {
 }
 
 /**
- * Deletes a bot by its ID.
+ * Deletes a bot's recording media by its ID.
  */
-async function delete_scheduled_bot_by_id(args: {
+async function delete_bot_media_by_id(args: {
     bot_id: string;
 }) {
     const { bot_id } = z.object({ bot_id: z.string() }).parse(args);
 
-    const response = await fetch_with_retry(`https://${env.RECALL_REGION}.recall.ai/api/v1/bot/${bot_id}`, {
-        method: "DELETE",
+    const response = await fetch_with_retry(`https://${env.RECALL_REGION}.recall.ai/api/v1/bot/${bot_id}/delete_media/`, {
+        method: "POST",
         headers: {
             "Authorization": `${env.RECALL_API_KEY}`,
             "Content-Type": "application/json",
