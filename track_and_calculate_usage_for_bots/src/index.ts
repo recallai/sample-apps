@@ -1,6 +1,6 @@
 import mri from "mri";
-import { track_and_calculate_usage_for_bots } from "./track_and_calculate_usage_for_bots";
 import { CmdLineArgsSchema } from "./schemas/CmdLineArgsSchema";
+import { track_and_calculate_usage_for_bots } from "./track_and_calculate_usage_for_bots";
 
 async function main() {
     const raw = mri(process.argv.slice(2), { alias: { h: "help" } });
@@ -29,8 +29,8 @@ Examples:
 
     const args = CmdLineArgsSchema.parse(raw);
 
-    const dateRange = [args.start_date_utc, args.end_date_utc].filter(Boolean).join(" → ") || "all time";
-    console.log(`Tracking and calculating usage for bots: ${dateRange}\n`);
+    const date_range = [args.start_date_utc, args.end_date_utc].filter(Boolean).join(" → ") || "all time";
+    console.log(`Tracking and calculating usage for bots: ${date_range}\n`);
 
     try {
         const seconds = await track_and_calculate_usage_for_bots(args);

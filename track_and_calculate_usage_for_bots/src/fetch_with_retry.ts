@@ -14,7 +14,7 @@ export async function fetch_with_retry(url: string, options: RequestInit, max_at
             }
             await new Promise((resolve) => setTimeout(
                 resolve,
-                1000 * (retry_after + Math.ceil(Math.random() * 5))
+                1000 * (retry_after + Math.ceil(Math.random() * 5)),
             ));
             continue;
         }
