@@ -7,23 +7,23 @@ import { BotSchema } from "./schemas/BotSchema";
  * Retrieve the usage for bots.
  * Pass one or several of the following arguments to filter usage for a specific time period or metadata.
  * For example:
- * - Setting `start_date` will only include bots whose `join_at` is >= the given time.
- * - Setting `end_date` will only include bots whose `join_at` is < the given time.
+ * - Setting `start_date_utc` will only include bots whose `join_at` is >= the given time.
+ * - Setting `end_date_utc` will only include bots whose `join_at` is < the given time.
  * - Setting `metadata` will only include bots that have the given metadata key-value pair (e.g. for a specific customer).
  */
-export async function retrieve_bot_usage(args: any) {
-    const { start_date, end_date, metadata } = z.object({
-        start_date: z.string(),
-        end_date: z.string(),
-        metadata: z.record(z.string(), z.string()),
+export async function track_and_calculate_usage_for_bots(args: any) {
+    const { start_date_utc, end_date_utc, metadata } = z.object({
+        start_date_utc: z.string().optional(),
+        end_date_utc: z.string().optional(),
+        metadata: z.record(z.string(), z.string()).optional(),
     }).parse(args);
 
     let total_usage_seconds = 0;
     let next: string | null = null;
     do {
         const page = await list_bots({
-            join_at_after: start_date,
-            join_at_before: end_date,
+            join_at_after: start_date_utc,
+            join_at_before: end_date_utc,
             metadata,
             next,
         });
@@ -51,9 +51,9 @@ async function list_bots(args: {
 }) {
     const { next, join_at_after, join_at_before, metadata } = z.object({
         next: z.string().nullable(),
-        join_at_after: z.string().nullable(),
-        join_at_before: z.string().nullable(),
-        metadata: z.record(z.string(), z.string()).nullable(),
+        join_at_after: z.string().optional(),
+        join_at_before: z.string().optional(),
+        metadata: z.record(z.string(), z.string()).optional(),
     }).parse(args);
 
     const url = next
@@ -84,7 +84,7 @@ async function list_bots(args: {
 }
 
 /**
- * Gets the usage for a single bot
+ * Gets the usage for a single bot.
  */
 function get_usage_seconds_for_bot(args: {
     bot: { id: string; status_changes: { code: string; created_at: string; }[]; }

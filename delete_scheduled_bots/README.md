@@ -1,6 +1,6 @@
-# Track and calculate bot usage
+# Delete scheduled bots
 
-This example demonstrates how to retrieve and calculate total bot usage for a given time period using the Recall.ai API.
+This example demonstrates how to bulk delete scheduled bots using the Recall.ai API.
 
 ## Pre-requisites
 
@@ -32,43 +32,53 @@ npm install
 
 ### 3. Run the script
 
-Run the script with the required parameters:
+Delete all scheduled bots starting from a future date:
 
 ```bash
 npx tsx src/index.ts \
-  --type bot \
-  --start_date_utc "2025-11-01 00:00:00" \
-  --end_date_utc "2025-12-01 00:00:00"
+  --start_date_utc "2025-12-15 00:00:00"
 ```
 
-You can also filter by custom metadata to track usage for a specific customer. This is useful when you pass custom metadata (e.g., `team_id`, `customer_id`) when creating bots:
+Delete scheduled bots within a date range:
 
 ```bash
 npx tsx src/index.ts \
-  --type bot \
-  --start_date_utc "2025-11-01 00:00:00" \
-  --end_date_utc "2025-12-01 00:00:00" \
+  --start_date_utc "2025-12-15 00:00:00" \
+  --end_date_utc "2025-12-31 00:00:00"
+```
+
+Filter by custom metadata to delete only specific customer's bots:
+
+```bash
+npx tsx src/index.ts \
+  --start_date_utc "2025-12-15 00:00:00" \
   --metadata '{"team_id":"1872"}'
 ```
 
 ### 4. View the output
 
-The script will output the total bot usage in seconds and formatted as hours/minutes/seconds:
+The script will output progress and final count:
 
 ```
-Fetching bot usage: 2025-11-01 00:00:00 → 2025-12-01 00:00:00
+Deleting scheduled bots: 2025-12-15 00:00:00 → 2025-12-31 00:00:00
 
+{ pageCount: 5, nextPage: null }
+Deleted bot: abc123
+Deleted bot: def456
 ...
 
-Total bot usage: 2306.6271 hours (8303858 seconds)
+Deleted 5 bots
 ```
 
 ## CLI Options
 
 | Option             | Required | Description                                                                 |
 | ------------------ | -------- | --------------------------------------------------------------------------- |
-| `--type`           | Yes      | Usage type: `bot`                                                           |
-| `--start_date_utc` | No       | Include bots with `join_at` >= this date (ISO 8601)                         |
-| `--end_date_utc`   | No       | Include bots with `join_at` < this date (ISO 8601)                          |
+| `--start_date_utc` | Yes      | Delete bots scheduled to join after this date (must be in the future)       |
+| `--end_date_utc`   | No       | Delete bots scheduled to join before this date                              |
 | `--metadata`       | No       | JSON object to filter by custom bot metadata (e.g., `'{"team_id":"1872"}'`) |
 | `--help`           | No       | Show help message                                                           |
+
+## Safety
+
+The `--start_date_utc` must be in the future (within 1 minute) to prevent accidentally deleting bots that have already joined calls.
