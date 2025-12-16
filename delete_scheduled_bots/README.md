@@ -78,7 +78,3 @@ Deleted 5 bots
 | `--end_date_utc`   | No       | Delete bots scheduled to join before this date                              |
 | `--metadata`       | No       | JSON object to filter by custom bot metadata (e.g., `'{"team_id":"1872"}'`) |
 | `--help`           | No       | Show help message                                                           |
-
-## Safety
-
-The `--start_date_utc` must be in the future (within 1 minute) to prevent accidentally deleting bots that have already joined calls.
