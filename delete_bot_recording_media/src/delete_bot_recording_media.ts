@@ -57,7 +57,7 @@ async function list_bots(args: {
         : new URL(`https://${env.RECALL_REGION}.recall.ai/api/v1/bot`);
     if (!next) {
         // Only include bots that have finished (have recording media to delete)
-        ["done", "analysis_done", "analysis_failed", "fatal"].forEach(status => {
+        ["done", "analysis_done", "analysis_failed", "fatal"].forEach((status) => {
             url.searchParams.append("status", status);
         });
         if (join_at_after) url.searchParams.set("join_at_after", join_at_after);
