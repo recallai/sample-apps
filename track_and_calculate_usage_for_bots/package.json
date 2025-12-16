@@ -1,7 +1,7 @@
 {
-    "name": "track_and_calculate_usage",
+    "name": "track_and_calculate_usage_for_bots",
     "version": "1.0.0",
-    "description": "Track and calculate usage for bots",
+    "description": "Track and calculate bot usage",
     "main": "index.ts",
     "scripts": {
         "dev": "ts-node src/index.ts"
