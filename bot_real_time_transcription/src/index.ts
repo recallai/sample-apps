@@ -1,6 +1,6 @@
 import http from "http";
-import { env } from "./config/env";
 import { bot_real_time_transcription } from "./bot_real_time_transcription";
+import { env } from "./config/env";
 
 const server = http.createServer();
 
