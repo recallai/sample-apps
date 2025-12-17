@@ -1,6 +1,6 @@
-# Receive and save the real-time meeting transcript
+# Receive and save the real-time meeting transcript from a meeting bot
 
-This example demonstrates how to receive real-time transcription utterances for each participant and save them to their respective files.
+This example demonstrates how to receive real-time transcription utterances for each participant from a meeting bot and save them to their respective files.
 
 ## Pre-requisites
 

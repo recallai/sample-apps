@@ -1,7 +1,7 @@
 {
-    "name": "real_time_transcription",
+    "name": "bot_real_time_transcription",
     "version": "1.0.0",
-    "description": "Receive and save the real-time meeting transcript",
+    "description": "Receive and save a bot's real-time meeting transcript",
     "main": "index.ts",
     "scripts": {
         "dev": "ts-node src/index.ts"

@@ -1,6 +1,6 @@
 import http from "http";
 import { env } from "./config/env";
-import { transcript_data_event_handler } from "./real_time_transcript_handler";
+import { bot_real_time_transcription } from "./bot_real_time_transcription";
 
 const server = http.createServer();
 
@@ -16,9 +16,9 @@ server.on("request", async (req, res) => {
         }
         const raw_body = Buffer.concat(body_chunks).toString("utf-8");
         const body = JSON.parse(raw_body);
-        await transcript_data_event_handler({ msg: body });
+        await bot_real_time_transcription({ msg: body });
     } catch (error) {
-        console.error(`Error handling transcript data: ${req.method} ${req.url}`, error);
+        console.error(`Error handling bot real-time transcription utterance: ${req.method} ${req.url}`, error);
     }
 
     res.writeHead(200, { "Content-Type": "application/json" });
