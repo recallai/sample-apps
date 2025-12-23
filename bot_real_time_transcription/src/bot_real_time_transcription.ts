@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { TranscriptDataEventSchema } from "./schemas/TranscriptDataEventSchema";
-import { TranscriptPartType } from "./schemas/TranscriptPartSchema";
+import { type TranscriptPartType } from "./schemas/TranscriptPartSchema";
 
 /**
  * Event handler for handling transcript.data event.

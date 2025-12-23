@@ -1,11 +1,11 @@
 import fs from "fs";
 import path from "path";
 import { z } from "zod";
-import { TranscriptPartSchema, TranscriptPartType } from "./schemas/TranscriptPartSchema";
 import { env } from "./config/env";
-import { TranscriptArtifactSchema } from "./schemas/TranscriptArtifactSchema";
-import { TranscriptArtifactEventSchema, TranscriptArtifactEventType } from "./schemas/TranscriptArtifactEventSchema";
 import { RecordingArtifactSchema } from "./schemas/RecordingArtifactSchema";
+import { TranscriptArtifactSchema } from "./schemas/TranscriptArtifactSchema";
+import { TranscriptArtifactEventSchema, type TranscriptArtifactEventType } from "./schemas/TranscriptArtifactEventSchema";
+import { TranscriptPartSchema, type TranscriptPartType } from "./schemas/TranscriptPartSchema";
 
 export async function create_async_transcript(args: { recording_id: string }) {
     const { recording_id } = z.object({ recording_id: z.string() }).parse(args);
@@ -13,21 +13,15 @@ export async function create_async_transcript(args: { recording_id: string }) {
         method: "POST",
         headers: {
             "Authorization": env.RECALL_API_KEY,
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         },
         body: JSON.stringify({
-            "provider": {
-                "deepgram_async": {
-                    "diarize": true
-                }
-            },
-            "diarization": {
-                "use_separate_streams_when_available": true
-            }
-        })
+            provider: { recallai_async: { diarize: true } },
+            diarization: { use_separate_streams_when_available: true },
+        }),
     });
     if (!response.ok) throw new Error(await response.text());
-    return TranscriptArtifactSchema.parse(await response.json())
+    return TranscriptArtifactSchema.parse(await response.json());
 }
 
 /*
@@ -43,9 +37,9 @@ export async function bot_async_transcription(args: { msg: TranscriptArtifactEve
 
     // Retrieve and format transcript data.
     const transcript_data = await retrieve_transcript_data({
-        download_url: recording.media_shortcuts.transcript.data.download_url
+        download_url: recording.media_shortcuts.transcript.data.download_url,
     });
-    const transcript_parts = format_transcript_by_sentences(transcript_data)
+    const transcript_parts = format_transcript_by_sentences(transcript_data);
 
     // Create the output files.
     const output_path_events = path.join(
@@ -81,11 +75,11 @@ async function retrieve_recording_artifact(args: { recording_id: string }) {
         method: "GET",
         headers: {
             "Authorization": env.RECALL_API_KEY,
-            "Content-Type": "application/json"
-        }
+            "Content-Type": "application/json",
+        },
     });
     if (!response.ok) throw new Error(await response.text());
-    return RecordingArtifactSchema.parse(await response.json())
+    return RecordingArtifactSchema.parse(await response.json());
 }
 /**
  * Retrieve the transcript parts from the transcript artifact's `download_url`.
@@ -96,7 +90,7 @@ async function retrieve_transcript_data(args: { download_url: string }) {
     const response = await fetch(download_url);
     if (!response.ok) throw new Error(await response.text());
 
-    return TranscriptPartSchema.array().parse(await response.json())
+    return TranscriptPartSchema.array().parse(await response.json());
 }
 
 /**

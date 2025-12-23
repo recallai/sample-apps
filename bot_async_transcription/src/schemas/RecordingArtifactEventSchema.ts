@@ -17,7 +17,7 @@ export const RecordingArtifactEventSchema = z.object({
         recording: z.object({
             id: z.string(),
             metadata: z.record(z.string(), z.string()),
-        })
+        }),
     }),
 });
 

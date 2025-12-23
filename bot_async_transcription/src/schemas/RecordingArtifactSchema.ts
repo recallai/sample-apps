@@ -2,22 +2,22 @@ import { z } from "zod";
 
 export const RecordingArtifactSchema = z.object({
     id: z.string(),
-    created_at: z.string().datetime(),
-    started_at: z.string().datetime(),
-    completed_at: z.string().datetime().optional(),
+    created_at: z.string(),
+    started_at: z.string(),
+    completed_at: z.string().optional(),
     status: z.object({
         code: z.enum(["processing", "done", "failed", "deleted"]),
         sub_code: z.string().nullable(),
-        updated_at: z.string().datetime(),
+        updated_at: z.string(),
     }),
     media_shortcuts: z.object({
         transcript: z.object({
             id: z.string(),
-            created_at: z.string().datetime(),
+            created_at: z.string(),
             status: z.object({
                 code: z.enum(["processing", "done", "failed", "deleted"]),
                 sub_code: z.string().nullable(),
-                updated_at: z.string().datetime(),
+                updated_at: z.string(),
             }),
             data: z.object({
                 download_url: z.url().nullable(),
@@ -28,5 +28,5 @@ export const RecordingArtifactSchema = z.object({
             }).nullable(),
             provider: z.any(),
         }).nullable(),
-    })
-})
+    }),
+});

@@ -1,9 +1,9 @@
 import http from "http";
+import z from "zod";
 import { create_async_transcript, bot_async_transcription } from "./bot_async_transcription";
 import { env } from "./config/env";
 import { RecordingArtifactEventSchema } from "./schemas/RecordingArtifactEventSchema";
 import { TranscriptArtifactEventSchema } from "./schemas/TranscriptArtifactEventSchema";
-import z from "zod";
 
 const server = http.createServer();
 
