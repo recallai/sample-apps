@@ -3,8 +3,8 @@ import path from "path";
 import { z } from "zod";
 import { env } from "./config/env";
 import { RecordingArtifactSchema } from "./schemas/RecordingArtifactSchema";
-import { TranscriptArtifactSchema } from "./schemas/TranscriptArtifactSchema";
 import { TranscriptArtifactEventSchema, type TranscriptArtifactEventType } from "./schemas/TranscriptArtifactEventSchema";
+import { TranscriptArtifactSchema } from "./schemas/TranscriptArtifactSchema";
 import { TranscriptPartSchema, type TranscriptPartType } from "./schemas/TranscriptPartSchema";
 
 export async function create_async_transcript(args: { recording_id: string }) {
