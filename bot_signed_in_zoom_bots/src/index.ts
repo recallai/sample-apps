@@ -15,10 +15,31 @@ const server = http.createServer();
  */
 server.on("request", async (req, res) => {
     try {
+        // Parse the request
         const url = new URL(`https://${req.headers.host?.replace("https://", "")}${req?.url}`);
-        console.log(`Incoming HTTP request: ${req.method} ${url.toString()}`);
+        const pathname = url.pathname.at(-1) === "/" ? url.pathname.slice(0, -1) : url.pathname;
+        const search_params = Object.fromEntries(url.searchParams.entries()) as any;
+        let body: any | null = null;
+        try {
+            if (["POST", "PUT", "PATCH", "DELETE"].includes(req.method!)) {
+                const body_chunks: Buffer[] = [];
+                for await (const chunk of req) {
+                    body_chunks.push(chunk);
+                }
+                const raw_body = Buffer.concat(body_chunks).toString("utf-8");
+                if (raw_body.trim()) body = JSON.parse(raw_body);
+            }
+        } catch (error) {
+            console.log("Error parsing body", error);
+        }
 
-        switch (url.pathname) {
+        console.log(`
+Incoming HTTP request: ${req.method} ${pathname} 
+search_params=${JSON.stringify(search_params)} 
+body=${JSON.stringify(body)}
+        `);
+
+        switch (pathname) {
             case "/zoom/oauth": {
                 if (req.method !== "GET") throw new Error(`Method not allowed: ${req.method}`);
 
@@ -76,21 +97,13 @@ server.on("request", async (req, res) => {
  * Start the server
  */
 server.listen(env.PORT, "0.0.0.0", () => {
-    // Quick check to verify
-    if (new URL(env.ZOOM_OAUTH_APP_REDIRECT_URI).pathname !== "/zoom/oauth/callback") {
-        throw new Error(`Zoom OAuth App Redirect URI path is not correct.
-Expected: "/zoom/oauth/callback"
-Received: "${new URL(env.ZOOM_OAUTH_APP_REDIRECT_URI).pathname}"
-
-Make sure that your Redirect URI in your Zoom OAuth is also set to: https://${process.env.NGROK_DOMAIN ?? "NGROK_DOMAIN"}/zoom/oauth/callback
-`);
-    }
-
-    console.log(`Server is running on port ${env.PORT}
+    console.log(`
+Server is running on port ${env.PORT}
 
 To get started, open the following URL in your browser: https://${process.env.NGROK_DOMAIN ?? "NGROK_DOMAIN"}/zoom/oauth
         
 After you complete the OAuth flow, you can then create a bot.
   - Ensure that \`zoom.zak_url="https://${process.env.NGROK_DOMAIN ?? "NGROK_DOMAIN"}/zoom/zak"\` is set in the bot's configuration.
-  - You can create a bot using the \`run.sh\` script. See the README for more details.`);
+  - You can create a bot using the \`run.sh\` script. See the README for more details.
+    `);
 });

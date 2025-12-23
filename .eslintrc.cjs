@@ -37,7 +37,6 @@ module.exports = {
         // TypeScript
         "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
         "@typescript-eslint/consistent-type-imports": ["error", { "prefer": "type-imports" }],
-        "@typescript-eslint/no-non-null-assertion": "warn",
 
         // Imports
         "import/order": ["error", {

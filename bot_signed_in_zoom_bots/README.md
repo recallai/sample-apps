@@ -15,11 +15,21 @@ This example demonstrates how to set up a ZAK token endpoint for Zoom signed-in 
 
 **Before running, make sure you don't have any apps running on port 4000**
 
-### 1. Create a Zoom OAuth App
+### 1. Start ngrok
 
-Follow the guide at https://developers.zoom.us/docs/integrations/create/ to create your OAuth app. You'll need the **Client ID**, **Client Secret**, and to set the **OAuth Redirect URL** (you'll update this after starting ngrok).
+In a terminal window, run:
 
-### 2. Set up environment variables
+```bash
+ngrok http 4000
+```
+
+After it's running, copy the ngrok URL (e.g. `somehash.ngrok-free.app`).
+
+### 2. Create a Zoom OAuth App
+
+Follow the guide at https://developers.zoom.us/docs/integrations/create/ to create your OAuth app. You'll need the **Client ID**, **Client Secret**, and to set the **OAuth Redirect URL** to: `https://YOUR_NGROK_DOMAIN/zoom/oauth/callback`
+
+### 3. Set up environment variables
 
 Copy the `.env.sample` file and rename it to `.env`:
 
@@ -27,11 +37,11 @@ Copy the `.env.sample` file and rename it to `.env`:
 cp .env.sample .env
 ```
 
-Then fill out the variables in the `.env` file.
+Then fill out the variables in the `.env` file, including the ngrok domain from step 1 (Don't forget to omit the protocol (e.g. `https://`)).
 
-### 3. Start the server
+### 4. Start the server
 
-Open this directory in a terminal and run:
+Open this directory in a new terminal and run:
 
 ```bash
 npm install
@@ -39,18 +49,6 @@ npm run dev
 ```
 
 This will start a server on port 4000.
-
-### 4. Start ngrok
-
-In a new terminal window, run:
-
-```bash
-ngrok http 4000
-```
-
-After it's running, copy the ngrok URL (e.g. `somehash.ngrok-free.app`). Update your `.env` file with the ngrok domain (without `https://`) and restart the server.
-
-**Important:** Also update your Zoom OAuth app's **OAuth Redirect URL** in the [Zoom Marketplace](https://marketplace.zoom.us/develop/apps) to: `https://YOUR_NGROK_DOMAIN/zoom/oauth/callback`
 
 ### 5. Complete the OAuth flow
 
