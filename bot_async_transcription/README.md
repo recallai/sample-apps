@@ -96,5 +96,5 @@ curl --request POST \
 
 After the call ends and the async transcript is processed, you can find the transcript files in the newly-generated `output/` folder, organized by recording ID:
 
-- `transcript.json` - The full transcript data with timestamps
-- `dialogue.txt` - A human-readable version of the dialogue
+- `transcript.json` - The transcript parts data.
+- `readable.txt` - A human-readable version of the transcript.

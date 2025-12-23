@@ -48,7 +48,7 @@ export async function bot_async_transcription(args: { msg: TranscriptArtifactEve
     );
     const output_path_readable = path.join(
         process.cwd(),
-        `output/recording-${msg.data.recording.id}/dialogue.txt`,
+        `output/recording-${msg.data.recording.id}/readable.txt`,
     );
     if (!fs.existsSync(output_path_events)) {
         fs.mkdirSync(path.dirname(output_path_events), { recursive: true });
@@ -59,7 +59,7 @@ export async function bot_async_transcription(args: { msg: TranscriptArtifactEve
         fs.writeFileSync(output_path_readable, "", { flag: "w+" });
     }
 
-    // Write the transcript data and dialogue to files.
+    // Write the transcript parts data and readable transcript to files.
     fs.writeFileSync(output_path_events, JSON.stringify(transcript_parts, null, 2), { flag: "w+" });
     fs.writeFileSync(output_path_readable, transcript_parts.map((t) => t ? `${t.speaker}: ${t.paragraph}` : "").join("\n"), { flag: "w+" });
 

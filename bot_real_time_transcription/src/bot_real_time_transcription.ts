@@ -17,7 +17,7 @@ export async function bot_real_time_transcription(args: { msg: Record<string, an
     );
     const output_path_readable = path.join(
         process.cwd(),
-        `output/recording-${msg.data.recording.id}/dialogue.txt`,
+        `output/recording-${msg.data.recording.id}/readable.txt`,
     );
     if (!fs.existsSync(output_path_events)) {
         fs.mkdirSync(path.dirname(output_path_events), { recursive: true });
@@ -35,16 +35,16 @@ export async function bot_real_time_transcription(args: { msg: Record<string, an
     const transcript_events = [...imported_transcript_utterances_array, msg.data.data];
     fs.writeFileSync(output_path_events, JSON.stringify(transcript_events, null, 2), { flag: "w+" });
 
-    // Create the dialogue transcript from the transcript data array.
-    const transcript_dialogue = format_transcript_by_sentences(transcript_events);
+    // Create the readable transcript from the transcript parts data and write it to a file.
+    const transcript_readable = format_transcript_by_sentences(transcript_events);
     fs.writeFileSync(
         output_path_readable,
-        transcript_dialogue.map((t) => t ? `${t.speaker}: ${t.paragraph}` : "").join("\n"),
+        transcript_readable.map((t) => t ? `${t.speaker}: ${t.paragraph}` : "").join("\n"),
         { flag: "w+" },
     );
 
     console.log(`Transcript data written to file: ${output_path_events}`);
-    console.log(`Transcript dialogue written to file: ${output_path_readable}`);
+    console.log(`Readable transcript written to file: ${output_path_readable}`);
 }
 
 /**
