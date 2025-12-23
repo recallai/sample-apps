@@ -3,7 +3,7 @@ import path from "path";
 import { PassThrough } from "stream";
 import ffmpegInstaller from "@ffmpeg-installer/ffmpeg";
 import ffmpeg from "fluent-ffmpeg";
-import { AudioSeparateRawDataSchema } from "./schemas/AudioSeparateRawDataSchema";
+import { AudioSeparateRawDataEventSchema } from "./schemas/AudioSeparateRawDataEventSchema";
 
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
@@ -99,7 +99,7 @@ function get_audio_passthrough_mp3(args: { recording_id: string, participant_id:
  */
 export function bot_separate_audio_streams_event_handler(args: { msg: Record<string, any> }) {
     const { msg: json_msg } = args;
-    const msg = AudioSeparateRawDataSchema.parse(json_msg);
+    const msg = AudioSeparateRawDataEventSchema.parse(json_msg);
 
     // Convert base64-encoded raw audio to PCM buffer.
     const pcm_buffer_chunk = Buffer.from(msg.data.data.buffer, "base64");

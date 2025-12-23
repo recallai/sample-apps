@@ -3,7 +3,7 @@ import { z } from "zod";
 /**
  * Schema for the audio_separate_raw.data event
  */
-export const AudioSeparateRawDataSchema = z.object({
+export const AudioSeparateRawDataEventSchema = z.object({
     "event": z.literal("audio_separate_raw.data"),
     "data": z.object({
         "data": z.object({

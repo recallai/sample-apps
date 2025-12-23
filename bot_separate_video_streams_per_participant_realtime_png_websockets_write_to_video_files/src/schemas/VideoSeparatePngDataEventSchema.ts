@@ -3,7 +3,7 @@ import { z } from "zod";
 /**
  * Schema for the video_separate_png.data event
  */
-export const VideoSeparatePngDataSchema = z.object({
+export const VideoSeparatePngDataEventSchema = z.object({
     "event": z.literal("video_separate_png.data"),
     "data": z.object({
         "data": z.object({

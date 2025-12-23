@@ -4,7 +4,7 @@ import { PassThrough } from "stream";
 import ffmpegInstaller from "@ffmpeg-installer/ffmpeg";
 import ffmpeg from "fluent-ffmpeg";
 import { PNG } from "pngjs";
-import { VideoSeparatePngDataSchema } from "./schemas/VideoSeparatePngDataSchema";
+import { VideoSeparatePngDataEventSchema } from "./schemas/VideoSeparatePngDataEventSchema";
 
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
@@ -94,7 +94,7 @@ function get_png_video_passthrough(args: { recording_id: string, participant_id:
  */
 export function bot_separate_png_video_streams_event_handler(args: { msg: Record<string, any> }) {
     const { msg: json_msg } = args;
-    const msg = VideoSeparatePngDataSchema.parse(json_msg);
+    const msg = VideoSeparatePngDataEventSchema.parse(json_msg);
     const png_buffer = Buffer.from(msg.data.data.buffer, "base64");
 
     // Save the png frame to a file.

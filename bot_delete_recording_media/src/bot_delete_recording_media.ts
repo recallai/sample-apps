@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { env } from "./config/env";
 import { fetch_with_retry } from "./fetch_with_retry";
-import { BotSchema } from "./schemas/BotSchema";
+import { BotArtifactSchema } from "./schemas/BotArtifactSchema";
 
 /**
  * Delete bot's recording media after a given date.
@@ -79,7 +79,7 @@ async function list_bots(args: {
     if (!response.ok) throw new Error(await response.text());
 
     return z.object({
-        results: BotSchema.array(),
+        results: BotArtifactSchema.array(),
         next: z.string().nullable(),
     }).parse(await response.json());
 }

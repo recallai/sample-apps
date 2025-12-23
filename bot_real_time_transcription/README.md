@@ -97,4 +97,7 @@ curl --request POST \
 
 ### 5. View the output
 
-After the call ends, you can find the transcript files in the newly-generated `output/` folder, organized by recording and participant ID.
+After the call ends and the async transcript is processed, you can find the transcript files in the newly-generated `output/` folder, organized by recording ID:
+
+- `transcript.json` - The transcript parts data.
+- `readable.txt` - A human-readable version of the transcript.
