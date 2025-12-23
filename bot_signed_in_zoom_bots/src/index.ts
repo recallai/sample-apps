@@ -17,7 +17,7 @@ server.on("request", async (req, res) => {
     try {
         // Parse the request
         const url = new URL(`https://${req.headers.host?.replace("https://", "")}${req?.url}`);
-        const pathname = url.pathname.at(-1) === '/' ? url.pathname.slice(0, -1) : url.pathname;
+        const pathname = url.pathname.at(-1) === "/" ? url.pathname.slice(0, -1) : url.pathname;
         const search_params = Object.fromEntries(url.searchParams.entries()) as any;
         let body: any | null = null;
         try {
