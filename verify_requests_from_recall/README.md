@@ -12,7 +12,17 @@ This example demonstrates how to verify that incoming webhook and WebSocket requ
 
 **Before running, make sure you don't have any apps running on port 4000**
 
-### 1. Set up environment variables
+### 1. Start ngrok
+
+In a terminal window, run:
+
+```bash
+ngrok http 4000
+```
+
+After it's running, copy the ngrok URL (e.g. `somehash.ngrok-free.app`).
+
+### 2. Set up environment variables
 
 Copy the `.env.sample` file and rename it to `.env`:
 
@@ -20,11 +30,11 @@ Copy the `.env.sample` file and rename it to `.env`:
 cp .env.sample .env
 ```
 
-Then fill out the variables in the `.env` file.
+Then fill out the variables in the `.env` file, including the ngrok domain from step 1 (Don't forget to omit the protocol (e.g. `https://`)).
 
-### 2. Start the server
+### 3. Start the server
 
-Open this directory in a terminal and run:
+Open this directory in a new terminal and run:
 
 ```bash
 npm install
@@ -32,16 +42,6 @@ npm run dev
 ```
 
 This will start a server on port 4000.
-
-### 3. Start ngrok
-
-In a new terminal window, run:
-
-```bash
-ngrok http 4000
-```
-
-After it's running, copy the ngrok URL (e.g. `somehash.ngrok.app`). You'll need just the domain without the `https://` prefix.
 
 ### 4. Create a bot
 
@@ -56,7 +56,7 @@ chmod +x run.sh
 ./run.sh
 ```
 
-This will create a bot and paste the response in the terminal
+This will create a bot and paste the response in the terminal.
 
 #### Option B: Using curl
 
@@ -85,9 +85,6 @@ curl --request POST \
           ]
         }
       ]
-    },
-    "zoom": {
-      "zak_url": "https://${NGROK_DOMAIN}"
     }
   }'
 ```
@@ -95,7 +92,7 @@ curl --request POST \
 **Note:**
 
 - Replace `RECALL_REGION`, `RECALL_API_KEY`, and `YOUR_MEETING_URL` with your own values.
-- Replace `YOUR_NGROK_DOMAIN` with your ngrok domain (e.g. `somehash.ngrok.app`). Use `wss://` instead of `https://` since this is a WebSocket connection.
+- Replace `YOUR_NGROK_DOMAIN` with your ngrok domain (e.g. `somehash.ngrok-free.app`).
 
 ### 5. Verify requests
 
