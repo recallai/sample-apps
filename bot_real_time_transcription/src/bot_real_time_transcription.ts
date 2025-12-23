@@ -1,14 +1,14 @@
 import fs from "fs";
 import path from "path";
 import { type z } from "zod";
-import { TranscriptDataSchema } from "./schemas/TranscriptDataSchema";
+import { TranscriptDataEventSchema } from "./schemas/TranscriptDataEventSchema";
 
 /**
  * Event handler for handling transcript.data event.
  */
 export async function bot_real_time_transcription(args: { msg: Record<string, any> }) {
     const { msg: json_msg } = args;
-    const msg = TranscriptDataSchema.parse(json_msg);
+    const msg = TranscriptDataEventSchema.parse(json_msg);
 
     // Write the transcript data to a file.
     const output_path_events = path.join(
@@ -30,7 +30,7 @@ export async function bot_real_time_transcription(args: { msg: Record<string, an
 
     // Create the updated transcript data array.
     const imported_transcript_utterances_string = fs.readFileSync(output_path_events, "utf-8") || "[]";
-    const imported_transcript_utterances_array = TranscriptDataSchema.shape.data.shape.data.array()
+    const imported_transcript_utterances_array = TranscriptDataEventSchema.shape.data.shape.data.array()
         .parse(JSON.parse(imported_transcript_utterances_string));
     const transcript_events = [...imported_transcript_utterances_array, msg.data.data];
     fs.writeFileSync(output_path_events, JSON.stringify(transcript_events, null, 2), { flag: "w+" });
@@ -50,7 +50,7 @@ export async function bot_real_time_transcription(args: { msg: Record<string, an
 /**
  * Parse the transcript data into a separate sentences for each participant.
  */
-function parse_transcript(transcript: z.infer<typeof TranscriptDataSchema>["data"]["data"][]) {
+function parse_transcript(transcript: z.infer<typeof TranscriptDataEventSchema>["data"]["data"][]) {
     if (!Array.isArray(transcript)) return [];
     const keepers = [];
     for (const entry of transcript) {

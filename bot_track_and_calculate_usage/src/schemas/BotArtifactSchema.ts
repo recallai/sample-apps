@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const BotSchema = z.object({
+export const BotArtifactSchema = z.object({
     id: z.string(),
     status_changes: z.array(z.object({
         code: z.string(), // status code, e.g. "joining_call", "done", "fatal"

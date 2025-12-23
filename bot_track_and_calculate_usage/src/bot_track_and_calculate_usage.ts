@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { env } from "./config/env";
 import { fetch_with_retry } from "./fetch_with_retry";
-import { BotSchema } from "./schemas/BotSchema";
+import { BotArtifactSchema } from "./schemas/BotArtifactSchema";
 
 /**
  * Retrieve the usage for bots.
@@ -78,7 +78,7 @@ async function list_bots(args: {
     });
     if (!response.ok) throw new Error(await response.text());
     return z.object({
-        results: BotSchema.array(),
+        results: BotArtifactSchema.array(),
         next: z.string().nullable(),
     }).parse(await response.json());
 }
@@ -89,7 +89,7 @@ async function list_bots(args: {
 function get_usage_seconds_for_bot(args: {
     bot: { id: string; status_changes: { code: string; created_at: string; }[]; }
 }) {
-    const { bot } = z.object({ bot: BotSchema }).parse(args);
+    const { bot } = z.object({ bot: BotArtifactSchema }).parse(args);
 
     const joining_call_status = bot.status_changes.find((status) => status.code === "joining_call");
     const termination_status = bot.status_changes.find((status) => ["done", "fatal"].includes(status.code));

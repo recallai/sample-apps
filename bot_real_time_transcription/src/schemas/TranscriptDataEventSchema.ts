@@ -1,18 +1,23 @@
 import { z } from "zod";
 
 /**
- * Schema for the video_separate_png.data event
+ * Schema for the transcription.data event
  */
-export const VideoSeparatePngDataSchema = z.object({
-    "event": z.literal("video_separate_png.data"),
+export const TranscriptDataEventSchema = z.object({
+    "event": z.literal("transcript.data"),
     "data": z.object({
         "data": z.object({
-            "buffer": z.string(), // base64 encoded png at 2fps with resolution 360x640
-            "type": z.enum(["webcam", "screenshare"]), // Type of video stream (webcam or screenshare)
-            "timestamp": z.object({ // Timestamp of the first byte in the buffer. More info about timestamps: https://docs.recall.ai/docs/download-schemas#/schema-timestamps
-                "relative": z.number(), // Timestamp in seconds
-                "absolute": z.string(), // ISO 8601 absolute timestamp (e.g. 2025-01-01 00:00:00)
-            }),
+            "words": z.object({
+                "text": z.string(),
+                "start_timestamp": z.object({
+                    "relative": z.number(), // Timestamp in seconds from the start of the recording
+                    "absolute": z.string().nullish(), // ISO 8601 absolute timestamp (e.g. 2025-01-01 00:00:00)
+                }),
+                "end_timestamp": z.object({
+                    "relative": z.number(), // Timestamp in seconds from the start of the recording
+                    "absolute": z.string().nullish(), // ISO 8601 absolute timestamp (e.g. 2025-01-01 00:00:00)
+                }).nullish(),
+            }).array(),
             "participant": z.object({
                 "id": z.number(), // Recall.ai assigned participant id (e.g. 100, 200, 300)
                 "name": z.string().nullable(), // Display name from meeting
@@ -26,7 +31,7 @@ export const VideoSeparatePngDataSchema = z.object({
             "id": z.string(),
             "metadata": z.record(z.string(), z.string()),
         }),
-        "video_separate": z.object({
+        "transcript": z.object({
             "id": z.string(),
             "metadata": z.record(z.string(), z.string()),
         }),

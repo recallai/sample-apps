@@ -1,23 +1,17 @@
 import { z } from "zod";
 
 /**
- * Schema for the transcription.data event
+ * Schema for the audio_separate_raw.data event
  */
-export const TranscriptDataSchema = z.object({
-    "event": z.literal("transcript.data"),
+export const AudioSeparateRawDataEventSchema = z.object({
+    "event": z.literal("audio_separate_raw.data"),
     "data": z.object({
         "data": z.object({
-            "words": z.object({
-                "text": z.string(),
-                "start_timestamp": z.object({
-                    "relative": z.number(), // Timestamp in seconds from the start of the recording
-                    "absolute": z.string().nullish(), // ISO 8601 absolute timestamp (e.g. 2025-01-01 00:00:00)
-                }),
-                "end_timestamp": z.object({
-                    "relative": z.number(), // Timestamp in seconds from the start of the recording
-                    "absolute": z.string().nullish(), // ISO 8601 absolute timestamp (e.g. 2025-01-01 00:00:00)
-                }).nullish(),
-            }).array(),
+            "buffer": z.string(), // base64-encoded raw audio 16 kHz mono, S16LE(16-bit PCM LE)
+            "timestamp": z.object({ // Timestamp of the first byte in the buffer. More info about timestamps: https://docs.recall.ai/docs/download-schemas#/schema-timestamps
+                "relative": z.number(), // "Timestamp in seconds"),
+                "absolute": z.string(), // "ISO 8601 absolute timestamp (e.g. 2025-01-01 00:00:00)")
+            }),
             "participant": z.object({
                 "id": z.number(), // Recall.ai assigned participant id (e.g. 100, 200, 300)
                 "name": z.string().nullable(), // Display name from meeting
@@ -31,7 +25,7 @@ export const TranscriptDataSchema = z.object({
             "id": z.string(),
             "metadata": z.record(z.string(), z.string()),
         }),
-        "transcript": z.object({
+        "audio_separate": z.object({
             "id": z.string(),
             "metadata": z.record(z.string(), z.string()),
         }),
