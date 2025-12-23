@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
-import { type z } from "zod";
 import { TranscriptDataEventSchema } from "./schemas/TranscriptDataEventSchema";
+import { TranscriptPartType } from "./schemas/TranscriptPartSchema";
 
 /**
  * Event handler for handling transcript.data event.
@@ -13,19 +13,19 @@ export async function bot_real_time_transcription(args: { msg: Record<string, an
     // Write the transcript data to a file.
     const output_path_events = path.join(
         process.cwd(),
-        `output/recording-${msg.data.recording.id}/${msg.data.data.participant.id ?? "undefined"}-transcript.json`,
+        `output/recording-${msg.data.recording.id}/transcript.json`,
     );
-    const output_path_dialogue = path.join(
+    const output_path_readable = path.join(
         process.cwd(),
-        `output/recording-${msg.data.recording.id}/${msg.data.data.participant.id ?? "undefined"}-dialogue.txt`,
+        `output/recording-${msg.data.recording.id}/dialogue.txt`,
     );
     if (!fs.existsSync(output_path_events)) {
         fs.mkdirSync(path.dirname(output_path_events), { recursive: true });
         fs.writeFileSync(output_path_events, "[]", { flag: "w+" });
     }
-    if (!fs.existsSync(output_path_dialogue)) {
-        fs.mkdirSync(path.dirname(output_path_dialogue), { recursive: true });
-        fs.writeFileSync(output_path_dialogue, "", { flag: "w+" });
+    if (!fs.existsSync(output_path_readable)) {
+        fs.mkdirSync(path.dirname(output_path_readable), { recursive: true });
+        fs.writeFileSync(output_path_readable, "", { flag: "w+" });
     }
 
     // Create the updated transcript data array.
@@ -36,21 +36,21 @@ export async function bot_real_time_transcription(args: { msg: Record<string, an
     fs.writeFileSync(output_path_events, JSON.stringify(transcript_events, null, 2), { flag: "w+" });
 
     // Create the dialogue transcript from the transcript data array.
-    const transcript_dialogue = parse_transcript(transcript_events);
+    const transcript_dialogue = format_transcript_by_sentences(transcript_events);
     fs.writeFileSync(
-        output_path_dialogue,
-        transcript_dialogue.map((t) => t ? `${t.speaker}: ${t.paragraph}` : "").join("\n") || "",
+        output_path_readable,
+        transcript_dialogue.map((t) => t ? `${t.speaker}: ${t.paragraph}` : "").join("\n"),
         { flag: "w+" },
     );
 
     console.log(`Transcript data written to file: ${output_path_events}`);
-    console.log(`Transcript dialogue written to file: ${output_path_dialogue}`);
+    console.log(`Transcript dialogue written to file: ${output_path_readable}`);
 }
 
 /**
  * Parse the transcript data into a separate sentences for each participant.
  */
-function parse_transcript(transcript: z.infer<typeof TranscriptDataEventSchema>["data"]["data"][]) {
+function format_transcript_by_sentences(transcript: TranscriptPartType[]) {
     if (!Array.isArray(transcript)) return [];
     const keepers = [];
     for (const entry of transcript) {
