@@ -2,11 +2,11 @@ import fs from "fs";
 import path from "path";
 import { z } from "zod";
 import { env } from "./config/env";
+import { convert_to_readable_transcript } from "./convert_to_readable_transcript";
 import { RecordingArtifactSchema } from "./schemas/RecordingArtifactSchema";
 import { TranscriptArtifactEventSchema, type TranscriptArtifactEventType } from "./schemas/TranscriptArtifactEventSchema";
 import { TranscriptArtifactSchema } from "./schemas/TranscriptArtifactSchema";
 import { TranscriptPartSchema } from "./schemas/TranscriptPartSchema";
-import { convert_to_readable_transcript } from "./convert_to_readable_transcript";
 
 /**
  * Create an async transcript job for a recording.

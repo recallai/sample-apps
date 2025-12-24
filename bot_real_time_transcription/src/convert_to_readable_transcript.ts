@@ -1,5 +1,5 @@
 import z from "zod";
-import { TranscriptPartSchema, TranscriptPartType } from "./schemas/TranscriptPartSchema";
+import { TranscriptPartSchema, type TranscriptPartType } from "./schemas/TranscriptPartSchema";
 
 /**
  * Parse the transcript_parts into a separate sentences for each participant.

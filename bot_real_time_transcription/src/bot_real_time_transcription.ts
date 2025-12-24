@@ -1,13 +1,15 @@
 import fs from "fs";
 import path from "path";
-import { TranscriptDataEventSchema } from "./schemas/TranscriptDataEventSchema";
 import { convert_to_readable_transcript } from "./convert_to_readable_transcript";
+import { TranscriptDataEventSchema } from "./schemas/TranscriptDataEventSchema";
 import { TranscriptPartSchema } from "./schemas/TranscriptPartSchema";
 
 /**
  * Event handler for handling transcript.data event.
  */
-export async function bot_real_time_transcription(args: { msg: Record<string, any> }) {
+export async function bot_real_time_transcription(args: {
+    msg: Record<string, any>,
+}) {
     const { msg: json_msg } = args;
     const msg = TranscriptDataEventSchema.parse(json_msg);
 
@@ -32,7 +34,7 @@ export async function bot_real_time_transcription(args: { msg: Record<string, an
     // Create the updated transcript data array.
     const transcript_parts_raw = fs.readFileSync(output_path_events, "utf-8") || "[]";
     const transcript_parts = TranscriptPartSchema.array().parse(
-        [...JSON.parse(transcript_parts_raw), msg.data.data]
+        [...JSON.parse(transcript_parts_raw), msg.data.data],
     );
     fs.writeFileSync(output_path_events, JSON.stringify(transcript_parts, null, 2), { flag: "w+" });
 

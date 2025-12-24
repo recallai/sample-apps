@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { TranscriptPartSchema, TranscriptPartType } from "./schemas/TranscriptPartSchema";
-import { SpeakerTimelinePartSchema, SpeakerTimelinePartType } from "./schemas/SpeakerTimelinePartSchema";
+import { SpeakerTimelinePartSchema, type SpeakerTimelinePartType } from "./schemas/SpeakerTimelinePartSchema";
+import { TranscriptPartSchema, type TranscriptPartType } from "./schemas/TranscriptPartSchema";
 
 
 /**
@@ -13,8 +13,8 @@ import { SpeakerTimelinePartSchema, SpeakerTimelinePartType } from "./schemas/Sp
 export function convert_to_hybrid_diarized_transcript_parts(
     args: {
         transcript_data: TranscriptPartType[],
-        speaker_timeline_data: SpeakerTimelinePartType[]
-    }
+        speaker_timeline_data: SpeakerTimelinePartType[],
+    },
 ): TranscriptPartType[] {
     const { transcript_data, speaker_timeline_data } = z.object({
         transcript_data: TranscriptPartSchema.array(),
