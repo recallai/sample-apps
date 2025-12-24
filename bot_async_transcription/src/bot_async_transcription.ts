@@ -5,7 +5,8 @@ import { env } from "./config/env";
 import { RecordingArtifactSchema } from "./schemas/RecordingArtifactSchema";
 import { TranscriptArtifactEventSchema, type TranscriptArtifactEventType } from "./schemas/TranscriptArtifactEventSchema";
 import { TranscriptArtifactSchema } from "./schemas/TranscriptArtifactSchema";
-import { TranscriptPartSchema, type TranscriptPartType } from "./schemas/TranscriptPartSchema";
+import { TranscriptPartSchema } from "./schemas/TranscriptPartSchema";
+import { convert_to_readable_transcript } from "./convert_to_readable_transcript";
 
 /**
  * Create an async transcript job for a recording.
@@ -44,7 +45,7 @@ export async function bot_async_transcription(args: { msg: TranscriptArtifactEve
     const transcript_parts = await retrieve_transcript_parts({
         download_url: recording.media_shortcuts.transcript.data.download_url,
     });
-    const readable_transcript_parts = format_transcript_by_sentences(transcript_parts);
+    const readable_transcript_parts = convert_to_readable_transcript({ transcript_parts });
 
     // Write the transcript parts data and readable transcript to files.
     const output_path_events = path.join(
@@ -101,56 +102,4 @@ async function retrieve_transcript_parts(args: { download_url: string }) {
     if (!response.ok) throw new Error(await response.text());
 
     return TranscriptPartSchema.array().parse(await response.json());
-}
-
-/**
- * Parse the transcript data into a separate sentences for each participant.
- */
-function format_transcript_by_sentences(transcript: TranscriptPartType[]) {
-    if (!Array.isArray(transcript)) return [];
-    const keepers = [];
-    for (const entry of transcript) {
-        const participant = entry?.participant;
-        const words = Array.isArray(entry?.words) ? entry.words : [];
-        if (!participant?.name || words.length === 0) continue;
-        const key = participant.id ?? participant.name;
-        const last = keepers[keepers.length - 1];
-        const last_key = last && (last.participant.id ?? last.participant.name);
-        if (last && key === last_key) {
-            last.words.push(...words);
-        } else {
-            keepers.push(entry);
-        }
-    }
-
-    // Map merged entries to paragraphs with timestamps + duration
-    return keepers
-        .map(({ participant, words }) => {
-            const paragraph = words.map((w) => w.text).join(" ").trim();
-            if (!paragraph) return null;
-
-            // First word with a start timestamp; last word with an end timestamp (words assumed chronological).
-            const first = words.find((w) => w?.start_timestamp);
-            const last = [...words].reverse().find((w) => w?.end_timestamp);
-
-            const start_relative = first?.start_timestamp?.relative ?? null;
-            const start_absolute = first?.start_timestamp?.absolute ?? null;
-            const end_relative = last?.end_timestamp?.relative ?? null;
-            const end_absolute = last?.end_timestamp?.absolute ?? null;
-
-            // Duration: prefer relative seconds; else compute from ISO absolute timestamps.
-            const duration_seconds =
-                start_relative !== null && end_relative !== null
-                    ? end_relative - start_relative
-                    : (start_absolute && end_absolute ? (Date.parse(end_absolute) - Date.parse(start_absolute)) / 1000 : null);
-
-            return {
-                speaker: participant.name,
-                paragraph,
-                start_timestamp: { relative: start_relative, absolute: start_absolute },
-                end_timestamp: { relative: end_relative, absolute: end_absolute },
-                duration_seconds,
-            };
-        })
-        .filter(Boolean);
 }
