@@ -1,0 +1,24 @@
+{
+    "name": "bot_async_transcription_hybrid_diarization",
+    "version": "1.0.0",
+    "description": "Receive and save a bot's async meeting transcript with hybrid diarization (machine + speaker timeline diarization)",
+    "main": "index.ts",
+    "scripts": {
+        "dev": "ts-node src/index.ts",
+        "test": "vitest run",
+        "test:watch": "vitest"
+    },
+    "author": "Gerry Saporito",
+    "license": "MIT",
+    "devDependencies": {
+        "@types/node": "^24.10.1",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.9.3",
+        "vitest": "^2.1.8"
+    },
+    "dependencies": {
+        "dotenv": "^17.2.3",
+        "http": "^0.0.1-security",
+        "zod": "^4.1.13"
+    }
+}

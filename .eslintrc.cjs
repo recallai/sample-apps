@@ -100,6 +100,7 @@ module.exports = {
                 "check-file/filename-naming-convention": [
                     "error",
                     { "**/*.ts": "SNAKE_CASE" },
+                    { "ignoreMiddleExtensions": true },
                 ],
             },
         },
