@@ -12,12 +12,12 @@ import { TranscriptPartSchema, type TranscriptPartType } from "./schemas/Transcr
  */
 export function convert_to_hybrid_diarized_transcript_parts(
     args: {
-        transcript_data: TranscriptPartType[],
+        transcript_parts: TranscriptPartType[],
         speaker_timeline_data: SpeakerTimelinePartType[],
     },
 ): TranscriptPartType[] {
-    const { transcript_data, speaker_timeline_data } = z.object({
-        transcript_data: TranscriptPartSchema.array(),
+    const { transcript_parts, speaker_timeline_data } = z.object({
+        transcript_parts: TranscriptPartSchema.array(),
         speaker_timeline_data: SpeakerTimelinePartSchema.array(),
     }).parse(args);
 
@@ -39,9 +39,13 @@ export function convert_to_hybrid_diarized_transcript_parts(
         const speaker_event_end = speaker_change_event.end_timestamp?.relative ?? Number.POSITIVE_INFINITY;
 
         // Get the transcript segments that are within the current speaker event
-        const transcript_segments = transcript_data.filter((transcript) => {
-            const start = transcript.words[0]?.start_timestamp?.relative ?? Number.NEGATIVE_INFINITY;
-            const end = transcript.words[transcript.words.length - 1]?.end_timestamp?.relative ?? Number.POSITIVE_INFINITY;
+        const transcript_segments = transcript_parts.filter((transcript) => {
+            const start = transcript.words.find(
+                (word) => word.start_timestamp?.relative !== undefined && word.start_timestamp.relative < speaker_event_end
+            )?.start_timestamp?.relative ?? Number.NEGATIVE_INFINITY;
+            const end = transcript.words.reverse().find(
+                (word) => word.end_timestamp?.relative !== undefined && word.end_timestamp.relative < speaker_event_end
+            )?.end_timestamp?.relative ?? Number.POSITIVE_INFINITY;
             return speaker_event_start <= start && speaker_event_end > end;
         });
 
@@ -87,7 +91,7 @@ export function convert_to_hybrid_diarized_transcript_parts(
     console.log(`Participant mapping: ${JSON.stringify(Object.fromEntries(anon_to_participant))}`);
 
     // Replace the participant data with the mapped participant data.
-    const hybrid_transcript_parts = transcript_data.map((transcript) => {
+    const hybrid_transcript_parts = transcript_parts.map((transcript) => {
         const participant_data = anon_to_participant.get(transcript.participant.name ?? "");
         if (!participant_data) {
             return transcript;

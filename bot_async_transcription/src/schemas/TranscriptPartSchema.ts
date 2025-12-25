@@ -17,7 +17,7 @@ export const TranscriptPartSchema = z.object({
         start_timestamp: z.object({
             relative: z.number(), // Timestamp in seconds from the start of the recording
             absolute: z.string().nullish(), // ISO 8601 absolute timestamp (e.g. 2025-01-01 00:00:00)
-        }),
+        }).nullish(),
         end_timestamp: z.object({
             relative: z.number(), // Timestamp in seconds from the start of the recording
             absolute: z.string().nullish(), // ISO 8601 absolute timestamp (e.g. 2025-01-01 00:00:00)

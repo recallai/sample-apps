@@ -47,16 +47,16 @@ export async function bot_async_transcription(args: { msg: TranscriptArtifactEve
     }
 
     // Retrieve and format transcript data.
-    const transcript_data = await retrieve_transcript_parts({
+    const transcript_parts = await retrieve_transcript_parts({
         download_url: recording.media_shortcuts.transcript.data.download_url,
     });
-    console.log(`Retrieved ${transcript_data.length} transcript parts`);
+    console.log(`Retrieved ${transcript_parts.length} transcript parts`);
     const speaker_timeline_data = await retrieve_speaker_timeline_parts({
         download_url: recording.media_shortcuts.participant_events.data.speaker_timeline_download_url,
     });
     console.log(`Retrieved ${speaker_timeline_data.length} speaker timeline parts`);
     const hybrid_transcript_parts = convert_to_hybrid_diarized_transcript_parts({
-        transcript_data,
+        transcript_parts,
         speaker_timeline_data,
     });
     console.log(`Formatted ${hybrid_transcript_parts.length} hybrid transcript parts`);
