@@ -56,7 +56,7 @@ function create_speaker_event(opts: {
 describe("convert_to_hybrid_diarized_transcript_parts", () => {
     describe("Happy Path - Single Speaker Per Participant", () => {
         it("should map anonymous speaker to real participant when only one speaker exists", () => {
-            const transcript_data: TranscriptPartType[] = [
+            const transcript_parts: TranscriptPartType[] = [
                 create_transcript({ speakerName: "Speaker A", startTime: 1, endTime: 5 }),
                 create_transcript({ speakerName: "Speaker A", startTime: 6, endTime: 10 }),
             ];
@@ -65,7 +65,7 @@ describe("convert_to_hybrid_diarized_transcript_parts", () => {
             ];
 
             const result = convert_to_hybrid_diarized_transcript_parts({
-                transcript_data,
+                transcript_parts,
                 speaker_timeline_data,
             });
 
@@ -77,7 +77,7 @@ describe("convert_to_hybrid_diarized_transcript_parts", () => {
         });
 
         it("should map multiple participants correctly when each has a unique anonymous speaker", () => {
-            const transcript_data: TranscriptPartType[] = [
+            const transcript_parts: TranscriptPartType[] = [
                 create_transcript({ speakerName: "Speaker A", startTime: 1, endTime: 5 }),
                 create_transcript({ speakerName: "Speaker B", startTime: 16, endTime: 20 }),
             ];
@@ -87,7 +87,7 @@ describe("convert_to_hybrid_diarized_transcript_parts", () => {
             ];
 
             const result = convert_to_hybrid_diarized_transcript_parts({
-                transcript_data,
+                transcript_parts,
                 speaker_timeline_data,
             });
 
@@ -99,7 +99,7 @@ describe("convert_to_hybrid_diarized_transcript_parts", () => {
 
     describe("Multiple Speakers Per Participant - No Mapping", () => {
         it("should NOT map when participant has multiple anonymous speakers in same segment", () => {
-            const transcript_data: TranscriptPartType[] = [
+            const transcript_parts: TranscriptPartType[] = [
                 create_transcript({ speakerName: "Speaker A", startTime: 1, endTime: 5 }),
                 create_transcript({ speakerName: "Speaker B", startTime: 6, endTime: 10 }),
             ];
@@ -108,7 +108,7 @@ describe("convert_to_hybrid_diarized_transcript_parts", () => {
             ];
 
             const result = convert_to_hybrid_diarized_transcript_parts({
-                transcript_data,
+                transcript_parts,
                 speaker_timeline_data,
             });
 
@@ -121,7 +121,7 @@ describe("convert_to_hybrid_diarized_transcript_parts", () => {
 
         it("should NOT map when participant has multiple speakers across different timeline segments", () => {
             // This is the key edge case: single speaker first, then multiple, then single again
-            const transcript_data: TranscriptPartType[] = [
+            const transcript_parts: TranscriptPartType[] = [
                 // Segment 1: Only Speaker A
                 create_transcript({ speakerName: "Speaker A", startTime: 1, endTime: 5 }),
                 // Segment 2: Both Speaker A and Speaker B
@@ -137,7 +137,7 @@ describe("convert_to_hybrid_diarized_transcript_parts", () => {
             ];
 
             const result = convert_to_hybrid_diarized_transcript_parts({
-                transcript_data,
+                transcript_parts,
                 speaker_timeline_data,
             });
 
@@ -152,7 +152,7 @@ describe("convert_to_hybrid_diarized_transcript_parts", () => {
 
     describe("Mixed Participants - Some Mapped, Some Not", () => {
         it("should map participant with single speaker but not participant with multiple speakers", () => {
-            const transcript_data: TranscriptPartType[] = [
+            const transcript_parts: TranscriptPartType[] = [
                 // John's segments - has multiple speakers (A and B)
                 create_transcript({ speakerName: "Speaker A", startTime: 1, endTime: 5 }),
                 create_transcript({ speakerName: "Speaker B", startTime: 6, endTime: 9 }),
@@ -166,7 +166,7 @@ describe("convert_to_hybrid_diarized_transcript_parts", () => {
             ];
 
             const result = convert_to_hybrid_diarized_transcript_parts({
-                transcript_data,
+                transcript_parts,
                 speaker_timeline_data,
             });
 
@@ -184,9 +184,9 @@ describe("convert_to_hybrid_diarized_transcript_parts", () => {
     });
 
     describe("Edge Cases - Empty and Missing Data", () => {
-        it("should return empty array when transcript_data is empty", () => {
+        it("should return empty array when transcript_parts is empty", () => {
             const result = convert_to_hybrid_diarized_transcript_parts({
-                transcript_data: [],
+                transcript_parts: [],
                 speaker_timeline_data: [
                     create_speaker_event({ participantId: 100, participantName: "John", startTime: 0, endTime: 10 }),
                 ],
@@ -196,12 +196,12 @@ describe("convert_to_hybrid_diarized_transcript_parts", () => {
         });
 
         it("should return unchanged transcripts when speaker_timeline_data is empty", () => {
-            const transcript_data: TranscriptPartType[] = [
+            const transcript_parts: TranscriptPartType[] = [
                 create_transcript({ speakerName: "Speaker A", startTime: 1, endTime: 5 }),
             ];
 
             const result = convert_to_hybrid_diarized_transcript_parts({
-                transcript_data,
+                transcript_parts,
                 speaker_timeline_data: [],
             });
 
@@ -211,7 +211,7 @@ describe("convert_to_hybrid_diarized_transcript_parts", () => {
         });
 
         it("should skip speaker events with null participant id", () => {
-            const transcript_data: TranscriptPartType[] = [
+            const transcript_parts: TranscriptPartType[] = [
                 create_transcript({ speakerName: "Speaker A", startTime: 1, endTime: 5 }),
             ];
             const speaker_timeline_data: SpeakerTimelinePartType[] = [
@@ -219,7 +219,7 @@ describe("convert_to_hybrid_diarized_transcript_parts", () => {
             ];
 
             const result = convert_to_hybrid_diarized_transcript_parts({
-                transcript_data,
+                transcript_parts,
                 speaker_timeline_data,
             });
 
@@ -229,7 +229,7 @@ describe("convert_to_hybrid_diarized_transcript_parts", () => {
         });
 
         it("should skip speaker events with null participant name", () => {
-            const transcript_data: TranscriptPartType[] = [
+            const transcript_parts: TranscriptPartType[] = [
                 create_transcript({ speakerName: "Speaker A", startTime: 1, endTime: 5 }),
             ];
             const speaker_timeline_data: SpeakerTimelinePartType[] = [
@@ -237,7 +237,7 @@ describe("convert_to_hybrid_diarized_transcript_parts", () => {
             ];
 
             const result = convert_to_hybrid_diarized_transcript_parts({
-                transcript_data,
+                transcript_parts,
                 speaker_timeline_data,
             });
 
@@ -246,7 +246,7 @@ describe("convert_to_hybrid_diarized_transcript_parts", () => {
         });
 
         it("should not add to speaker set when transcript has null participant name", () => {
-            const transcript_data: TranscriptPartType[] = [
+            const transcript_parts: TranscriptPartType[] = [
                 create_transcript({ speakerName: null, startTime: 1, endTime: 5 }),
             ];
             const speaker_timeline_data: SpeakerTimelinePartType[] = [
@@ -254,7 +254,7 @@ describe("convert_to_hybrid_diarized_transcript_parts", () => {
             ];
 
             const result = convert_to_hybrid_diarized_transcript_parts({
-                transcript_data,
+                transcript_parts,
                 speaker_timeline_data,
             });
 
@@ -266,7 +266,7 @@ describe("convert_to_hybrid_diarized_transcript_parts", () => {
 
     describe("Edge Cases - Timing and Boundaries", () => {
         it("should only include transcript segments fully contained within speaker event", () => {
-            const transcript_data: TranscriptPartType[] = [
+            const transcript_parts: TranscriptPartType[] = [
                 // Fully contained - should be included
                 create_transcript({ speakerName: "Speaker A", startTime: 2, endTime: 8 }),
                 // Starts before speaker event - should NOT be included
@@ -279,7 +279,7 @@ describe("convert_to_hybrid_diarized_transcript_parts", () => {
             ];
 
             const result = convert_to_hybrid_diarized_transcript_parts({
-                transcript_data,
+                transcript_parts,
                 speaker_timeline_data,
             });
 
@@ -292,7 +292,7 @@ describe("convert_to_hybrid_diarized_transcript_parts", () => {
         });
 
         it("should handle speaker event with null end_timestamp (extends to infinity)", () => {
-            const transcript_data: TranscriptPartType[] = [
+            const transcript_parts: TranscriptPartType[] = [
                 create_transcript({ speakerName: "Speaker A", startTime: 100, endTime: 200 }),
             ];
             const speaker_timeline_data: SpeakerTimelinePartType[] = [
@@ -300,7 +300,7 @@ describe("convert_to_hybrid_diarized_transcript_parts", () => {
             ];
 
             const result = convert_to_hybrid_diarized_transcript_parts({
-                transcript_data,
+                transcript_parts,
                 speaker_timeline_data,
             });
 
@@ -309,7 +309,7 @@ describe("convert_to_hybrid_diarized_transcript_parts", () => {
         });
 
         it("should handle transcript segment with start exactly at speaker event start", () => {
-            const transcript_data: TranscriptPartType[] = [
+            const transcript_parts: TranscriptPartType[] = [
                 create_transcript({ speakerName: "Speaker A", startTime: 0, endTime: 5 }),
             ];
             const speaker_timeline_data: SpeakerTimelinePartType[] = [
@@ -317,7 +317,7 @@ describe("convert_to_hybrid_diarized_transcript_parts", () => {
             ];
 
             const result = convert_to_hybrid_diarized_transcript_parts({
-                transcript_data,
+                transcript_parts,
                 speaker_timeline_data,
             });
 
@@ -325,7 +325,7 @@ describe("convert_to_hybrid_diarized_transcript_parts", () => {
         });
 
         it("should NOT include transcript that ends exactly at speaker event end", () => {
-            const transcript_data: TranscriptPartType[] = [
+            const transcript_parts: TranscriptPartType[] = [
                 create_transcript({ speakerName: "Speaker A", startTime: 5, endTime: 10 }),
             ];
             const speaker_timeline_data: SpeakerTimelinePartType[] = [
@@ -333,7 +333,7 @@ describe("convert_to_hybrid_diarized_transcript_parts", () => {
             ];
 
             const result = convert_to_hybrid_diarized_transcript_parts({
-                transcript_data,
+                transcript_parts,
                 speaker_timeline_data,
             });
 
@@ -344,7 +344,7 @@ describe("convert_to_hybrid_diarized_transcript_parts", () => {
 
     describe("Edge Cases - Transcript Not Matching Any Speaker Event", () => {
         it("should leave transcript unchanged when it doesn't fall within any speaker event", () => {
-            const transcript_data: TranscriptPartType[] = [
+            const transcript_parts: TranscriptPartType[] = [
                 create_transcript({ speakerName: "Speaker A", startTime: 50, endTime: 60 }),
             ];
             const speaker_timeline_data: SpeakerTimelinePartType[] = [
@@ -352,7 +352,7 @@ describe("convert_to_hybrid_diarized_transcript_parts", () => {
             ];
 
             const result = convert_to_hybrid_diarized_transcript_parts({
-                transcript_data,
+                transcript_parts,
                 speaker_timeline_data,
             });
 
@@ -363,7 +363,7 @@ describe("convert_to_hybrid_diarized_transcript_parts", () => {
 
     describe("Data Preservation", () => {
         it("should preserve other transcript fields when mapping participant", () => {
-            const transcript_data: TranscriptPartType[] = [
+            const transcript_parts: TranscriptPartType[] = [
                 {
                     participant: {
                         id: null,
@@ -387,7 +387,7 @@ describe("convert_to_hybrid_diarized_transcript_parts", () => {
             ];
 
             const result = convert_to_hybrid_diarized_transcript_parts({
-                transcript_data,
+                transcript_parts,
                 speaker_timeline_data,
             });
 
@@ -401,14 +401,14 @@ describe("convert_to_hybrid_diarized_transcript_parts", () => {
             expect(result[0].participant.email).toBe("original@example.com");
             // Words should be preserved
             expect(result[0].words[0].text).toBe("Hello world");
-            expect(result[0].words[0].start_timestamp.absolute).toBe("2025-01-01T00:00:01Z");
+            expect(result[0].words[0].start_timestamp?.absolute).toBe("2025-01-01T00:00:01Z");
         });
     });
 
     describe("Edge Cases - Same Anonymous Speaker for Multiple Participants", () => {
         it("should overwrite mapping when same anonymous speaker appears for different participants", () => {
             // This is a potential issue: if machine diarization assigns same label to different participants
-            const transcript_data: TranscriptPartType[] = [
+            const transcript_parts: TranscriptPartType[] = [
                 create_transcript({ speakerName: "Speaker A", startTime: 1, endTime: 5 }),
                 create_transcript({ speakerName: "Speaker A", startTime: 16, endTime: 20 }),
             ];
@@ -418,7 +418,7 @@ describe("convert_to_hybrid_diarized_transcript_parts", () => {
             ];
 
             const result = convert_to_hybrid_diarized_transcript_parts({
-                transcript_data,
+                transcript_parts,
                 speaker_timeline_data,
             });
 
@@ -431,7 +431,7 @@ describe("convert_to_hybrid_diarized_transcript_parts", () => {
 
     describe("Edge Cases - Empty Words Array", () => {
         it("should handle transcript with empty words array gracefully", () => {
-            const transcript_data: TranscriptPartType[] = [
+            const transcript_parts: TranscriptPartType[] = [
                 {
                     participant: {
                         id: null,
@@ -450,7 +450,7 @@ describe("convert_to_hybrid_diarized_transcript_parts", () => {
 
             // Should not throw - the optional chaining on words[0]?.start_timestamp should handle this
             const result = convert_to_hybrid_diarized_transcript_parts({
-                transcript_data,
+                transcript_parts,
                 speaker_timeline_data,
             });
 

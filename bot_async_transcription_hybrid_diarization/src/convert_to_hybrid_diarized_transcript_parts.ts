@@ -41,10 +41,10 @@ export function convert_to_hybrid_diarized_transcript_parts(
         // Get the transcript segments that are within the current speaker event
         const transcript_segments = transcript_parts.filter((transcript) => {
             const start = transcript.words.find(
-                (word) => word.start_timestamp?.relative !== undefined && word.start_timestamp.relative < speaker_event_end
+                (word) => word.start_timestamp?.relative !== undefined && word.start_timestamp.relative < speaker_event_end,
             )?.start_timestamp?.relative ?? Number.NEGATIVE_INFINITY;
             const end = transcript.words.reverse().find(
-                (word) => word.end_timestamp?.relative !== undefined && word.end_timestamp.relative < speaker_event_end
+                (word) => word.end_timestamp?.relative !== undefined && word.end_timestamp.relative < speaker_event_end,
             )?.end_timestamp?.relative ?? Number.POSITIVE_INFINITY;
             return speaker_event_start <= start && speaker_event_end > end;
         });

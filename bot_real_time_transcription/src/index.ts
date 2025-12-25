@@ -1,8 +1,8 @@
 import http from "http";
+import z from "zod";
 import { bot_real_time_transcription } from "./bot_real_time_transcription";
 import { env } from "./config/env";
 import { TranscriptDataEventSchema } from "./schemas/TranscriptDataEventSchema";
-import z from "zod";
 
 const server = http.createServer();
 
