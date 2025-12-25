@@ -32,7 +32,7 @@ server.on("request", async (req, res) => {
             TranscriptArtifactEventSchema,
         ]).safeParse(body);
         if (!result.success) {
-            console.log(`[Recording=${body?.data?.recording?.id ?? "N/A"}] Received unhandled webhook event: ${JSON.stringify({ msg: body, error: result.error.message })}`);
+            console.log(`[Recording=${body?.data?.recording?.id ?? "N/A"}] Received unhandled webhook event: ${JSON.stringify(body)}`);
             res.writeHead(200, { "Content-Type": "application/json" });
             res.end(JSON.stringify({ success: true }));
             return;
