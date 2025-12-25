@@ -2,14 +2,20 @@
   "name": "recall-sample-apps",
   "version": "1.0.0",
   "private": true,
+  "packageManager": "npm@11.3.0",
+  "workspaces": [
+    "*"
+  ],
   "scripts": {
-    "lint": "eslint '**/src/**/*.{ts,tsx}'"
+    "lint": "eslint '**/src/**/*.{ts,tsx}'",
+    "test": "turbo run test"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "eslint": "^8.57.0",
     "eslint-plugin-check-file": "^2.6.2",
-    "eslint-plugin-import": "^2.29.1"
+    "eslint-plugin-import": "^2.29.1",
+    "turbo": "^2.3.3"
   }
 }

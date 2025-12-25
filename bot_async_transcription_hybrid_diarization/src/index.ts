@@ -1,11 +1,11 @@
 import http from "http";
 import z from "zod";
-import { bot_real_time_transcription } from "./bot_real_time_transcription";
+import { create_async_transcript, bot_async_transcription } from "./bot_async_transcription_hybrid_diarization";
 import { env } from "./config/env";
-import { TranscriptDataEventSchema } from "./schemas/TranscriptDataEventSchema";
+import { RecordingArtifactEventSchema } from "./schemas/RecordingArtifactEventSchema";
+import { TranscriptArtifactEventSchema } from "./schemas/TranscriptArtifactEventSchema";
 
 const server = http.createServer();
-
 
 /**
  * HTTP server for handling HTTP requests.
@@ -28,7 +28,8 @@ server.on("request", async (req, res) => {
 
         // Validate the request body.
         const result = z.discriminatedUnion("event", [
-            TranscriptDataEventSchema,
+            RecordingArtifactEventSchema,
+            TranscriptArtifactEventSchema,
         ]).safeParse(body);
         if (!result.success) {
             console.log(`[Recording=${body?.data?.recording?.id ?? "N/A"}] Received unhandled webhook event: ${JSON.stringify(body)}`);
@@ -39,9 +40,24 @@ server.on("request", async (req, res) => {
         const { data: msg } = result;
         console.log(`[Recording=${msg.data.recording.id}] Received webhook event: ${JSON.stringify(result)}`);
 
-        await bot_real_time_transcription({ msg });
+        // Handle the webhook event.
+        switch (msg.event) {
+            case "recording.done": {
+                await create_async_transcript({ recording_id: msg.data.recording.id });
+                console.log(`[Recording=${msg.data.recording.id}] Created async transcript for recording`);
+                break;
+            }
+            case "transcript.done": {
+                await bot_async_transcription({ msg: body });
+                console.log(`[Recording=${msg.data.recording.id}] Saved async transcript to output files`);
+                break;
+            }
+            default: {
+                console.log(`[Recording=${msg.data.recording.id}] Received recording artifact event: ${msg.event}`);
+            }
+        }
     } catch (error) {
-        console.error(`Error handling bot real-time transcription utterance: ${req.method} ${req.url}`, error);
+        console.error(`Error handling webhook event: ${req.method} ${req.url}`, error);
     }
 
     res.writeHead(200, { "Content-Type": "application/json" });

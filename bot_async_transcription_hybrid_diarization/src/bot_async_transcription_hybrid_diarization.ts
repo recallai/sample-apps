@@ -2,8 +2,10 @@ import fs from "fs";
 import path from "path";
 import { z } from "zod";
 import { env } from "./config/env";
+import { convert_to_hybrid_diarized_transcript_parts } from "./convert_to_hybrid_diarized_transcript_parts";
 import { convert_to_readable_transcript } from "./convert_to_readable_transcript";
 import { RecordingArtifactSchema } from "./schemas/RecordingArtifactSchema";
+import { SpeakerTimelinePartSchema } from "./schemas/SpeakerTimelinePartSchema";
 import { TranscriptArtifactEventSchema, type TranscriptArtifactEventType } from "./schemas/TranscriptArtifactEventSchema";
 import { TranscriptArtifactSchema } from "./schemas/TranscriptArtifactSchema";
 import { TranscriptPartSchema } from "./schemas/TranscriptPartSchema";
@@ -21,9 +23,7 @@ export async function create_async_transcript(args: { recording_id: string }) {
             "Content-Type": "application/json",
         },
         body: JSON.stringify({
-            provider: { recallai_async: {} },
-            // Enable perfect diarization by default if separate streams are available.
-            diarization: { use_separate_streams_when_available: true },
+            provider: { deepgram_async: { diarize: true } },
         }),
     });
     if (!response.ok) throw new Error(await response.text());
@@ -37,17 +37,33 @@ export async function bot_async_transcription(args: { msg: TranscriptArtifactEve
     const { msg } = z.object({ msg: TranscriptArtifactEventSchema }).parse(args);
 
     const recording = await retrieve_recording_artifact({ recording_id: msg.data.recording.id });
+    console.log(`Retrieved recording: ${recording.id}`);
+
     if (!recording.media_shortcuts?.transcript?.data?.download_url) {
         throw new Error("Transcript download URL is null");
+    }
+    if (!recording.media_shortcuts.participant_events?.data?.speaker_timeline_download_url) {
+        throw new Error("Speaker timeline download URL is null");
     }
 
     // Retrieve and format transcript data.
     const transcript_parts = await retrieve_transcript_parts({
         download_url: recording.media_shortcuts.transcript.data.download_url,
     });
-    const readable_transcript_parts = convert_to_readable_transcript({ transcript_parts });
+    console.log(`Retrieved ${transcript_parts.length} transcript parts`);
+    const speaker_timeline_data = await retrieve_speaker_timeline_parts({
+        download_url: recording.media_shortcuts.participant_events.data.speaker_timeline_download_url,
+    });
+    console.log(`Retrieved ${speaker_timeline_data.length} speaker timeline parts`);
+    const hybrid_transcript_parts = convert_to_hybrid_diarized_transcript_parts({
+        transcript_parts,
+        speaker_timeline_data,
+    });
+    console.log(`Formatted ${hybrid_transcript_parts.length} hybrid transcript parts`);
+    const readable_hybrid_transcript_parts = convert_to_readable_transcript({ transcript_parts: hybrid_transcript_parts });
+    console.log(`Formatted ${readable_hybrid_transcript_parts.length} readable hybrid transcript parts`);
 
-    // Write the transcript parts data and readable transcript to files.
+    // Write the hybrid transcript parts data to a file.
     const output_path_events = path.join(
         process.cwd(),
         `output/recording-${msg.data.recording.id}/transcript.json`,
@@ -56,9 +72,9 @@ export async function bot_async_transcription(args: { msg: TranscriptArtifactEve
         fs.mkdirSync(path.dirname(output_path_events), { recursive: true });
         fs.writeFileSync(output_path_events, "[]", { flag: "w+" });
     }
-    fs.writeFileSync(output_path_events, JSON.stringify(transcript_parts, null, 2), { flag: "w+" });
+    fs.writeFileSync(output_path_events, JSON.stringify(hybrid_transcript_parts, null, 2), { flag: "w+" });
 
-    // Write the readable transcript to a file.
+    // Write the readable hybrid transcript to a file.
     const output_path_readable = path.join(
         process.cwd(),
         `output/recording-${msg.data.recording.id}/readable.txt`,
@@ -67,12 +83,12 @@ export async function bot_async_transcription(args: { msg: TranscriptArtifactEve
         fs.mkdirSync(path.dirname(output_path_readable), { recursive: true });
         fs.writeFileSync(output_path_readable, "", { flag: "w+" });
     }
-    fs.writeFileSync(output_path_readable, readable_transcript_parts.map((t) => t ? `${t.speaker}: ${t.paragraph}` : "").join("\n"), { flag: "w+" });
+    fs.writeFileSync(output_path_readable, readable_hybrid_transcript_parts.map((t) => t ? `${t.speaker}: ${t.paragraph}` : "").join("\n"), { flag: "w+" });
 
     // Return the transcript parts and readable transcript.
     return {
-        transcript_parts,
-        readable_transcript_parts,
+        transcript_parts: hybrid_transcript_parts,
+        readable_transcript_parts: readable_hybrid_transcript_parts,
     };
 }
 
@@ -102,4 +118,16 @@ async function retrieve_transcript_parts(args: { download_url: string }) {
     if (!response.ok) throw new Error(await response.text());
 
     return TranscriptPartSchema.array().parse(await response.json());
+}
+
+/**
+ * Retrieve the speaker timeline data from the participant events artifact's `download_url`.
+ */
+async function retrieve_speaker_timeline_parts(args: { download_url: string }) {
+    const { download_url } = z.object({ download_url: z.string() }).parse(args);
+
+    const response = await fetch(download_url);
+    if (!response.ok) throw new Error(await response.text());
+
+    return SpeakerTimelinePartSchema.array().parse(await response.json());
 }
