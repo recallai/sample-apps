@@ -39,7 +39,8 @@ server.on("request", async (req, res) => {
         console.log(`
 Incoming HTTP request: ${req.method} ${pathname} 
 search_params=${JSON.stringify(search_params)} 
-body=${JSON.stringify(body)}`);
+body=${JSON.stringify(body)}
+        `);
 
         switch (pathname) {
             /** OAuth endpoints */
