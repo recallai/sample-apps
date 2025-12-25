@@ -1,5 +1,5 @@
-import { env } from "../config/env";
 import { CalendarSchema, type CalendarType } from "../../schemas/CalendarArtifactSchema";
+import { env } from "../config/env";
 
 /**
  * List calendars saved in Recall.
@@ -21,10 +21,10 @@ export async function calendars_list(args: Partial<CalendarType>): Promise<{ cal
     return {
         calendars: CalendarSchema
             .array()
-            .parse(data.results).map(v => ({
+            .parse(data.results).map((v) => ({
                 ...v,
                 status_changes: v.status_changes
-                    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
             })),
     };
 }

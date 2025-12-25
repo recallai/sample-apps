@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { z } from "zod";
 import { toast } from "sonner";
+import { z } from "zod";
 import { CalendarEventSchema } from "../../schemas/CalendarEventArtifactSchema";
 
 export function useCalendarEvents(props: {
@@ -11,7 +11,7 @@ export function useCalendarEvents(props: {
     const {
         calendarId,
         startTimeGte,
-        startTimeLte
+        startTimeLte,
     } = z.object({
         calendarId: z.string(),
         startTimeGte: z.string().nullish(),
@@ -27,9 +27,9 @@ export function useCalendarEvents(props: {
         const minute = date.getUTCMinutes();
         const second = date.getUTCSeconds();
         return `${year}-${month.toString().padStart(2, "0")}-${day.toString().padStart(2, "0")} ${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}:${second.toString().padStart(2, "0")}`;
-    }
+    };
 
-    const { data, isPending } = useQuery({
+    const { data: results, isPending } = useQuery({
         queryKey: ["calendar_events", calendarId, startTimeGte, startTimeLte],
         queryFn: async () => {
             try {
@@ -52,17 +52,24 @@ export function useCalendarEvents(props: {
                         next: z.string().nullable(),
                     })
                     .parse(await res.json());
-                return { calendar_events: data.calendar_events, next: data.next };
+                return { 
+                    calendar_events: data.calendar_events, 
+                    next: data.next, 
+                };
             } catch (error) {
                 console.error("Error fetching calendar events:", error);
-                toast.error(`Failed to fetch calendar events. See console for details.`);
+                toast.error("Failed to fetch calendar events. See console for details.");
                 return { calendar_events: [], next: null };
             }
         },
         enabled: !!calendarId,
     });
 
-    console.log("calendar_events", data?.calendar_events, isPending);
+    console.log("calendar_events", results?.calendar_events, isPending);
 
-    return { calendar_events: data?.calendar_events ?? [], next: data?.next ?? null, isPending };
+    return { 
+        calendarEvents: results?.calendar_events ?? [], 
+        next: results?.next ?? null,
+        isPending, 
+    };
 }

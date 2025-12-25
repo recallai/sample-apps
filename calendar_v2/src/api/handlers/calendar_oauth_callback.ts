@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { env } from "../config/env";
 import { CalendarSchema, type CalendarType } from "../../schemas/CalendarArtifactSchema";
 import { OAuthStateSchema } from "../../schemas/OAuthStateSchema";
+import { env } from "../config/env";
 import { calendars_list } from "./calendars_list";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -103,7 +103,7 @@ export async function calendar_oauth_callback(args: {
                 calendar: {
                     ...calendar,
                     platform_email: calendar.platform_email || calendar_config.platform_email,
-                }
+                },
             };
         }
     }

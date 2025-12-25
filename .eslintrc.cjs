@@ -53,6 +53,13 @@ module.exports = {
     },
     overrides: [
         {
+            // Declaration files - no filename naming convention enforced
+            files: ["**/*.d.ts"],
+            rules: {
+                "check-file/filename-naming-convention": "off",
+            },
+        },
+        {
             files: ["**/src/**/*Schema.ts"],
             rules: {
                 "@typescript-eslint/naming-convention": [
@@ -73,11 +80,52 @@ module.exports = {
             },
         },
         {
-            files: ["**/src/**/*.ts"],
-            excludedFiles: ["**/src/**/*Schema.ts"],
+            // Client-side .ts files (hooks, utils, etc.) - follow kebab-case convention
+            files: ["**/client/**/*.ts"],
+            excludedFiles: ["**/*.d.ts"],
             rules: {
                 "@typescript-eslint/naming-convention": [
                     "error",
+                    {
+                        "selector": "variable",
+                        "format": ["camelCase", "PascalCase", "UPPER_CASE"],
+                        "leadingUnderscore": "allow",
+                    },
+                    {
+                        "selector": "function",
+                        "format": ["camelCase", "PascalCase"],
+                    },
+                    {
+                        "selector": "parameter",
+                        "format": ["camelCase"],
+                        "leadingUnderscore": "allow",
+                    },
+                    {
+                        "selector": "typeLike",
+                        "format": ["PascalCase"],
+                    },
+                ],
+                "check-file/filename-naming-convention": [
+                    "error",
+                    { "**/*.ts": "KEBAB_CASE" },
+                    { "ignoreMiddleExtensions": true },
+                ],
+            },
+        },
+        {
+            files: ["**/src/**/*.ts"],
+            excludedFiles: ["**/src/**/*Schema.ts", "**/client/**/*.ts", "**/*.d.ts"],
+            rules: {
+                "@typescript-eslint/naming-convention": [
+                    "error",
+                    {
+                        "selector": "variable",
+                        "format": null,
+                        "filter": {
+                            "regex": "__",
+                            "match": true
+                        }
+                    },
                     {
                         "selector": "variable",
                         "format": ["snake_case", "UPPER_CASE"],

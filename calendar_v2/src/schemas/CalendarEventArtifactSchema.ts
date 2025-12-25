@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { CalendarSchema } from "./CalendarArtifactSchema";
 
 export const CalendarEventSchema = z.object({
     id: z.string(),

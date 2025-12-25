@@ -1,12 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
-import { z } from "zod";
 import { toast } from "sonner";
+import { z } from "zod";
 import { CalendarSchema } from "../../schemas/CalendarArtifactSchema";
 
 export function useCalendar(props: { email: string | null }) {
     const { email } = z.object({ email: z.string().nullable() }).parse(props);
 
-    const { data: calendars } = useQuery({
+    const { data: results, isPending } = useQuery({
         queryKey: ["calendars", email],
         queryFn: async () => {
             try {
@@ -21,19 +21,19 @@ export function useCalendar(props: { email: string | null }) {
                     .parse(await res.json());
 
                 if (data.calendars[0]?.platform_email) {
-                    const url = new URL(window.location.href);
-                    url.searchParams.set("platform_email", data.calendars[0].platform_email);
-                    window.history.pushState({}, "", url.toString());
+                    const newUrl = new URL(window.location.href);
+                    newUrl.searchParams.set("platform_email", data.calendars[0].platform_email);
+                    window.history.pushState({}, "", newUrl.toString());
                 }
 
-                return data.calendars;
+                return data;
             } catch (error) {
                 console.error("Error fetching calendars:", error);
-                toast.error(`Failed to fetch calendars. See console for details.`);
+                toast.error("Failed to fetch calendars. See console for details.");
             }
         },
         enabled: !!email,
     });
 
-    return { calendars };
+    return { calendars: results?.calendars ?? [], isPending };
 }

@@ -1,4 +1,3 @@
-import { useSearchParams } from "react-router-dom";
 import {
   Calendar as CalendarIcon,
   Clock,
@@ -7,12 +6,11 @@ import {
   Loader2,
 } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import type { CalendarType } from "../schemas/CalendarArtifactSchema";
+import type { CalendarEventType } from "../schemas/CalendarEventArtifactSchema";
 import { Button } from "./components/ui/Button";
-import { useCalendar } from "./hooks/use-calendar";
-import { useCalendarEvents } from "./hooks/use-calendar-events";
-import { useDeleteCalendar } from "./hooks/use-delete-calendar";
-import { CalendarType } from "../schemas/CalendarArtifactSchema";
-import { CalendarEventType } from "../schemas/CalendarEventArtifactSchema";
+import { Calendar } from "./components/ui/Calendar";
 import {
   Card,
   CardContent,
@@ -20,10 +18,6 @@ import {
   CardHeader,
   CardTitle,
 } from "./components/ui/Card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/Tabs";
-import { Calendar } from "./components/ui/Calendar";
-import { ScrollArea } from "./components/ui/ScrollArea";
-import { Badge } from "./components/ui/Badge";
 import {
   Dialog,
   DialogContent,
@@ -32,6 +26,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "./components/ui/Dialog";
+import { ScrollArea } from "./components/ui/ScrollArea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/Tabs";
+import { useCalendar } from "./hooks/use-calendar";
+import { useCalendarEvents } from "./hooks/use-calendar-events";
+import { useDeleteCalendar } from "./hooks/use-delete-calendar";
 
 function App() {
   const [searchParams] = useSearchParams();
@@ -93,10 +92,10 @@ function ConnectCalendar() {
 
 function CalendarList({ calendars }: { calendars: CalendarType[] }) {
   const googleCalendars = calendars.filter(
-    (c) => c.platform === "google_calendar"
+    (c) => c.platform === "google_calendar",
   );
   const outlookCalendars = calendars.filter(
-    (c) => c.platform === "microsoft_outlook"
+    (c) => c.platform === "microsoft_outlook",
   );
 
   const platforms = [
@@ -155,7 +154,7 @@ function CalendarDetails({ calendar }: { calendar: CalendarType }) {
       0,
       0,
       0,
-      0
+      0,
     ).toISOString();
   }, []);
 
@@ -187,15 +186,10 @@ function CalendarDetails({ calendar }: { calendar: CalendarType }) {
           ...Object.fromEntries(searchParams.entries()),
           start_time__gte: startDate.toISOString(),
           start_time__lte: endDate.toISOString(),
-        })
+        }),
       );
     },
-    [searchParams, setSearchParams]
-  );
-
-  const lastStatus = useMemo(
-    () => calendar.status_changes.at(-1),
-    [calendar.status_changes]
+    [searchParams, setSearchParams],
   );
 
   return (
@@ -337,7 +331,7 @@ function CalendarEventsList({
   const latestStatus = calendar.status_changes.at(0)?.status;
   const isConnecting = latestStatus === "connecting";
 
-  const { calendar_events, isPending } = useCalendarEvents({
+  const { calendarEvents, isPending } = useCalendarEvents({
     calendarId: calendar.id,
     startTimeGte: startTimeGte,
     startTimeLte: startTimeLte,
@@ -370,8 +364,8 @@ function CalendarEventsList({
         <CardDescription>
           {isConnecting
             ? "Syncing calendar..."
-            : `${calendar_events.length} event${
-                calendar_events.length !== 1 ? "s" : ""
+            : `${calendarEvents.length} event${
+                calendarEvents.length !== 1 ? "s" : ""
               } scheduled`}
         </CardDescription>
       </CardHeader>
@@ -394,14 +388,14 @@ function CalendarEventsList({
                 Loading events...
               </p>
             </div>
-          ) : calendar_events.length === 0 ? (
+          ) : calendarEvents.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center py-8">
               <CalendarIcon className="size-8 text-gray-300 mb-2" />
               <p className="text-sm text-gray-500">No events for this day</p>
             </div>
           ) : (
             <div className="space-y-3 pr-4">
-              {calendar_events.map((event) => (
+              {calendarEvents.map((event) => (
                 <div
                   key={event.id}
                   className="flex flex-col gap-1.5 p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"

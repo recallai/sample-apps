@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { env } from "../config/env";
 import { OAuthStateSchema, type OAuthStateType } from "../../schemas/OAuthStateSchema";
+import { env } from "../config/env";
 
 /**
  * Generate an OAuth URL for the user to authorize their calendar.

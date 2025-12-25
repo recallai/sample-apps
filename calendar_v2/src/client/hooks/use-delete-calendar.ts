@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { z } from "zod";
 import { toast } from "sonner";
+import { z } from "zod";
 
 export function useDeleteCalendar(props: { calendarId: string | null }) {
     const { calendarId } = z.object({ calendarId: z.string().nullable() }).parse(props);
@@ -21,11 +21,11 @@ export function useDeleteCalendar(props: { calendarId: string | null }) {
         },
         onSuccess: () => {
             toast.success("Calendar disconnected successfully");
-            queryClient.invalidateQueries({ queryKey: ["calendars"] });
+            void queryClient.invalidateQueries({ queryKey: ["calendars"] });
         },
         onError: (error) => {
             console.error("Error deleting calendar:", error);
-            toast.error(`Failed to disconnect calendar. See console for details.`);
+            toast.error("Failed to disconnect calendar. See console for details.");
         },
     });
 

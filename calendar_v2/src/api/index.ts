@@ -1,17 +1,17 @@
 import http from "http";
 import dotenv from "dotenv";
+import { env } from "./config/env";
+import { calendar_events_list } from "./handlers/calendar_events_list";
 import { calendar_oauth } from "./handlers/calendar_oauth";
 import { calendar_oauth_callback } from "./handlers/calendar_oauth_callback";
 import { calendars_delete } from "./handlers/calendars_delete";
 import { calendars_list } from "./handlers/calendars_list";
 import { recall_webhook } from "./handlers/recall_webhook";
-import { calendar_events_list } from "./handlers/calendar_events_list";
-import { env } from "./config/env";
 
 dotenv.config();
 
 const server = http.createServer();
-const client_domain = `http://localhost:5173`;
+const client_domain = "http://localhost:5173";
 
 /**
  * HTTP server for handling HTTP requests from Recall.ai
@@ -19,8 +19,8 @@ const client_domain = `http://localhost:5173`;
 server.on("request", async (req, res) => {
     try {
         // Parse the request
-        const url = new URL(`https://${req.headers.host?.replace("https://", "")}${req?.url}`);
-        const pathname = url.pathname.at(-1) === '/' ? url.pathname.slice(0, -1) : url.pathname;
+        const url = new URL(`https://${req.headers.host?.replace("https://", "")}${req.url}`);
+        const pathname = url.pathname.at(-1) === "/" ? url.pathname.slice(0, -1) : url.pathname;
         const search_params = Object.fromEntries(url.searchParams.entries()) as any;
         let body: any | null = null;
         try {

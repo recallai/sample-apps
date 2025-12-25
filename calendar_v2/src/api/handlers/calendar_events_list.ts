@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { env } from "../config/env";
 import { CalendarEventSchema, type CalendarEventType } from "../../schemas/CalendarEventArtifactSchema";
+import { env } from "../config/env";
 
 export async function calendar_events_list(args: {
     calendar_id: string,

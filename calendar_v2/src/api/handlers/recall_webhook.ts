@@ -1,9 +1,9 @@
 import { z } from "zod";
+import { CalendarSchema, type CalendarType } from "../../schemas/CalendarArtifactSchema";
+import { CalendarEventSchema, type CalendarEventType } from "../../schemas/CalendarEventArtifactSchema";
 import { CalendarSyncEventsEventSchema } from "../../schemas/CalendarSyncEventsEventSchema";
 import { CalendarUpdateEventSchema } from "../../schemas/CalendarUpdateEventSchema";
-import { CalendarEventSchema, CalendarEventType } from "../../schemas/CalendarEventArtifactSchema";
 import { env } from "../config/env";
-import { CalendarSchema, CalendarType } from "../../schemas/CalendarArtifactSchema";
 
 export async function recall_webhook(payload: any): Promise<void> {
     const { event, data } = z.union([
@@ -111,7 +111,7 @@ async function schedule_bot_for_calendar_event(args: {
             bot_config: {
                 bot_name: `${calendar.platform_email}'s notetaker'`,
                 // meeting_url and start_time is autoamtically updated by Recall when we call the schedule bot for calendar event endpoint.
-            }
+            },
         }),
     });
     if (!response.ok) throw new Error(await response.text());
@@ -173,7 +173,7 @@ async function fetch_with_retry(
         if (response.status === 429 && retry_after && retries < max_retries) {
             const delay_seconds = parseInt(retry_after, 10);
             console.log(`Rate limited. Retrying after ${delay_seconds}s...`);
-            await new Promise(resolve => setTimeout(resolve, delay_seconds * 1000));
+            await new Promise((resolve) => setTimeout(resolve, delay_seconds * 1000));
             retries++;
             continue;
         }

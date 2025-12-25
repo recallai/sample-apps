@@ -10,11 +10,11 @@ import {
   Video,
   X,
 } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { cn } from "../../utils/cn";
 
-const SidebarItems = [
+const SidebarItems = [ 
   { icon: Home, label: "Dashboard", href: "#sample-link" },
   { icon: Calendar, label: "Calendars", href: "/dashboard/calendars" },
   { icon: Video, label: "Meetings", href: "#sample-link-meetings" },
@@ -75,7 +75,7 @@ function DashboardWrapper({ children }: { children: React.ReactNode }) {
       <aside
         className={cn(
           "fixed top-14 left-0 bottom-0 w-56 bg-white border-r z-40 transition-transform md:translate-x-0",
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          sidebarOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
         <div className="p-3 space-y-1">
@@ -89,7 +89,7 @@ function DashboardWrapper({ children }: { children: React.ReactNode }) {
                   "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
                   isActive
                     ? "bg-blue-50 text-blue-700"
-                    : "text-gray-700 hover:bg-gray-100"
+                    : "text-gray-700 hover:bg-gray-100",
                 )}
                 onClick={() => setSidebarOpen(false)}
               >
