@@ -22,57 +22,76 @@ export function convert_to_hybrid_diarized_transcript_parts(
     }).parse(args);
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    const ParticipantMappingSchema = z.object({ id: z.number(), name: z.string() });
-    const participant_map = new Map<string, string>();
+    const ParticipantMappingSchema = z.object({ id: z.number().nullable(), name: z.string().nullable() });
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    type ParticipantMappingType = z.infer<typeof ParticipantMappingSchema>;
 
-    // Create a mapping of participant names to their IDs.
-    for (let i = 0; i < speaker_timeline_data.length; i++) {
+    // Collect all anonymous speakers per participant across all their timeline segments.
+    // This ensures we know the total number of unique speakers for each participant before making mapping decisions.
+    const participant_to_anon = new Map<string, Set<string>>();
+    for (const speaker_change_event of speaker_timeline_data) {
+        if (!speaker_change_event.participant.id || !speaker_change_event.participant.name) {
+            continue;
+        }
+
         // Get the bounds of the current speaker event
-        const speaker_event = speaker_timeline_data[i];
-        const speaker_event_start = speaker_event.start_timestamp.relative;
-        const speaker_event_end = speaker_event.end_timestamp?.relative ?? Number.POSITIVE_INFINITY;
+        const speaker_event_start = speaker_change_event.start_timestamp.relative;
+        const speaker_event_end = speaker_change_event.end_timestamp?.relative ?? Number.POSITIVE_INFINITY;
 
         // Get the transcript segments that are within the current speaker event
         const transcript_segments = transcript_data.filter((transcript) => {
-            const start = transcript.words[0].start_timestamp.relative;
+            const start = transcript.words[0]?.start_timestamp?.relative ?? Number.NEGATIVE_INFINITY;
             const end = transcript.words[transcript.words.length - 1]?.end_timestamp?.relative ?? Number.POSITIVE_INFINITY;
             return speaker_event_start <= start && speaker_event_end > end;
         });
 
-        // If there are no transcript segments, skip the current speaker event
-        if (transcript_segments.length === 0) continue;
+        // Add the participant to the mapping if it's not already present
+        const participant_key = JSON.stringify(ParticipantMappingSchema.parse({
+            id: speaker_change_event.participant.id ?? null,
+            name: speaker_change_event.participant.name ?? null,
+        }));
+        if (!participant_to_anon.has(participant_key)) {
+            participant_to_anon.set(participant_key, new Set());
+        }
 
-        // For each transcript segment, see if the speaker is the same for each
-        const speaker_names = new Set(transcript_segments.map((transcript) => transcript.participant?.name ?? ""));
-        if (speaker_names.size === 1) {
-            console.log(`Found ${speaker_names.size} speaker names for event ${i}: ${JSON.stringify(Array.from(speaker_names.values()))}`);
-            const anon_name = speaker_names.values().next().value;
-            const participant_id = speaker_event.participant.id ?? undefined;
-            const participant_name = speaker_event.participant.name ?? undefined;
-            if (anon_name && participant_id && participant_name) {
-                const participant = ParticipantMappingSchema.parse({ name: participant_name, id: participant_id });
-                participant_map.set(anon_name, JSON.stringify(participant));
-            } else {
-                console.error(`No speaker name or id found for event ${JSON.stringify({ anon_name, participant_id, participant_name, participant: speaker_event.participant })}`);
+        // Add all anonymous speakers from this segment
+        for (const segment of transcript_segments) {
+            const participants = participant_to_anon.get(participant_key);
+            if (participants && segment.participant.name) {
+                participants.add(segment.participant.name);
             }
         }
     }
 
-    const participant_mapping = Object.fromEntries(
-        Array.from(participant_map.entries())
-            .map(
-                ([anon_name, participant]) => [
-                    anon_name,
-                    ParticipantMappingSchema.parse(JSON.parse(participant)),
-                ],
-            ),
-    );
+    // Derive mappings: only create mapping for participants with exactly 1 speaker across ALL their segments.
+    // If a participant ever had multiple speakers, none of them should be mapped.
+    const anon_to_participant = new Map<string, ParticipantMappingType>();
+    for (const [participant_raw, anon] of participant_to_anon.entries()) {
+        const result = ParticipantMappingSchema.safeParse(JSON.parse(participant_raw));
+        if (!result.success) {
+            console.log(`Failed to parse participant: ${participant_raw} - ${result.error.message}`);
+            continue;
+        }
+        const { data: participant } = result;
 
-    console.log(`Participant mapping: ${JSON.stringify(participant_mapping)}`);
+        if (anon.size === 1) {
+            const anon_key = anon.values().next().value!;
+            anon_to_participant.set(anon_key, participant);
+        } else if (anon.size > 1) {
+            console.log(`Participant "${participant.name}" (id: ${participant.id}) has ${anon.size} speakers: ${JSON.stringify(Array.from(anon))} - not mapping`);
+        } else {
+            console.log(`Expected participant to have at least 1 speaker, but has ${anon.size}`);
+        }
+    }
 
+    console.log(`Participant mapping: ${JSON.stringify(Object.fromEntries(anon_to_participant))}`);
+
+    // Replace the participant data with the mapped participant data.
     const hybrid_transcript_parts = transcript_data.map((transcript) => {
-        const participant_data = participant_mapping[transcript.participant?.name ?? ""];
-        if (!participant_data) return transcript;
+        const participant_data = anon_to_participant.get(transcript.participant.name ?? "");
+        if (!participant_data) {
+            return transcript;
+        }
         return {
             ...transcript,
             participant: {

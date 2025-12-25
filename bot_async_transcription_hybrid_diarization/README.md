@@ -46,7 +46,7 @@ Copy the `.env.sample` file and rename it to `.env`:
 cp .env.sample .env
 ```
 
-Fill out the variables in the `.env` file with your `RECALL_REGION` and `RECALL_API_KEY`.
+Fill out the variables in the `.env` file, including the ngrok domain from step 1 (omit the `https://` protocol).
 
 ### 3. Add your webhook URL to the Recall dashboard
 
