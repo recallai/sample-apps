@@ -148,6 +148,41 @@ describe("convert_to_hybrid_diarized_transcript_parts", () => {
             expect(result[2].participant.name).toBe("Speaker B");
             expect(result[3].participant.name).toBe("Speaker A");
         });
+
+        it("should NOT map when different speakers use same device in separate timeline segments", () => {
+            // Scenario: Two people call in from the same device (John) at different times
+            // Speaker A speaks during John's first segment
+            // Speaker B speaks during John's second segment (different person, same device)
+            // Mary has only Speaker C, so she should be mapped
+            const transcript_parts: TranscriptPartType[] = [
+                // John segment 1: Speaker A
+                create_transcript({ speakerName: "Speaker A", startTime: 1, endTime: 5 }),
+                // Mary segment: Speaker C
+                create_transcript({ speakerName: "Speaker C", startTime: 11, endTime: 14 }),
+                // John segment 2: Speaker B (different person on same device)
+                create_transcript({ speakerName: "Speaker B", startTime: 16, endTime: 20 }),
+            ];
+            const speaker_timeline_data: SpeakerTimelinePartType[] = [
+                create_speaker_event({ participantId: 100, participantName: "John", startTime: 0, endTime: 10 }),
+                create_speaker_event({ participantId: 200, participantName: "Mary", startTime: 10, endTime: 15 }),
+                create_speaker_event({ participantId: 100, participantName: "John", startTime: 15, endTime: 25 }),
+            ];
+
+            const result = convert_to_hybrid_diarized_transcript_parts({
+                transcript_parts,
+                speaker_timeline_data,
+            });
+
+            // John had both A and B across segments - stays anonymous
+            expect(result[0].participant.name).toBe("Speaker A");
+            expect(result[0].participant.id).toBeNull();
+            // Mary had only C - gets mapped
+            expect(result[1].participant.name).toBe("Mary");
+            expect(result[1].participant.id).toBe(200);
+            // John's second segment also stays anonymous
+            expect(result[2].participant.name).toBe("Speaker B");
+            expect(result[2].participant.id).toBeNull();
+        });
     });
 
     describe("Mixed Participants - Some Mapped, Some Not", () => {
