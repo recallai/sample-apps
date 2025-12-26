@@ -31,6 +31,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/Tabs";
 import { useCalendar } from "./hooks/use-calendar";
 import { useCalendarEvents } from "./hooks/use-calendar-events";
 import { useDeleteCalendar } from "./hooks/use-delete-calendar";
+import { useToggleRecording } from "./hooks/use-toggle-recording";
 
 function App() {
   const [searchParams] = useSearchParams();
@@ -92,10 +93,10 @@ function ConnectCalendar() {
 
 function CalendarList({ calendars }: { calendars: CalendarType[] }) {
   const googleCalendars = calendars.filter(
-    (c) => c.platform === "google_calendar",
+    (c) => c.platform === "google_calendar"
   );
   const outlookCalendars = calendars.filter(
-    (c) => c.platform === "microsoft_outlook",
+    (c) => c.platform === "microsoft_outlook"
   );
 
   const platforms = [
@@ -154,7 +155,7 @@ function CalendarDetails({ calendar }: { calendar: CalendarType }) {
       0,
       0,
       0,
-      0,
+      0
     ).toISOString();
   }, []);
 
@@ -186,10 +187,10 @@ function CalendarDetails({ calendar }: { calendar: CalendarType }) {
           ...Object.fromEntries(searchParams.entries()),
           start_time__gte: startDate.toISOString(),
           start_time__lte: endDate.toISOString(),
-        }),
+        })
       );
     },
-    [searchParams, setSearchParams],
+    [searchParams, setSearchParams]
   );
 
   return (
@@ -396,46 +397,120 @@ function CalendarEventsList({
           ) : (
             <div className="space-y-3 pr-4">
               {calendarEvents.map((event) => (
-                <div
+                <CalendarEventCard
                   key={event.id}
-                  className="flex flex-col gap-1.5 p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <h4 className="text-sm font-medium flex-1">
-                      {getEventTitle(event)}
-                    </h4>
-                    {/* Show recording badge if scheduled for a future time */}
-                    {event.bots.some((bot) => new Date(bot.start_time) > new Date()) && (
-                        <span className="shrink-0 text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full flex items-center gap-1">
-                          <span className="size-2 bg-red-500 rounded-full animate-pulse" />
-                          Will record
-                        </span>
-                      )}
-                  </div>
-                  <div className="flex flex-col gap-1 text-xs text-gray-500">
-                    <span className="flex items-center gap-1">
-                      <Clock className="size-3" />
-                      {formatTime(event.start_time)} -{" "}
-                      {formatTime(event.end_time)}
-                    </span>
-                    {event.meeting_url && (
-                      <a
-                        href={event.meeting_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline truncate"
-                      >
-                        <Video className="size-3 shrink-0" />
-                        <span className="truncate">{event.meeting_url}</span>
-                      </a>
-                    )}
-                  </div>
-                </div>
+                  event={event}
+                  calendarId={calendar.id}
+                  formatTime={formatTime}
+                  getEventTitle={getEventTitle}
+                />
               ))}
             </div>
           )}
         </ScrollArea>
       </CardContent>
     </Card>
+  );
+}
+
+function CalendarEventCard({
+  event,
+  calendarId,
+  formatTime,
+  getEventTitle,
+}: {
+  event: CalendarEventType;
+  calendarId: string;
+  formatTime: (dateString: string) => string;
+  getEventTitle: (event: CalendarEventType) => string;
+}) {
+  const { scheduleRecording, unscheduleRecording, isPending } =
+    useToggleRecording({
+      calendarId,
+      calendarEventId: event.id,
+    });
+
+  const isInFuture = new Date(event.start_time) > new Date();
+  const hasMeetingUrl = !!event.meeting_url;
+  const canToggleRecording = isInFuture && hasMeetingUrl;
+
+  const hasScheduledRecording = event.bots.some(
+    (bot) => new Date(bot.start_time) > new Date()
+  );
+
+  const handleToggle = () => {
+    if (isPending) return;
+    if (hasScheduledRecording) {
+      unscheduleRecording();
+    } else {
+      scheduleRecording();
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-1.5 p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
+      <div className="flex items-start justify-between gap-2">
+        <h4 className="text-sm font-medium flex-1">{getEventTitle(event)}</h4>
+
+        {/* Recording toggle switch */}
+        {canToggleRecording ? (
+          <button
+            onClick={handleToggle}
+            disabled={isPending}
+            className="shrink-0 flex items-center gap-2 group"
+            title={
+              hasScheduledRecording ? "Turn off recording" : "Turn on recording"
+            }
+          >
+            <span className="text-xs text-gray-500 group-hover:text-gray-700">
+              {"Will record"}
+            </span>
+            <span className="min-w-9 min-h-5 flex items-center justify-center">
+              {isPending ? (
+                <Loader2 className="size-4 animate-spin text-gray-400" />
+              ) : (
+                <div
+                  className={`relative w-9 h-5 rounded-full transition-colors ${
+                    hasScheduledRecording ? "bg-red-500" : "bg-gray-300"
+                  }`}
+                >
+                  <div
+                    className={`absolute top-0.5 size-4 bg-white rounded-full shadow transition-transform ${
+                      hasScheduledRecording
+                        ? "translate-x-4"
+                        : "translate-x-0.5"
+                    }`}
+                  />
+                </div>
+              )}
+            </span>
+          </button>
+        ) : !hasMeetingUrl ? (
+          <span className="shrink-0 text-xs text-gray-400">
+            No meeting link
+          </span>
+        ) : !isInFuture ? (
+          <span className="shrink-0 text-xs text-gray-400">Past</span>
+        ) : null}
+      </div>
+
+      <div className="flex flex-col gap-1 text-xs text-gray-500">
+        <span className="flex items-center gap-1">
+          <Clock className="size-3" />
+          {formatTime(event.start_time)} - {formatTime(event.end_time)}
+        </span>
+        {event.meeting_url && (
+          <a
+            href={event.meeting_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline truncate"
+          >
+            <Video className="size-3 shrink-0" />
+            <span className="truncate">{event.meeting_url}</span>
+          </a>
+        )}
+      </div>
+    </div>
   );
 }

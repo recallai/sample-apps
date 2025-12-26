@@ -6,7 +6,7 @@ import { calendar_oauth } from "./handlers/calendar_oauth";
 import { calendar_oauth_callback } from "./handlers/calendar_oauth_callback";
 import { calendars_delete } from "./handlers/calendars_delete";
 import { calendars_list } from "./handlers/calendars_list";
-import { recall_webhook } from "./handlers/recall_webhook";
+import { calendar_event_retrieve, calendar_retrieve, recall_webhook, schedule_bot_for_calendar_event, unschedule_bot_for_calendar_event } from "./handlers/recall_webhook";
 
 dotenv.config();
 
@@ -110,6 +110,7 @@ body=${JSON.stringify(body)}
             }
             case "/api/calendar/events": {
                 switch (req.method?.toUpperCase()) {
+                    // List the calendar events for a given calendar.
                     case "GET": {
                         if (!search_params.calendar_id) throw new Error("calendar_id is required");
 
@@ -118,6 +119,47 @@ body=${JSON.stringify(body)}
 
                         res.writeHead(200, { "Content-Type": "application/json" });
                         res.end(JSON.stringify(results));
+                        return;
+                    }
+                    default: {
+                        throw new Error(`Method not allowed: ${req.method}`);
+                    }
+                }
+            }
+            case "/api/calendar/events/bot": {
+                switch (req.method?.toUpperCase()) {
+                    // Scheudle a bot for a given calendar event.
+                    case "POST": {
+                        if (!search_params.calendar_event_id) throw new Error("calendar_event_id is required");
+
+                        const calendar_event = await calendar_event_retrieve({ calendar_event_id: search_params.calendar_event_id });
+                        if (!calendar_event) throw new Error("Calendar event not found");
+
+                        const calendar = await calendar_retrieve({ calendar_id: calendar_event.calendar_id });
+                        if (!calendar) throw new Error("Calendar not found");
+
+                        const results = await schedule_bot_for_calendar_event({ calendar, calendar_event });
+                        console.log(`Scheduled Bot for Calendar Event: ${JSON.stringify(results)}`);
+
+                        res.writeHead(200, { "Content-Type": "application/json" });
+                        res.end(JSON.stringify({ message: "Bot scheduled" }));
+                        return;
+                    }
+                    // Unschedule a bot for a given calendar event.
+                    case "DELETE": {
+                        if (!search_params.calendar_event_id) throw new Error("calendar_event_id is required");
+
+                        const calendar_event = await calendar_event_retrieve({ calendar_event_id: search_params.calendar_event_id });
+                        if (!calendar_event) throw new Error("Calendar event not found");
+
+                        const calendar = await calendar_retrieve({ calendar_id: calendar_event.calendar_id });
+                        if (!calendar) throw new Error("Calendar not found");
+
+                        const results = await unschedule_bot_for_calendar_event(search_params);
+                        console.log(`Unscheduled Bot for Calendar Event: ${JSON.stringify(results)}`);
+
+                        res.writeHead(200, { "Content-Type": "application/json" });
+                        res.end(JSON.stringify({ message: "Bot unscheduled" }));
                         return;
                     }
                     default: {

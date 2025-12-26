@@ -52,7 +52,7 @@ export async function recall_webhook(payload: any): Promise<void> {
 /**
  * Retrieve a calendar from Recall.
  */
-async function calendar_retrieve(args: { calendar_id: string, }) {
+export async function calendar_retrieve(args: { calendar_id: string, }) {
     const { calendar_id } = z.object({
         calendar_id: z.string(),
     }).parse(args);
@@ -72,7 +72,7 @@ async function calendar_retrieve(args: { calendar_id: string, }) {
 /**
  * List calendar events for a given calendar from Recall.
  */
-async function calendar_events_list(args: { calendar_id: string, next: string | null }) {
+export async function calendar_events_list(args: { calendar_id: string, next: string | null }) {
     const { calendar_id, next } = z.object({
         calendar_id: z.string(),
         next: z.string().nullable(),
@@ -98,10 +98,53 @@ async function calendar_events_list(args: { calendar_id: string, next: string | 
 }
 
 /**
+ * Retrieve a calendar event from Recall.
+ */
+export async function calendar_event_retrieve(args: {
+    calendar_event_id: string,
+}) {
+    const { calendar_event_id } = z.object({
+        calendar_event_id: z.string(),
+    }).parse(args);
+    
+    const response = await fetch_with_retry(`https://${env.RECALL_REGION}.recall.ai/api/v2/calendar-events/${calendar_event_id}`, {
+        method: "GET",
+        headers: {
+            "Authorization": `${env.RECALL_API_KEY}`,
+            "Content-Type": "application/json",
+        },
+    });
+    if (!response.ok) throw new Error(await response.json());
+
+    return CalendarEventSchema.parse(await response.json());
+}
+
+/**
+ * Unschedule a bot for a given calendar event.
+ */
+export async function unschedule_bot_for_calendar_event(args: {
+    calendar_event_id: string,
+}) {
+    const { calendar_event_id } = z.object({
+        calendar_event_id: z.string(),
+    }).parse(args);
+
+    const response = await fetch_with_retry(`https://${env.RECALL_REGION}.recall.ai/api/v2/calendar-events/${calendar_event_id}/bot`, {
+        method: "DELETE",
+        headers: {
+            "Authorization": `${env.RECALL_API_KEY}`,
+            "Content-Type": "application/json",
+        },
+    });
+    if (!response.ok) throw new Error(await response.text());
+    return CalendarEventSchema.parse(await response.json());
+}
+
+/**
  * Schedule a bot for a given calendar event.
  * It will show up in the bot list as `${calendar.platform_email}'s notetaker'`.
  */
-async function schedule_bot_for_calendar_event(args: {
+export async function schedule_bot_for_calendar_event(args: {
     calendar: CalendarType,
     calendar_event: CalendarEventType,
 }) {
