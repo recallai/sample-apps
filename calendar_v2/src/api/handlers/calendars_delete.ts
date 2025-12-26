@@ -10,7 +10,10 @@ export async function calendars_delete(args: { calendar_id: string }): Promise<v
     const url = new URL(`https://${env.RECALL_REGION}.recall.ai/api/v2/calendars/${calendar_id}/`);
     const response = await fetch(url.toString(), {
         method: "DELETE",
-        headers: { "Authorization": `${env.RECALL_API_KEY}` },
+        headers: { 
+            "Authorization": `${env.RECALL_API_KEY}`,
+            "Content-Type": "application/json",
+        },
     });
     if (!response.ok) throw new Error(await response.text());
 }

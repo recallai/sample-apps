@@ -404,23 +404,30 @@ function CalendarEventsList({
                     <h4 className="text-sm font-medium flex-1">
                       {getEventTitle(event)}
                     </h4>
-                    {event.bots.length > 0 && (
-                      <span className="shrink-0 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
-                        Bot scheduled
-                      </span>
-                    )}
+                    {/* Show recording badge if scheduled for a future time */}
+                    {event.bots.some((bot) => new Date(bot.start_time) > new Date()) && (
+                        <span className="shrink-0 text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full flex items-center gap-1">
+                          <span className="size-2 bg-red-500 rounded-full animate-pulse" />
+                          Will record
+                        </span>
+                      )}
                   </div>
-                  <div className="flex items-center gap-3 text-xs text-gray-500">
+                  <div className="flex flex-col gap-1 text-xs text-gray-500">
                     <span className="flex items-center gap-1">
                       <Clock className="size-3" />
                       {formatTime(event.start_time)} -{" "}
                       {formatTime(event.end_time)}
                     </span>
                     {event.meeting_url && (
-                      <span className="flex items-center gap-1">
-                        <Video className="size-3" />
-                        Has meeting link
-                      </span>
+                      <a
+                        href={event.meeting_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline truncate"
+                      >
+                        <Video className="size-3 shrink-0" />
+                        <span className="truncate">{event.meeting_url}</span>
+                      </a>
                     )}
                   </div>
                 </div>

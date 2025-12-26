@@ -23,7 +23,10 @@ export async function calendar_events_list(args: {
 
     const response = await fetch(url.toString(), {
         method: "GET",
-        headers: { "Authorization": `${env.RECALL_API_KEY}` },
+        headers: {
+             "Authorization": `${env.RECALL_API_KEY}`,
+             "Content-Type": "application/json",
+        },
     });
     if (!response.ok) throw new Error(await response.text());
 

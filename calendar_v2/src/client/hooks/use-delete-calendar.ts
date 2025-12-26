@@ -13,7 +13,9 @@ export function useDeleteCalendar(props: { calendarId: string | null }) {
 
             const res = await fetch(url.toString(), {
                 method: "DELETE",
-                headers: { "Content-Type": "application/json" },
+                headers: { 
+                    "Content-Type": "application/json",
+                },
             });
             if (!res.ok) throw new Error(await res.text());
 

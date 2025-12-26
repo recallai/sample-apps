@@ -70,8 +70,8 @@ body=${JSON.stringify(body)}
             case "/api/recall/webhook": {
                 if (req.method?.toUpperCase() !== "POST") throw new Error(`Method not allowed: ${req.method}`);
 
-                await recall_webhook(body);
                 console.log(`Recall webhook received: ${JSON.stringify(body)}`);
+                await recall_webhook(body);
 
                 res.writeHead(200, { "Content-Type": "application/json" });
                 res.end(JSON.stringify({ message: "Recall webhook received" }));

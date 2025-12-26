@@ -140,7 +140,10 @@ async function retrieve_google_calendar_oauth_tokens(args: {
 
     // Get the user's email from the OAuth tokens.
     const user_response = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
-        headers: { "Authorization": `Bearer ${oauth_tokens.access_token}` },
+        headers: { 
+            "Authorization": `Bearer ${oauth_tokens.access_token}`,
+            "Content-Type": "application/json",
+        },
     });
     if (!user_response.ok) throw new Error(await user_response.text());
 
@@ -180,7 +183,10 @@ async function retrieve_outlook_calendar_oauth_tokens(args: {
 
     // Get the user's email from the OIDC userinfo endpoint (uses the 'email' scope).
     const userinfo_response = await fetch("https://graph.microsoft.com/oidc/userinfo", {
-        headers: { "Authorization": `Bearer ${oauth_tokens.access_token}` },
+        headers: {
+            "Authorization": `Bearer ${oauth_tokens.access_token}`,
+            "Content-Type": "application/json",
+        },
     });
     if (!userinfo_response.ok) throw new Error(await userinfo_response.text());
 
