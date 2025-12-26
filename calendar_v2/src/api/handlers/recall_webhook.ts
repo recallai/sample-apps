@@ -23,7 +23,12 @@ export async function recall_webhook(payload: any): Promise<void> {
         case "calendar.sync_events": {
             let next: string | null = null;
             do {
-                const { results, next: new_next } = await calendar_events_list({ calendar_id: data.calendar_id, next });
+
+                const { results, next: new_next } = await calendar_events_list({
+                    updated_at__gte: data.last_updated_ts,
+                    calendar_id: data.calendar_id,
+                    next,
+                });
                 console.log(`Received ${results.length} calendar events.`);
 
                 for (const calendar_event of results) {
@@ -72,8 +77,9 @@ export async function calendar_retrieve(args: { calendar_id: string, }) {
 /**
  * List calendar events for a given calendar from Recall.
  */
-export async function calendar_events_list(args: { calendar_id: string, next: string | null }) {
-    const { calendar_id, next } = z.object({
+export async function calendar_events_list(args: { updated_at__gte?: string | null, calendar_id: string, next: string | null }) {
+    const { updated_at__gte, calendar_id, next } = z.object({
+        updated_at__gte: z.string().nullish(),
         calendar_id: z.string(),
         next: z.string().nullable(),
     }).parse(args);
@@ -81,6 +87,7 @@ export async function calendar_events_list(args: { calendar_id: string, next: st
     const url = new URL(`https://${env.RECALL_REGION}.recall.ai/api/v2/calendar-events/`);
     url.searchParams.set("calendar_id", calendar_id);
     if (next) url.searchParams.set("next", next);
+    if (updated_at__gte) url.searchParams.set("updated_at__gte", updated_at__gte);
 
     const response = await fetch_with_retry(url.toString(), {
         method: "GET",
@@ -106,7 +113,7 @@ export async function calendar_event_retrieve(args: {
     const { calendar_event_id } = z.object({
         calendar_event_id: z.string(),
     }).parse(args);
-    
+
     const response = await fetch_with_retry(`https://${env.RECALL_REGION}.recall.ai/api/v2/calendar-events/${calendar_event_id}`, {
         method: "GET",
         headers: {
