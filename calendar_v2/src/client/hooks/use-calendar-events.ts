@@ -31,6 +31,8 @@ export function useCalendarEvents(props: {
 
     const { data: results, isPending } = useQuery({
         queryKey: ["calendar_events", calendarId, startTimeGte, startTimeLte],
+        staleTime: 0,
+        gcTime: 0,
         queryFn: async () => {
             try {
                 if (!calendarId) {
@@ -52,9 +54,9 @@ export function useCalendarEvents(props: {
                         next: z.string().nullable(),
                     })
                     .parse(await res.json());
-                return { 
-                    calendar_events: data.calendar_events, 
-                    next: data.next, 
+                return {
+                    calendar_events: data.calendar_events,
+                    next: data.next,
                 };
             } catch (error) {
                 console.error("Error fetching calendar events:", error);
@@ -67,9 +69,9 @@ export function useCalendarEvents(props: {
 
     console.log("calendar_events", results?.calendar_events, isPending);
 
-    return { 
-        calendarEvents: results?.calendar_events ?? [], 
+    return {
+        calendarEvents: results?.calendar_events ?? [],
         next: results?.next ?? null,
-        isPending, 
+        isPending,
     };
 }

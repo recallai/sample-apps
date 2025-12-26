@@ -6,7 +6,7 @@ export function useToggleRecording(props: {
     calendarId: string;
     calendarEventId: string;
 }) {
-    const { calendarId, calendarEventId } = z.object({
+    const { calendarId: _calendarId, calendarEventId } = z.object({
         calendarId: z.string(),
         calendarEventId: z.string(),
     }).parse(props);
