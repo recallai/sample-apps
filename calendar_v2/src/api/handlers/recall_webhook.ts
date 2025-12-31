@@ -7,10 +7,15 @@ import { env } from "../config/env";
 import { fetch_with_retry } from "../fetch_with_retry";
 
 export async function recall_webhook(payload: any): Promise<void> {
-    const { event, data } = z.discriminatedUnion("event", [
+    const result = z.discriminatedUnion("event", [
         CalendarUpdateEventSchema,
         CalendarSyncEventsEventSchema,
-    ]).parse(payload);
+    ]).safeParse(payload);
+    if (!result.success) {
+        console.log(`Received unhandled Recall webhook event: ${JSON.stringify(payload)}`);
+        return;
+    }
+    const { event, data } = result.data;
 
     const calendar = await calendar_retrieve({ calendar_id: data.calendar_id });
     console.log(`Found calendar: ${JSON.stringify(calendar)}`);

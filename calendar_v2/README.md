@@ -4,9 +4,9 @@ A full-stack demo app showing how to integrate [Recall.ai's Calendar API](https:
 
 ## Features
 
-- **OAuth Integration**: Connect Google Calendar or Microsoft Outlook accounts
-- **Calendar Sync**: Automatically sync calendar events via Recall.ai webhooks
-- **Bot Scheduling**: Schedule/unschedule recording bots for meetings with video links
+-   **OAuth Integration**: Connect Google Calendar or Microsoft Outlook accounts
+-   **Calendar Sync**: Automatically sync calendar events via Recall.ai webhooks
+-   **Bot Scheduling**: Schedule/unschedule recording bots for meetings with video links
 
 ## Architecture & Request Flows
 
@@ -21,11 +21,10 @@ When a user clicks "Connect Google" or "Connect Outlook":
     │ GET /oauth?platform=google_calendar|microsoft_outlook         │
     │──────────────────▶│                      │                    │
     │                   │                      │                    │
-    │   302 Redirect to provider OAuth         │                    │
-    │◀──────────────────│                      │                    │
+    │                   │ 302 Redirect to provider OAuth            │
+    │                   │─────────────────────▶│                    │
     │                   │                      │                    │
-    │   User authorizes calendar access        │                    │
-    │─────────────────────────────────────────▶│                    │
+    │                   │        User authorizes calendar access    │
     │                   │                      │                    │
     │   Redirect back with auth code           │                    │
     │◀─────────────────────────────────────────│                    │
@@ -41,7 +40,7 @@ When a user clicks "Connect Google" or "Connect Outlook":
     │                   │    refresh_token }   │                    │
     │                   │◀─────────────────────│                    │
     │                   │                      │                    │
-    │                   │   POST /api/v2/calendars                  │
+    │                   │   POST https://REGION.recall.ai/api/v2/calendars
     │                   │   { refresh_token, client_id, ... }       │
     │                   │─────────────────────────────────────────-▶│
     │                   │                      │                    │
@@ -69,7 +68,7 @@ After OAuth (and on ongoing calendar changes), calendar providers notify Recall.
        │                      │           calendar_id, last_updated_ts }
        │                      │──────────────────────▶│
        │                      │                       │
-       │                      │      GET /api/v2/calendar-events
+       │                      │ GET https://REGION.recall.ai/api/v2/calendar-events
        │                      │          ?calendar_id=...&updated_at__gte={last_updated_ts}
        │                      │◀──────────────────────│
        │                      │                       │
@@ -79,7 +78,7 @@ After OAuth (and on ongoing calendar changes), calendar providers notify Recall.
        │                      │       For each event with meeting_url
        │                      │       and start_time in future:
        │                      │                       │
-       │                      │  POST /api/v2/calendar-events/{id}/bot
+       │                      │  POST https://REGION.recall.ai/api/v2/calendar-events/{id}/bot
        │                      │◀──────────────────────│
        │                      │                       │
        │                      │   { bot scheduled }   │
@@ -102,7 +101,7 @@ When a user toggles the recording switch in the UI:
     │  POST /api/calendar/events/bot?calendar_event_id=...
     │────────────────────▶│                    │
     │                     │                    │
-    │                     │  POST /api/v2/calendar-events/{id}/bot
+    │                     │  POST https://REGION.recall.ai/api/v2/calendar-events/{id}/bot
     │                     │───────────────────▶│
     │                     │                    │
     │                     │   Bot scheduled    │
@@ -118,7 +117,7 @@ When a user toggles the recording switch in the UI:
     │  DELETE /api/calendar/events/bot?calendar_event_id=...
     │────────────────────▶│                    │
     │                     │                    │
-    │                     │  DELETE /api/v2/calendar-events/{id}/bot
+    │                     │  DELETE https://REGION.recall.ai/api/v2/calendar-events/{id}/bot
     │                     │───────────────────▶│
     │                     │                    │
     │                     │   Bot unscheduled  │
@@ -130,16 +129,16 @@ When a user toggles the recording switch in the UI:
 
 ### Key Points
 
-- **Push-based sync**: Calendar providers send webhooks to Recall, which notifies your server—use via the `calendar.update` or `calendar.sync_events` webhooks. Note: use the `last_updated_ts` to fetch only changed events on `calendar.sync_events` webhooks.
-- **Deduplication keys**: Prevent duplicate bots when multiple users have the same meeting
-- **Recall auto-manages bots**: Automatically unschedules bots when events are deleted or calendars are disconnected, and reschedules when meeting times change
+-   **Push-based sync**: Calendar providers send webhooks to Recall, which notifies your server—use via the `calendar.update` or `calendar.sync_events` webhooks. Note: use the `last_updated_ts` to fetch only changed events on `calendar.sync_events` webhooks.
+-   **Deduplication keys**: Prevent duplicate bots when multiple users have the same meeting
+-   **Recall auto-manages bots**: Automatically unschedules bots when events are deleted or calendars are disconnected, and reschedules when meeting times change
 
 ## Prerequisites
 
-- Node.js 18+
-- [ngrok](https://ngrok.com/) account (for webhooks)
-- Recall.ai API key
-- Google and/or Microsoft OAuth credentials
+-   Node.js 18+
+-   [ngrok](https://ngrok.com/) account (for webhooks)
+-   Recall.ai API key
+-   Google and/or Microsoft OAuth credentials
 
 ## Setup
 
@@ -147,8 +146,8 @@ When a user toggles the recording switch in the UI:
 
 Follow the official Recall.ai guides to create OAuth credentials (you'll need these for step 3):
 
-- **Google Calendar**: [Google Calendar Setup Guide](https://docs.recall.ai/docs/calendar-v2-google-calendar)
-- **Microsoft Outlook**: [Microsoft Outlook Setup Guide](https://docs.recall.ai/docs/calendar-v2-microsoft-outlook)
+-   **Google Calendar**: [Google Calendar Setup Guide](https://docs.recall.ai/docs/calendar-v2-google-calendar)
+-   **Microsoft Outlook**: [Microsoft Outlook Setup Guide](https://docs.recall.ai/docs/calendar-v2-microsoft-outlook)
 
 Use `https://your-domain.ngrok-free.app/api/calendar/oauth/callback` as the redirect URI.
 
@@ -191,8 +190,8 @@ npm run dev
 
 This starts:
 
-- **Backend**: http://localhost:4000
-- **Frontend**: http://localhost:5173
+-   **Backend**: http://localhost:4000
+-   **Frontend**: http://localhost:5173
 
 ## Usage
 
@@ -222,14 +221,8 @@ calendar_v2/
 ├── src/
 │   ├── api/                    # Backend server
 │   │   ├── config/env.ts       # Environment validation
-│   │   ├── handlers/           # API route handlers
-│   │   │   ├── calendar_oauth.ts
-│   │   │   ├── calendar_oauth_callback.ts
-│   │   │   ├── calendar_events_list.ts
-│   │   │   ├── calendars_list.ts
-│   │   │   ├── calendars_delete.ts
-│   │   │   └── recall_webhook.ts
-│   │   └── index.ts            # HTTP server
+│   │   ├── handlers/           # Route handlers (⬇ see table below)
+│   │   └── index.ts            # HTTP server & routing
 │   ├── client/                 # React frontend
 │   │   ├── App.tsx             # Main app component
 │   │   ├── components/         # UI components
@@ -237,6 +230,19 @@ calendar_v2/
 │   └── schemas/                # Data validation models
 └── package.json
 ```
+
+### `src/api/handlers/` — Route Handlers
+
+This is where the Recall.ai integration logic lives:
+
+| File                         | Purpose                                                                                                                                         |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `calendar_oauth.ts`          | Generates OAuth URLs for Google/Outlook. Redirects users to the provider's consent screen.                                                      |
+| `calendar_oauth_callback.ts` | Handles the OAuth callback. Exchanges the auth code for tokens, then creates a calendar in Recall.ai via `POST /api/v2/calendars`.              |
+| `recall_webhook.ts`          | **Core logic.** Receives `calendar.sync_events` webhooks, fetches changed events from Recall, and schedules bots for meetings with video links. |
+| `calendar_events_list.ts`    | Proxies requests to Recall's `GET /api/v2/calendar-events` for the frontend to display events.                                                  |
+| `calendars_list.ts`          | Proxies requests to Recall's `GET /api/v2/calendars` to list connected calendars.                                                               |
+| `calendars_delete.ts`        | Disconnects a calendar via Recall's `DELETE /api/v2/calendars/{id}`.                                                                            |
 
 ## Bot Deduplication
 
@@ -250,5 +256,5 @@ This ensures only one bot joins per meeting, even if multiple users have the sam
 
 Other strategies available:
 
-- **User level**: One bot per user per meeting
-- **Domain level**: One bot per company domain per meeting
+-   **User level**: One bot per user per meeting
+-   **Domain level**: One bot per company domain per meeting
