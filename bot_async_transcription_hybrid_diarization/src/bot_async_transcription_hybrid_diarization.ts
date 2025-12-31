@@ -19,7 +19,7 @@ export async function create_async_transcript(args: { recording_id: string }) {
     const response = await fetch(`https://${env.RECALL_REGION}.recall.ai/api/v1/recording/${recording_id}/create_transcript/`, {
         method: "POST",
         headers: {
-            "Authorization": env.RECALL_API_KEY,
+            "Authorization": `${env.RECALL_API_KEY}`,
             "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -100,7 +100,7 @@ async function retrieve_recording_artifact(args: { recording_id: string }) {
     const response = await fetch(`https://${env.RECALL_REGION}.recall.ai/api/v1/recording/${recording_id}/`, {
         method: "GET",
         headers: {
-            "Authorization": env.RECALL_API_KEY,
+            "Authorization": `${env.RECALL_API_KEY}`,
             "Content-Type": "application/json",
         },
     });

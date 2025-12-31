@@ -33,7 +33,7 @@ export async function get_zoom_oauth_access_token(): Promise<any> {
     const response = await fetch("https://zoom.us/oauth/token", {
         method: "POST",
         headers: {
-            Authorization: `Basic ${token}`,
+            "Authorization": `Basic ${token}`,
             "Content-Type": "application/x-www-form-urlencoded",
         },
         body: new URLSearchParams({ grant_type: "refresh_token", refresh_token }).toString(),
@@ -54,7 +54,10 @@ export async function get_zoom_oauth_access_token(): Promise<any> {
 async function generate_zoom_zak(args: { access_token: string }): Promise<{ zak_token: string }> {
     const { access_token } = z.object({ access_token: z.string() }).parse(args);
     const response = await fetch("https://api.zoom.us/v2/users/me/token?type=zak", {
-        headers: { "Authorization": `Bearer ${access_token}` },
+        headers: { 
+            "Authorization": `Bearer ${access_token}`,
+            "Content-Type": "application/json",
+        },
     });
     if (!response.ok) throw new Error(await response.text());
 

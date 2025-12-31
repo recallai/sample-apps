@@ -60,7 +60,8 @@ async function generate_oauth_tokens_from_authorization_code(args: {
     const response = await fetch(url.toString(), {
         method: "POST",
         headers: {
-            Authorization: `Basic ${auth_token}`,
+            "Authorization": `Basic ${auth_token}`,
+            "Content-Type": "application/x-www-form-urlencoded",
         },
     });
     if (!response.ok) throw new Error(await response.text());
