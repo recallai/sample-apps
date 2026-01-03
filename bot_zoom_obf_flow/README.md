@@ -1,16 +1,17 @@
-# Zoom ZAK Token Flow for Signed-In Bots
+# Zoom OAuth-Based Flow (OBF) for Bots
 
-This example demonstrates how to implement the Zoom ZAK (Zoom Access Key) token flow to allow Recall.ai bots to join Zoom meetings as a signed-in user.
+This example demonstrates how to implement the Zoom OAuth-Based Flow (OBF) to allow Recall.ai bots to join Zoom meetings on behalf of another participant in the call.
 
-## What is ZAK?
+## What is OBF?
 
-The ZAK (Zoom Access Key) token enables bots to join Zoom meetings with authenticated access which enables:
+The OAuth-Based Flow (OBF) ties a bot's lifetime in a meeting directly to a specific user in that meeting. The bot can only be in the meeting as long as its "parent" user is. This enables:
 
 -   Joining meetings that require signed-in participants
 -   Starting instant meetings or scheduled meetings before the host joins
--   Appearing as a named Zoom user rather than a guest
+-   Bypassing waiting rooms (when configured)
+-   Appearing as a named user rather than a guest
 
-> **📘 For complete documentation, see:** [Zoom Signed-in Bots](https://docs.recall.ai/docs/zoom-signed-in-bots)
+> **📘 For complete documentation, see:** [Zoom Native Bots (OBF)](https://docs.recall.ai/docs/zoom-native-bots-obf)
 
 ## How It Works
 
@@ -44,26 +45,26 @@ The ZAK (Zoom Access Key) token enables bots to join Zoom meetings with authenti
      │ ═══════════════════════════════════════════════ │
      │                │                │                │
      │                │ 3. POST /api/v1/bot             │
-     │                │ { zoom: { zak_url } }           │
+     │                │ { zoom: { obf_token_url } }     │
      │                │───────────────────────────────▶│
      │                │                │                │
      │ ═══════════════════════════════════════════════ │
      │              When bot joins call:               │
      │ ═══════════════════════════════════════════════ │
      │                │                │                │
-     │                │ 4. GET /zoom/zak                │
+     │                │ 4. GET /zoom/obf                │
      │                │◀───────────────────────────────│
      │                │                │                │
      │                │  Refresh access token           │
      │                │───────────────▶│                │
      │                │                │                │
-     │                │  Get ZAK token │                │
+     │                │  Get OBF token │                │
      │                │───────────────▶│                │
      │                │                │                │
-     │                │   zak_token    │                │
+     │                │    obf_token   │                │
      │                │◀───────────────│                │
      │                │                │                │
-     │                │  Return ZAK token               │
+     │                │  Return OBF token               │
      │                │───────────────────────────────▶│
      │                │                │                │
      │                │         Bot joins meeting       │
@@ -72,9 +73,10 @@ The ZAK (Zoom Access Key) token enables bots to join Zoom meetings with authenti
 
 ## Prerequisites
 
--   [Zoom OAuth App](https://developers.zoom.us/docs/integrations/create/) with scope: `user:read:zak`
+-   [Zoom General App](https://developers.zoom.us/docs/integrations/create/) with scope: `user:read:token` and **Meeting SDK** enabled
 -   [ngrok](https://ngrok.com/) for exposing your local server
 -   [Node.js](https://nodejs.org/) 18+
+-   Custom SDK credentials enabled in your Recall workspace (contact Recall support)
 
 ## Setup
 
@@ -86,15 +88,22 @@ ngrok http 4000
 
 Copy the domain (e.g. `abc123.ngrok-free.app`).
 
-### 2. Create a Zoom OAuth App
+### 2. Create a Zoom General App
 
 1. Go to the [Zoom App Marketplace](https://marketplace.zoom.us/develop/create)
 2. Create a **General App** with OAuth
-3. Add the scope: `user:read:zak`
-4. Set the OAuth Redirect URL to: `https://YOUR_NGROK_DOMAIN/zoom/oauth/callback`
-5. Copy the **Client ID** and **Client Secret**
+3. Add the scope: `user:read:token`
+4. In the **Embed** section, enable **Meeting SDK**
+5. Set the OAuth Redirect URL to: `https://YOUR_NGROK_DOMAIN/zoom/oauth/callback`
+6. Add your OBF callback URL to the allow list: `https://YOUR_NGROK_DOMAIN/zoom/obf`
+7. Copy the **Client ID** and **Client Secret**
 
-### 3. Configure environment
+### 3. Add SDK credentials to Recall
+
+1. Navigate to **Meeting Bot Setup** > **Zoom** in the Recall dashboard
+2. Paste your Zoom app's Client ID and Client Secret
+
+### 4. Configure environment
 
 ```bash
 cp .env.sample .env
@@ -102,7 +111,7 @@ cp .env.sample .env
 
 Then fill out the variables in the `.env` file, including the ngrok domain from step 1 (Don't forget to omit the protocol (e.g. `https://`)).
 
-### 4. Start the server
+### 5. Start the server
 
 Open this directory in a new terminal and run:
 
@@ -113,7 +122,7 @@ npm run dev
 
 This will start a server on port 4000.
 
-### 5. Complete the OAuth flow
+### 6. Complete the OAuth flow
 
 Open your browser and navigate to:
 
@@ -123,7 +132,7 @@ https://YOUR_NGROK_DOMAIN/zoom/oauth
 
 Follow the prompts to authorize your Zoom app. After authorizing, the refresh token will be saved to `output/zoom_oauth_refresh_token.txt`.
 
-### 6. Create a bot
+### 7. Create a bot
 
 You can create a bot using the `run.sh` script or manually with curl.
 
@@ -147,7 +156,7 @@ curl -X POST "https://RECALL_REGION.recall.ai/api/v1/bot/" \
   -d '{
     "meeting_url": "YOUR_ZOOM_MEETING_URL",
     "zoom": {
-      "zak_url": "https://YOUR_NGROK_DOMAIN/zoom/zak"
+      "obf_token_url": "https://YOUR_NGROK_DOMAIN/zoom/obf?meeting_id=ZOOM_MEETING_ID"
     }
   }'
 ```
@@ -157,12 +166,18 @@ curl -X POST "https://RECALL_REGION.recall.ai/api/v1/bot/" \
 -   Replace `RECALL_REGION`, `RECALL_API_KEY`, and `YOUR_MEETING_URL` with your own
     values.
 -   Replace `YOUR_NGROK_DOMAIN` with your ngrok domain (e.g. `somehash.ngrok-free.app`).
--   The bot will join the meeting as a signed-in Zoom user.
+-   The bot will join the meeting on behalf of the OAuth user.
+
+## Important OBF Behavior
+
+-   **Short-lived & single-use**: OBF tokens should be minted just-in-time when launching a bot
+-   **Parent user required**: The bot can't join until the parent user has already joined the meeting
+-   **Linked lifetime**: If the parent user leaves, the bot's SDK session will end
 
 ## API Endpoints
 
-| Endpoint                   | Description                                           |
-| -------------------------- | ----------------------------------------------------- |
-| `GET /zoom/oauth`          | Initiates Zoom OAuth flow                             |
-| `GET /zoom/oauth/callback` | Handles OAuth callback, stores refresh token          |
-| `GET /zoom/zak`            | Returns a ZAK token (called by Recall when bot joins) |
+| Endpoint                   | Description                                            |
+| -------------------------- | ------------------------------------------------------ |
+| `GET /zoom/oauth`          | Initiates Zoom OAuth flow                              |
+| `GET /zoom/oauth/callback` | Handles OAuth callback, stores refresh token           |
+| `GET /zoom/obf`            | Returns an OBF token (called by Recall when bot joins) |
