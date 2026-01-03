@@ -1,4 +1,4 @@
-# Zoom ZAK Token Flow for Signed-In Bots
+# Zoom Access Key (ZAK) Token Flow for Signed-In Zoom Bots
 
 This example demonstrates how to implement the Zoom ZAK (Zoom Access Key) token flow to allow Recall.ai bots to join Zoom meetings as a signed-in user.
 
@@ -16,58 +16,58 @@ The ZAK (Zoom Access Key) token enables bots to join Zoom meetings with authenti
 
 ```
 ┌──────────┐     ┌──────────┐     ┌──────────┐     ┌──────────┐
-│  Admin   │     │  Server  │     │   Zoom   │     │ Recall   │
-└────┬─────┘     └────┬─────┘     └────┬─────┘     └────┬─────┘
-     │                │                │                │
-     │ 1. GET /zoom/oauth              │                │
-     │───────────────▶│                │                │
-     │                │                │                │
-     │   Redirect to Zoom OAuth        │                │
-     │◀───────────────│                │                │
-     │                │                │                │
-     │   Authorize app                 │                │
-     │────────────────────────────────▶│                │
-     │                │                │                │
-     │   Callback with code            │                │
-     │◀────────────────────────────────│                │
-     │                │                │                │
-     │ 2. GET /zoom/oauth/callback     │                │
-     │───────────────▶│                │                │
-     │                │  Exchange for tokens            │
-     │                │───────────────▶│                │
-     │                │  { refresh_token }              │
-     │                │◀───────────────│                │
-     │                │  (stored locally)               │
-     │                │                │                │
-     │ ═══════════════════════════════════════════════ │
-     │         Later, when creating a bot:             │
-     │ ═══════════════════════════════════════════════ │
-     │                │                │                │
-     │                │ 3. POST /api/v1/bot             │
-     │                │ { zoom: { zak_url } }           │
-     │                │───────────────────────────────▶│
-     │                │                │                │
-     │ ═══════════════════════════════════════════════ │
-     │              When bot joins call:               │
-     │ ═══════════════════════════════════════════════ │
-     │                │                │                │
-     │                │ 4. GET /zoom/zak                │
-     │                │◀───────────────────────────────│
-     │                │                │                │
-     │                │  Refresh access token           │
-     │                │───────────────▶│                │
-     │                │                │                │
-     │                │  Get ZAK token │                │
-     │                │───────────────▶│                │
-     │                │                │                │
-     │                │   zak_token    │                │
-     │                │◀───────────────│                │
-     │                │                │                │
-     │                │  Return ZAK token               │
-     │                │───────────────────────────────▶│
-     │                │                │                │
-     │                │         Bot joins meeting       │
-     │                │                │                │
+│  Client  │     │  Server  │     │   Zoom   │     │  Recall  │
+└────┬─────┘     └────┬─────┘     └────┬─────┘     └─────┬────┘
+     │                │                │                 │
+     │ 1. GET /zoom/oauth              │                 │
+     │───────────────▶│                │                 │
+     │                │                │                 │
+     │   Redirect to Zoom OAuth        │                 │
+     │◀───────────────│                │                 │
+     │                │                │                 │
+     │   Authorize app                 │                 │
+     │────────────────────────────────▶│                 │
+     │                │                │                 │
+     │   Callback with code            │                 │
+     │◀────────────────────────────────│                 │
+     │                │                │                 │
+     │ 2. GET /zoom/oauth/callback     │                 │
+     │───────────────▶│                │                 │
+     │                │  Exchange for tokens             │
+     │                │───────────────▶│                 │
+     │                │  { refresh_token }               │
+     │                │◀───────────────│                 │
+     │                │  (stored locally)                │
+     │                │                │                 │
+     │ ═════════════════════════════════════════════════ │
+     │           Later, when creating a bot:             │
+     │ ═════════════════════════════════════════════════ │
+     │                │                │                 │
+     │                │ 3. POST /api/v1/bot              │
+     │                │ { zoom: { zak_url } }            │
+     │                │─────────────────────────────────▶│
+     │                │                │                 │
+     │ ═════════════════════════════════════════════════ │
+     │              When bot joins call:                 │
+     │ ═════════════════════════════════════════════════ │
+     │                │                │                 │
+     │                │ 4. GET /zoom/zak                 │
+     │                │◀─────────────────────────────────│
+     │                │                │                 │
+     │                │  Refresh access token            │
+     │                │───────────────▶│                 │
+     │                │                │                 │
+     │                │  Get ZAK token │                 │
+     │                │───────────────▶│                 │
+     │                │                │                 │
+     │                │   zak_token    │                 │
+     │                │◀───────────────│                 │
+     │                │                │                 │
+     │                │  Return ZAK token                │
+     │                │─────────────────────────────────▶│
+     │                │                │                 │
+     │                │         Bot joins meeting        │
+     │                │                │                 │
 ```
 
 ## Prerequisites
@@ -90,11 +90,11 @@ Copy the domain (e.g. `abc123.ngrok-free.app`).
 
 1. Go to the [Zoom App Marketplace](https://marketplace.zoom.us/develop/create)
 2. Create a **General App** with OAuth
-3. Add the scope: `user:read:zak`
-4. Set the OAuth Redirect URL to: `https://YOUR_NGROK_DOMAIN/zoom/oauth/callback`
+3. Set the OAuth Redirect URL to: `https://YOUR_NGROK_DOMAIN/zoom/oauth/callback`
+4. Add the scope: `user:read:zak`
 5. Copy the **Client ID** and **Client Secret**
 
-### 3. Configure environment
+### 3. Set up env variables
 
 ```bash
 cp .env.sample .env

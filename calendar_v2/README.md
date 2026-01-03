@@ -158,7 +158,7 @@ cd calendar_v2
 npm install
 ```
 
-### 3. Configure environment variables
+### 3. Set up env variables
 
 Copy the sample environment file and fill in your values:
 

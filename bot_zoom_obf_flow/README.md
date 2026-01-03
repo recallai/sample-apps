@@ -1,23 +1,20 @@
-# Zoom OAuth-Based Flow (OBF) for Bots
+# Zoom On-behalf-of (OBF) Token Flow for Zoom Bots
 
-This example demonstrates how to implement the Zoom OAuth-Based Flow (OBF) to allow Recall.ai bots to join Zoom meetings on behalf of another participant in the call.
+This example demonstrates how to implement the Zoom OBF token flow to allow Recall.ai bots to join Zoom meetings on behalf of another participant in the call.
 
 ## What is OBF?
 
-The OAuth-Based Flow (OBF) ties a bot's lifetime in a meeting directly to a specific user in that meeting. The bot can only be in the meeting as long as its "parent" user is. This enables:
+The OBF ties a bot's lifetime in a meeting directly to a specific user in that meeting. The bot can only be in the meeting as long as its "parent" user is. This enables:
 
--   Joining meetings that require signed-in participants
--   Starting instant meetings or scheduled meetings before the host joins
--   Bypassing waiting rooms (when configured)
--   Appearing as a named user rather than a guest
+-   Appearing as your Zoom app via Zoom's native UI
 
-> **📘 For complete documentation, see:** [Zoom Native Bots (OBF)](https://docs.recall.ai/docs/zoom-native-bots-obf)
+> **📘 For complete documentation, see:** [Zoom Native Bots (OBF)](https://docs.recall.ai/docs/zoom-obf-tokens)
 
 ## How It Works
 
 ```
 ┌──────────┐     ┌──────────┐     ┌──────────┐     ┌──────────┐
-│  Admin   │     │  Server  │     │   Zoom   │     │ Recall   │
+│  Client  │     │  Server  │     │   Zoom   │     │  Recall  │
 └────┬─────┘     └────┬─────┘     └────┬─────┘     └────┬─────┘
      │                │                │                │
      │ 1. GET /zoom/oauth              │                │
@@ -40,20 +37,20 @@ The OAuth-Based Flow (OBF) ties a bot's lifetime in a meeting directly to a spec
      │                │◀───────────────│                │
      │                │  (stored locally)               │
      │                │                │                │
-     │ ═══════════════════════════════════════════════ │
-     │         Later, when creating a bot:             │
-     │ ═══════════════════════════════════════════════ │
+     │ ════════════════════════════════════════════════ │
+     │         Later, when creating a bot:              │
+     │ ════════════════════════════════════════════════ │
      │                │                │                │
      │                │ 3. POST /api/v1/bot             │
      │                │ { zoom: { obf_token_url } }     │
-     │                │───────────────────────────────▶│
+     │                │────────────────────────────────▶│
      │                │                │                │
-     │ ═══════════════════════════════════════════════ │
-     │              When bot joins call:               │
-     │ ═══════════════════════════════════════════════ │
+     │ ════════════════════════════════════════════════ │
+     │               When bot joins call:               │
+     │ ════════════════════════════════════════════════ │
      │                │                │                │
      │                │ 4. GET /zoom/obf                │
-     │                │◀───────────────────────────────│
+     │                │◀────────────────────────────────│
      │                │                │                │
      │                │  Refresh access token           │
      │                │───────────────▶│                │
@@ -65,7 +62,7 @@ The OAuth-Based Flow (OBF) ties a bot's lifetime in a meeting directly to a spec
      │                │◀───────────────│                │
      │                │                │                │
      │                │  Return OBF token               │
-     │                │───────────────────────────────▶│
+     │                │────────────────────────────────▶│
      │                │                │                │
      │                │         Bot joins meeting       │
      │                │                │                │
@@ -76,7 +73,7 @@ The OAuth-Based Flow (OBF) ties a bot's lifetime in a meeting directly to a spec
 -   [Zoom General App](https://developers.zoom.us/docs/integrations/create/) with scope: `user:read:token` and **Meeting SDK** enabled
 -   [ngrok](https://ngrok.com/) for exposing your local server
 -   [Node.js](https://nodejs.org/) 18+
--   Custom SDK credentials enabled in your Recall workspace (contact Recall support)
+-   Custom SDK credentials enabled in your Recall workspace (contact Recall support to enable)
 
 ## Setup
 
@@ -92,18 +89,17 @@ Copy the domain (e.g. `abc123.ngrok-free.app`).
 
 1. Go to the [Zoom App Marketplace](https://marketplace.zoom.us/develop/create)
 2. Create a **General App** with OAuth
-3. Add the scope: `user:read:token`
-4. In the **Embed** section, enable **Meeting SDK**
-5. Set the OAuth Redirect URL to: `https://YOUR_NGROK_DOMAIN/zoom/oauth/callback`
-6. Add your OBF callback URL to the allow list: `https://YOUR_NGROK_DOMAIN/zoom/obf`
-7. Copy the **Client ID** and **Client Secret**
+3. Set the OAuth Redirect URL to: `https://YOUR_NGROK_DOMAIN/zoom/oauth/callback`
+4. Add the scope: `user:read:token`
+5. In the **Embed** section, enable **Meeting SDK**
+6. Copy the **Client ID** and **Client Secret**
 
 ### 3. Add SDK credentials to Recall
 
 1. Navigate to **Meeting Bot Setup** > **Zoom** in the Recall dashboard
 2. Paste your Zoom app's Client ID and Client Secret
 
-### 4. Configure environment
+### 3. Set up env variables
 
 ```bash
 cp .env.sample .env
@@ -170,9 +166,9 @@ curl -X POST "https://RECALL_REGION.recall.ai/api/v1/bot/" \
 
 ## Important OBF Behavior
 
--   **Short-lived & single-use**: OBF tokens should be minted just-in-time when launching a bot
+-   **Short-lived & single-use**: OBF tokens should be minted just-in-time (in the `/zoom/obf` endpoint) when launching a bot
 -   **Parent user required**: The bot can't join until the parent user has already joined the meeting
--   **Linked lifetime**: If the parent user leaves, the bot's SDK session will end
+-   **Linked lifetime**: If the parent user leaves, the bot's will also be removed from the call by Zoom
 
 ## API Endpoints
 
