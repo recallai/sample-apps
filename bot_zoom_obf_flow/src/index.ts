@@ -84,11 +84,8 @@ body=${JSON.stringify(body)}
                     res.writeHead(200, { "Content-Type": "image/x-icon" });
                     res.end(Buffer.from(""));
                     return;
-                } else if (url.pathname === "/api/recall/webhook") {
-                    res.writeHead(200, { "Content-Type": "application/json" });
-                    res.end(JSON.stringify({ message: "Recall webhook received" }));
-                    return;
                 }
+
                 throw new Error(`Endpoint not found: ${req.method} ${url.pathname}`);
             }
         }
