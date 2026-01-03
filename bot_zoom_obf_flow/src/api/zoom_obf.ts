@@ -5,14 +5,15 @@ import { z } from "zod";
 import { env } from "../config/env";
 
 /**
- * Generate a Zoom ZAK token.
+ * Generate a Zoom OBF token.
  * This is the token that is used to start a Zoom meeting and/or authenticate a participant in a Zoom meeting, 
  * allowing them to join meetings as authenticated participants (e.g. signed-in users).
- * You can generate a new ZAK token as long as you have a valid access token.
+ * You can generate a new OBF token as long as you have a valid access token.
  */
-export async function zoom_zak(): Promise<{ zak_token: string }> {
+export async function zoom_obf(args: { meeting_id: string }): Promise<{ obf_token: string }> {
+    const { meeting_id } = z.object({ meeting_id: z.string() }).parse(args);
     const { access_token } = await get_zoom_oauth_access_token();
-    return generate_zoom_zak({ access_token });
+    return generate_zoom_obf({ access_token, meeting_id });
 }
 
 /**
@@ -47,17 +48,17 @@ export async function get_zoom_oauth_access_token(): Promise<{ access_token: str
 }
 
 /**
- * Generates a Zoom ZAK token.
- * This is the token that is used to start a Zoom meeting and/or authenticate a participant in a Zoom meeting, 
- * allowing them to join meetings as authenticated participants (e.g. signed-in users).
+ * Generates a Zoom OBF token.
+ * This is the token that is used to join a Zoom meeting on behalf of an OAuth user.
  */
-async function generate_zoom_zak(args: { access_token: string }): Promise<{ zak_token: string }> {
-    const { access_token } = z.object({ access_token: z.string() }).parse(args);
-    const response = await fetch("https://api.zoom.us/v2/users/me/token?type=zak", {
-        headers: { "Authorization": `Bearer ${access_token}` },
-    });
+async function generate_zoom_obf(args: { access_token: string, meeting_id: string }): Promise<{ obf_token: string }> {
+    const { access_token, meeting_id } = z.object({ access_token: z.string(), meeting_id: z.string() }).parse(args);
+    const response = await fetch(
+        `https://api.zoom.us/v2/users/me/token?type=onbehalf&meeting_id=${meeting_id}`,
+        { headers: { Authorization: `Bearer ${access_token}` } },
+    );
     if (!response.ok) throw new Error(await response.text());
 
     const data = z.object({ token: z.string() }).parse(await response.json());
-    return { zak_token: data.token };
+    return { obf_token: data.token };
 }

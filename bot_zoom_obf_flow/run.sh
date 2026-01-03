@@ -12,6 +12,13 @@ fi
 : "${MEETING_URL:?MEETING_URL is required (Zoom/Meet URL)}"
 : "${NGROK_DOMAIN:?NGROK_DOMAIN is required (ngrok.io host without scheme)}"
 
+# Extract meeting ID from Zoom URL (matches zoom.us/j/123, zoom.com/s/123, etc.)
+MEETING_ID=$(echo "${MEETING_URL}" | grep -oE 'zoom\.(us|com)/(j|s|wc/join)/([0-9]+)' | grep -oE '[0-9]+$')
+if [ -z "${MEETING_ID}" ]; then
+  echo "Error: Could not extract meeting ID from URL: ${MEETING_URL}" >&2
+  exit 1
+fi
+
 curl --request POST \
   --url https://${RECALL_REGION}.recall.ai/api/v1/bot/ \
   --header "Authorization: ${RECALL_API_KEY}" \
@@ -20,17 +27,8 @@ curl --request POST \
   --data @- <<EOF
 {
   "meeting_url": "${MEETING_URL}",
-  "recording_config": {
-    "realtime_endpoints": [
-      {
-        "type": "websocket",
-        "url": "wss://${NGROK_DOMAIN}",
-        "events": [
-          "audio_separate_raw.data"
-        ]
-      }
-    ],
-    "audio_separate_raw": {}
+  "zoom": {
+    "obf_token_url": "https://${NGROK_DOMAIN}/zoom/obf?meeting_id=${MEETING_ID}"
   }
 }
 EOF

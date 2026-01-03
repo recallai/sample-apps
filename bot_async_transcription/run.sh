@@ -7,7 +7,7 @@ if [ -f "$DOTENV_FILE" ]; then
   source "$DOTENV_FILE"
 fi
 
-: "${RECALL_REGION:?REGION is required (us-west-2, us-east-1, eu-central-1, ap-northeast-1)}"
+: "${RECALL_REGION:?RECALL_REGION is required (us-west-2, us-east-1, eu-central-1, ap-northeast-1)}"
 : "${RECALL_API_KEY:?RECALL_API_KEY is required}"
 : "${MEETING_URL:?MEETING_URL is required (Zoom/Meet URL)}"
 

@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import z from "zod";
 import { zoom_oauth } from "./api/zoom_oauth";
 import { zoom_oauth_callback } from "./api/zoom_oauth_callback";
-import { zoom_zak } from "./api/zoom_zak";
+import { zoom_obf } from "./api/zoom_obf";
 import { env } from "./config/env";
 
 dotenv.config();
@@ -67,14 +67,14 @@ body=${JSON.stringify(body)}
                 }));
                 return;
             }
-            case "/zoom/zak": {
+            case "/zoom/obf": {
                 if (req.method !== "GET") throw new Error(`Method not allowed: ${req.method}`);
 
-                const { zak_token } = await zoom_zak();
-                console.log(`Generated Zoom ZAK token: ${zak_token}`);
+                const { obf_token } = await zoom_obf(search_params);
+                console.log(`Generated Zoom OBF token: ${obf_token}`);
 
                 res.writeHead(200, { "Content-Type": "text/plain" });
-                res.end(zak_token);
+                res.end(obf_token);
                 return;
             }
             default: {
@@ -104,7 +104,7 @@ Server is running on port ${env.PORT}
 To get started, open the following URL in your browser: https://${process.env.NGROK_DOMAIN ?? "NGROK_DOMAIN"}/zoom/oauth
         
 After you complete the OAuth flow, you can then create a bot.
-  - Ensure that \`zoom.zak_url="https://${process.env.NGROK_DOMAIN ?? "NGROK_DOMAIN"}/zoom/zak"\` is set in the bot's configuration.
+  - Ensure that \`zoom.obf_token_url="https://${process.env.NGROK_DOMAIN ?? "NGROK_DOMAIN"}/zoom/obf"\` is set in the bot's configuration.
   - You can create a bot using the \`run.sh\` script. See the README for more details.
     `);
 });
