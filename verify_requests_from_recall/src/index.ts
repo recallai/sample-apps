@@ -58,7 +58,7 @@ server.on("request", async (req, res) => {
     } catch (error) {
         console.error(`Error verifying HTTP request from Recall.ai: ${req.method} ${req.url}`, error);
         res.writeHead(400, { "Content-Type": "application/json" });
-        res.end("Request not verified");
+        res.end(JSON.stringify({ error: "Request not verified" }));
     }
 });
 
