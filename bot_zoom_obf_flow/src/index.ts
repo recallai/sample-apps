@@ -70,8 +70,6 @@ body=${JSON.stringify(body)}
             case "/zoom/obf": {
                 if (req.method !== "GET") throw new Error(`Method not allowed: ${req.method}`);
 
-                console.log(`Zoom OBF endpoint called ${req.url}`);
-
                 const { obf_token } = await zoom_obf(search_params);
                 console.log(`Generated Zoom OBF token: ${obf_token}`);
 
@@ -91,7 +89,7 @@ body=${JSON.stringify(body)}
         }
     } catch (error) {
         console.error(`${req.method} ${req.url}`, error);
-        res.writeHead(400, { "Content-Type": "text/plain" });
+        res.writeHead(400, { "Content-Type": "application/json" });
         res.end(JSON.stringify({ error: error instanceof Error ? error.message : String(error) }));
     }
 });

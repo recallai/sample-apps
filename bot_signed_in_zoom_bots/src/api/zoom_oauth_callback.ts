@@ -22,7 +22,7 @@ export async function zoom_oauth_callback(args: { authorization_code: string }):
     });
 
     // Save this refresh token to be used later
-    const file_path = path.join(cwd(), "/output/zoom_oauth_refresh_token.txt");
+    const file_path = path.join(cwd(), "output/zoom_oauth_refresh_token.txt");
     fs.mkdirSync(path.dirname(file_path), { recursive: true });
     fs.writeFileSync(file_path, refresh_token);
 
