@@ -253,7 +253,7 @@ deduplication_key = `${meeting_url}-${meeting_start_timestamp}`;
 
 This ensures only one bot joins per meeting, even if multiple users have the same event.
 
-Other strategies available:
+Other strategies available as seen in `generate_bot_deduplication_key()`:
 
 -   **User level**: One bot per user per meeting
 -   **Domain level**: One bot per company domain per meeting
