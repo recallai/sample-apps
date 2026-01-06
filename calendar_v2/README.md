@@ -1,16 +1,16 @@
 # Calendar V2 Demo
 
-A full-stack demo app showing how to integrate [Recall.ai's Calendar API](https://docs.recall.ai/docs/calendar-integration-overview) to automatically schedule meeting bots for calendar events.
+A full-stack demo app showing how to integrate [Recall.ai's Calendar V2 API](https://docs.recall.ai/docs/calendar-v2-integration-guide) to automatically schedule meeting bots for calendar events.
 
 ## Features
 
--   **OAuth Integration**: Connect Google Calendar or Microsoft Outlook accounts
+-   **Calendar Integration**: Connects directly with a user's Google Calendar or Microsoft Outlook accounts
 -   **Calendar Sync**: Automatically sync calendar events via Recall.ai webhooks
--   **Bot Scheduling**: Schedule/unschedule recording bots for meetings with video links
+-   **Bot Scheduling**: Schedule/unschedule recording bots for meetings
 
 ## Architecture & Request Flows
 
-### 1. Connecting a Calendar (OAuth Flow)
+### 1. Connecting a Calendar
 
 When a user clicks "Connect Google" or "Connect Outlook":
 
@@ -51,7 +51,7 @@ When a user clicks "Connect Google" or "Connect Outlook":
     │◀──────────────────│                      │                    │
 ```
 
-### 2. Calendar Sync & Auto-Scheduling (Webhook)
+### 2. Calendar Sync & Auto-Scheduling (via Webhooks)
 
 After OAuth (and on ongoing calendar changes), calendar providers notify Recall.ai via webhooks, which then notifies your server:
 
@@ -76,7 +76,7 @@ After OAuth (and on ongoing calendar changes), calendar providers notify Recall.
        │                      │──────────────────────▶│
        │                      │                       │
        │                      │       For each event with meeting_url
-       │                      │       and start_time in future:
+       │                      │       and start_time in future schedule a bot:
        │                      │                       │
        │                      │  POST https://REGION.recall.ai/api/v2/calendar-events/{id}/bot
        │                      │◀──────────────────────│
@@ -110,7 +110,7 @@ When a user toggles the recording switch in the UI:
     │       200 OK        │                    │
     │◀────────────────────│                    │
     │                     │                    │
-    │  ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ │
+    │  ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─  │
     │                     │                    │
     │  Toggle "Record" OFF│                    │
     │                     │                    │
@@ -138,7 +138,6 @@ When a user toggles the recording switch in the UI:
 -   Node.js 18+
 -   [ngrok](https://ngrok.com/) account (for webhooks)
 -   Recall.ai API key
--   Google and/or Microsoft OAuth credentials
 
 ## Setup
 
@@ -149,7 +148,7 @@ Follow the official Recall.ai guides to create OAuth credentials (you'll need th
 -   **Google Calendar**: [Google Calendar Setup Guide](https://docs.recall.ai/docs/calendar-v2-google-calendar)
 -   **Microsoft Outlook**: [Microsoft Outlook Setup Guide](https://docs.recall.ai/docs/calendar-v2-microsoft-outlook)
 
-Use `https://your-domain.ngrok-free.app/api/calendar/oauth/callback` as the redirect URI.
+Use `https://YOUR_CUSTOM_NGROK_SUBDOMAIN.ngrok-free.app/api/calendar/oauth/callback` as the redirect URI.
 
 ### 2. Install dependencies
 
@@ -158,7 +157,13 @@ cd calendar_v2
 npm install
 ```
 
-### 3. Set up env variables
+### 3. Start ngrok
+
+```bash
+ngrok http 4000
+```
+
+### 4. Set up env variables
 
 Copy the sample environment file and fill in your values:
 
@@ -168,18 +173,12 @@ cp .env.sample .env
 
 Then edit `.env` with your Recall API key, ngrok domain, and OAuth credentials from step 1.
 
-### 4. Configure Recall.ai webhook
+### 5. Configure Recall.ai webhook
 
 In your [Recall.ai webhooks dashboard](https://docs.recall.ai/reference/webhooks-overview), set the webhook URL to:
 
 ```
-https://your-domain.ngrok-free.app/api/recall/webhook
-```
-
-### 5. Start ngrok
-
-```bash
-ngrok http 4000 --domain=your-domain.ngrok-free.app
+https://YOUR_CUSTOM_NGROK_SUBDOMAIN.ngrok-free.app/api/recall/webhook
 ```
 
 ### 6. Run the app
@@ -193,7 +192,7 @@ This starts:
 -   **Backend**: http://localhost:4000
 -   **Frontend**: http://localhost:5173
 
-## Usage
+## Using the app
 
 1. Open http://localhost:5173 in your browser
 2. Click "Connect Google" or "Connect Outlook" to authorize your calendar
@@ -242,7 +241,7 @@ This is where the Recall.ai integration logic lives:
 | `recall_webhook.ts`          | **Core logic.** Receives `calendar.sync_events` webhooks, fetches changed events from Recall, and schedules bots for meetings with video links. |
 | `calendar_events_list.ts`    | Proxies requests to Recall's `GET /api/v2/calendar-events` for the frontend to display events.                                                  |
 | `calendars_list.ts`          | Proxies requests to Recall's `GET /api/v2/calendars` to list connected calendars.                                                               |
-| `calendars_delete.ts`        | Disconnects a calendar via Recall's `DELETE /api/v2/calendars/{id}`.                                                                            |
+| `calendars_delete.ts`        | Deletes a calendar via Recall's `DELETE /api/v2/calendars/{id}`.                                                                                |
 
 ## Bot Deduplication
 
