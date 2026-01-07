@@ -38,7 +38,7 @@ body=${JSON.stringify(body)}
             case "/api/session": {
                 switch (req.method) {
                     case "POST": {
-                        const { session_id, session_token } = await heygen_live_avatar_create_session({
+                        const { data: { session_id, session_token } } = await heygen_live_avatar_create_session({
                             avatar_id: env.HEYGEN_AVATAR_ID,
                             voice_id: env.HEYGEN_AVATAR_VOICE_ID,
                             context_id: env.HEYGEN_AVATAR_CONTEXT_ID,
@@ -48,7 +48,7 @@ body=${JSON.stringify(body)}
                         return;
                     }
                     case "DELETE": {
-                        const { session_id, session_token } = await heygen_live_avatar_stop_session(
+                        const { data: { session_id, session_token } } = await heygen_live_avatar_stop_session(
                             search_params,
                         );
                         res.writeHead(200, { "Content-Type": "application/json" });
@@ -75,6 +75,10 @@ body=${JSON.stringify(body)}
         res.writeHead(400, { "Content-Type": "application/json" });
         res.end(JSON.stringify({ error: error instanceof Error ? error.message : error }));
     }
+
+    res.writeHead(405, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ error: "Method not allowed" }));
+    return;
 });
 
 /**

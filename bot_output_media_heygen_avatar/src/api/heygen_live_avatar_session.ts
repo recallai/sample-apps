@@ -35,8 +35,12 @@ export async function heygen_live_avatar_create_session(args: {
     if (!response.ok) throw new Error(await response.text());
 
     return z.object({
-        session_id: z.string(),
-        session_token: z.string(),
+        code: z.number(),
+        data: z.object({
+            session_id: z.string(),
+            session_token: z.string(),
+        }),
+        message: z.string(),
     }).parse(await response.json());
 }
 
@@ -60,7 +64,11 @@ export async function heygen_live_avatar_stop_session(args: {
     if (!response.ok) throw new Error(await response.text());
 
     return z.object({
-        session_id: z.string(),
-        session_token: z.string(),
+        code: z.number(),
+        data: z.object({
+            session_id: z.string(),
+            session_token: z.string(),
+        }),
+        message: z.string(),
     }).parse(await response.json());
 }

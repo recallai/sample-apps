@@ -7,6 +7,7 @@ import {
     VoiceChatState,
     AgentEventsEnum,
 } from "@heygen/liveavatar-web-sdk";
+import { useQuery } from "@tanstack/react-query";
 import {
     createContext,
     useContext,
@@ -17,6 +18,7 @@ import {
     useCallback,
     type ReactNode,
 } from "react";
+import { z } from "zod";
 
 // ============================================================================
 // Types
@@ -54,11 +56,6 @@ interface LiveAvatarContextValue {
     startSession: () => Promise<void>;
     stopSession: () => Promise<void>;
     keepAlive: () => Promise<void>;
-}
-
-interface LiveAvatarProviderProps {
-    children: ReactNode;
-    sessionAccessToken: string;
 }
 
 // ============================================================================
@@ -213,8 +210,8 @@ function useTalkingState(session: LiveAvatarSession | null) {
 /**
  * Manages the conversation history (transcripts) between user and avatar.
  */
-function useConversationState(session: LiveAvatarSession | null) {
-    const [transcript, setConversation] = useState<Transcript[]>([]);
+function useTranscriptUpdate(session: LiveAvatarSession | null) {
+    const [transcript, setTranscript] = useState<Transcript[]>([]);
     const currentParticipantRef = useRef<ParticipantType | null>(null);
 
     const handleTranscript = useCallback(
@@ -224,7 +221,7 @@ function useConversationState(session: LiveAvatarSession | null) {
         ) => {
             const { taskId, text } = data;
 
-            setConversation((prev) => {
+            setTranscript((prev) => {
                 if (
                     currentParticipantRef.current === participant &&
                     prev.length > 0
@@ -261,22 +258,22 @@ function useConversationState(session: LiveAvatarSession | null) {
             return;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const handleUserSpeakStarted = (data: any) => {
+        session.on(AgentEventsEnum.USER_SPEAK_STARTED, (data) => {
             console.log("USER_SPEAK_STARTED", data);
-            handleTranscript("user", {
-                taskId: data.task_id ?? data.event_id ?? "",
-                text: data.text ?? "",
-            });
-        };
-
-        session.on(AgentEventsEnum.USER_SPEAK_STARTED, handleUserSpeakStarted);
+            // handleTranscript("user", {
+            //     taskId: data.task_id ?? data.event_id ?? "",
+            //     text: data.text ?? "",
+            // });
+        });
 
         return () => {
-            session.off(
-                AgentEventsEnum.USER_SPEAK_STARTED,
-                handleUserSpeakStarted,
-            );
+            session.off(AgentEventsEnum.USER_SPEAK_STARTED, (data) => {
+                console.log("USER_SPEAK_STARTED", data);
+                // handleTranscript("user", {
+                //     taskId: data.task_id ?? data.event_id ?? "",
+                //     text: data.text ?? "",
+                // });
+            });
         };
     }, [session, handleTranscript]);
 
@@ -299,14 +296,6 @@ function useConversationState(session: LiveAvatarSession | null) {
  * - Speaking activity detection for both user and avatar
  * - Conversation history (transcripts) between user and avatar
  * - Connection quality monitoring
- *
- * Usage:
- *   <LiveAvatarContextProvider sessionAccessToken={token}>
- *     <YourApp />
- *   </LiveAvatarContextProvider>
- *
- * Then in child components:
- *   const { startSession, stopSession, sessionState, ... } = useLiveAvatarContext();
  */
 const SESSION_CONFIG = {
     voiceChat: true,
@@ -315,24 +304,43 @@ const SESSION_CONFIG = {
 
 export function LiveAvatarContextProvider({
     children,
-    sessionAccessToken,
-}: LiveAvatarProviderProps) {
-    // Lazy initialization to avoid creating new session on every render
+}: {
+    children: ReactNode;
+}) {
     const sessionRef = useRef<LiveAvatarSession | null>(null);
 
-    if (sessionRef.current === null) {
+    // Fetch the session token
+    const {
+        data: sessionData,
+        isLoading,
+        error,
+    } = useQuery({
+        queryKey: ["heygen-session-token"],
+        queryFn: async () => {
+            const response = await fetch("/api/session", { method: "POST" });
+            if (!response.ok) throw new Error(await response.text());
+            return z
+                .object({
+                    session_id: z.string(),
+                    session_token: z.string(),
+                })
+                .parse(await response.json());
+        },
+        staleTime: Infinity, // Don't refetch - session token is one-time use
+        retry: false,
+    });
+
+    // Initialize the LiveAvatarSession once we have the token
+    if (sessionData?.session_token && !sessionRef.current) {
         sessionRef.current = new LiveAvatarSession(
-            sessionAccessToken,
+            sessionData.session_token,
             SESSION_CONFIG,
         );
     }
 
     const session = sessionRef.current;
 
-    /**
-     * Cleans up all session listeners.
-     * Called on disconnect and unmount.
-     */
+    /** Cleans up all session listeners. Called on disconnect and unmount.*/
     const cleanupSession = useCallback(() => {
         if (sessionRef.current) {
             sessionRef.current.removeAllListeners();
@@ -340,48 +348,30 @@ export function LiveAvatarContextProvider({
         }
     }, []);
 
+    const { isMuted, voiceChatState } = useVoiceChatState(session);
+    const { isUserTalking, isAvatarTalking } = useTalkingState(session);
+    const { transcript } = useTranscriptUpdate(session);
     const { sessionState, isStreamReady, connectionQuality } = useSessionState(
         session,
         cleanupSession,
     );
-    const { isMuted, voiceChatState } = useVoiceChatState(session);
-    const { isUserTalking, isAvatarTalking } = useTalkingState(session);
-    const { transcript } = useConversationState(session);
 
-    /**
-     * Starts the LiveAvatar session.
-     */
+    /** Starts the LiveAvatar session.*/
     const startSession = useCallback(async () => {
-        if (!sessionRef.current) {
-            throw new Error("Session is not initialized");
-        }
+        if (!sessionRef.current) throw new Error("Session is not initialized");
         await sessionRef.current.start();
     }, []);
 
-    /**
-     * Stops the LiveAvatar session and cleans up listeners.
-     */
+    /** Stops the LiveAvatar session and cleans up listeners.*/
     const stopSession = useCallback(async () => {
-        if (!sessionRef.current) {
-            return;
-        }
+        if (!sessionRef.current) return;
         await sessionRef.current.stop();
         // Note: cleanup happens via the onDisconnect callback in useSessionState
     }, []);
 
-    /**
-     * Sends a keep-alive signal to prevent server-side session timeout.
-     *
-     * Avatar sessions have a server-side timeout (typically <10 minutes of
-     * inactivity). Use this when:
-     * - User has the session open but is idle (reading, thinking, AFK)
-     * - You want to keep the connection alive without actual user interaction
-     * - Before performing an action after a long pause
-     */
+    /** Sends a keep-alive signal to prevent server-side session timeout.*/
     const keepAlive = useCallback(async () => {
-        if (!sessionRef.current) {
-            throw new Error("Session is not initialized");
-        }
+        if (!sessionRef.current) throw new Error("Session is not initialized");
         await sessionRef.current.keepAlive();
     }, []);
 
@@ -423,6 +413,15 @@ export function LiveAvatarContextProvider({
         ],
     );
 
+    // Show loading state while fetching token
+    if (isLoading) return <div>Loading avatar session...</div>;
+
+    // Show error state if token fetch failed
+    if (error) return <div>Error loading avatar session: {error.message}</div>;
+
+    // Don't render children until session is initialized
+    if (!session) return <div>Initializing avatar session...</div>;
+
     return (
         <LiveAvatarContext.Provider value={contextValue}>
             {children}
@@ -435,29 +434,11 @@ export function LiveAvatarContextProvider({
 // ============================================================================
 
 /**
- * useLiveAvatarContext
- *
  * Hook to access the LiveAvatar session state and actions from the context.
  * Provides access to session controls (start/stop), real-time state updates,
  * voice chat status, and transcript history.
  *
  * Must be used within a LiveAvatarContextProvider.
- *
- * @returns {LiveAvatarContextValue} The context value containing:
- *   - sessionRef: Reference to the underlying LiveAvatarSession
- *   - sessionState: Current session state (INACTIVE, CONNECTING, CONNECTED, etc.)
- *   - isStreamReady: Whether the video stream is ready for display
- *   - connectionQuality: Current connection quality indicator
- *   - isMuted: Whether the user's microphone is muted
- *   - voiceChatState: Current voice chat state
- *   - isUserTalking: Whether the user is currently speaking
- *   - isAvatarTalking: Whether the avatar is currently speaking
- *   - transcript: Array of transcripts between user and avatar
- *   - startSession: Function to start the session
- *   - stopSession: Function to stop the session and cleanup
- *   - keepAlive: Function to prevent server-side session timeout during idle periods
- *
- * @throws Error if used outside of LiveAvatarContextProvider
  */
 export function useLiveAvatarContext(): LiveAvatarContextValue {
     const context = useContext(LiveAvatarContext);
