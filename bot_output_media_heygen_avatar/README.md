@@ -1,5 +1,7 @@
 # HeyGen Avatar Output Media Demo
 
+[![Watch the demo](https://cdn.loom.com/sessions/thumbnails/b1f116686d7c4d009790ee8c1460336c-ec5d0ce0b95e8f1f-full-play.gif)](https://www.loom.com/share/b1f116686d7c4d009790ee8c1460336c)
+
 A full-stack demo app showing how to use [Recall.ai's Output Media API](https://docs.recall.ai/docs/stream-media) with a [HeyGen Live Avatar](https://www.heygen.com/interactive-avatar) to create an AI-powered meeting participant that can see, hear, and respond to meeting participants in real-time.
 
 ## Features
@@ -226,3 +228,5 @@ bot_output_media_heygen_avatar/
 | `run.sh`                                       | Creates a Recall bot with output_media pointing to your ngrok URL    |
 
 ## Debugging
+
+See [here](https://docs.recall.ai/docs/stream-media) for how to debug output media bots live
