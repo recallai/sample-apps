@@ -18,6 +18,7 @@ import {
     useCallback,
     type ReactNode,
 } from "react";
+import { toast } from "sonner";
 import { z } from "zod";
 
 // ============================================================================
@@ -358,21 +359,44 @@ export function LiveAvatarContextProvider({
 
     /** Starts the LiveAvatar session.*/
     const startSession = useCallback(async () => {
-        if (!sessionRef.current) throw new Error("Session is not initialized");
-        await sessionRef.current.start();
+        try {
+            if (!sessionRef.current) {
+                throw new Error("Session is not initialized");
+            }
+            await sessionRef.current.start();
+        } catch (e) {
+            console.error("Error starting session:", e);
+            toast.error("Failed to start session. See console for details.");
+        }
     }, []);
 
     /** Stops the LiveAvatar session and cleans up listeners.*/
     const stopSession = useCallback(async () => {
-        if (!sessionRef.current) return;
-        await sessionRef.current.stop();
+        try {
+            if (!sessionRef.current) {
+                throw new Error("Session is not initialized");
+            }
+            await sessionRef.current.stop();
+        } catch (e) {
+            console.error("Error stopping session:", e);
+            toast.error("Failed to stop session. See console for details.");
+        }
         // Note: cleanup happens via the onDisconnect callback in useSessionState
     }, []);
 
     /** Sends a keep-alive signal to prevent server-side session timeout.*/
     const keepAlive = useCallback(async () => {
-        if (!sessionRef.current) throw new Error("Session is not initialized");
-        await sessionRef.current.keepAlive();
+        try {
+            if (!sessionRef.current) {
+                throw new Error("Session is not initialized");
+            }
+            await sessionRef.current.keepAlive();
+        } catch (e) {
+            console.error("Error keeping session alive:", e);
+            toast.error(
+                "Failed to make keep-alive request. See console for details.",
+            );
+        }
     }, []);
 
     // Cleanup session on unmount
