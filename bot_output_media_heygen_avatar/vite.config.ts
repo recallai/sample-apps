@@ -13,6 +13,7 @@ export default defineConfig({
     },
     server: {
         port: 5173,
+        allowedHosts: true, // Allow ngrok and other tunneling services
         proxy: {
             '/api': {
                 target: 'http://localhost:4000',

@@ -1,7 +1,6 @@
 import http from "http";
-import { WebSocketServer } from "ws";
 import { env } from "./config/env";
-import { heygen_live_avatar_create_session, heygen_live_avatar_stop_session } from "./heygen_live_avatar_session";
+import { heygen_live_avatar_create_session } from "./heygen_live_avatar_create_session";
 
 const server = http.createServer();
 
@@ -47,22 +46,20 @@ body=${JSON.stringify(body)}
                         res.end(JSON.stringify({ session_id, session_token }));
                         return;
                     }
-                    case "DELETE": {
-                        const { data: { session_id, session_token } } = await heygen_live_avatar_stop_session(
-                            search_params,
-                        );
-                        res.writeHead(200, { "Content-Type": "application/json" });
-                        res.end(JSON.stringify({ session_id, session_token }));
+                    default: {
+                        res.writeHead(405, { "Content-Type": "application/json" });
+                        res.end(JSON.stringify({ error: "Method not allowed" }));
                         return;
                     }
                 }
-                break;
             }
 
             /** Default endpoints */
             default: {
                 if (url.pathname.startsWith("/api/")) {
-                    throw new Error(`Endpoint not found: ${req.method} ${url.pathname}`);
+                    res.writeHead(404, { "Content-Type": "application/json" });
+                    res.end(JSON.stringify({ error: `Endpoint not found: ${req.method} ${url.pathname}` }));
+                    return;
                 } else {
                     res.writeHead(404, { "Content-Type": "text/plain" });
                     res.end(Buffer.from(""));
@@ -74,38 +71,6 @@ body=${JSON.stringify(body)}
         console.error(`${req.method} ${req.url}`, error);
         res.writeHead(400, { "Content-Type": "application/json" });
         res.end(JSON.stringify({ error: error instanceof Error ? error.message : error }));
-    }
-
-    res.writeHead(405, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: "Method not allowed" }));
-    return;
-});
-
-/**
- * WebSocket server for handling WebSocket requests from Recall.ai
- */
-const wss = new WebSocketServer({ noServer: true });
-wss.on("connection", (socket) => {
-    socket.on("message", (raw_msg) => {
-        console.log("Message received", raw_msg.toString());
-    });
-
-    socket.on("close", () => {
-        console.log("WebSocket connection closed");
-    });
-});
-
-server.on("upgrade", (req, socket, head) => {
-    try {
-        wss.handleUpgrade(req, socket, head, (ws) => {
-            wss.emit("connection", ws, req);
-        });
-
-        console.log(`WebSocket request verified: ${req.method} ${req.url}`);
-        socket.write("WebSocket connection upgraded");
-    } catch (error) {
-        console.error(`Error verifying WebSocket request from Recall.ai: ${req.method} ${req.url}`, error);
-        socket.destroy();
     }
 });
 

@@ -43,32 +43,3 @@ export async function heygen_live_avatar_create_session(args: {
         message: z.string(),
     }).parse(await response.json());
 }
-
-/**
- * Stop a HeyGen avatar session.
- */
-export async function heygen_live_avatar_stop_session(args: {
-    session_token: string;
-}) {
-    const { session_token } = z.object({
-        session_token: z.string(),
-    }).parse(args);
-
-    const response = await fetch("https://api.liveavatar.com/v1/sessions", {
-        method: "DELETE",
-        headers: {
-            "X-API-KEY": `Bearer ${session_token}`,
-            "Content-Type": "application/json",
-        },
-    });
-    if (!response.ok) throw new Error(await response.text());
-
-    return z.object({
-        code: z.number(),
-        data: z.object({
-            session_id: z.string(),
-            session_token: z.string(),
-        }),
-        message: z.string(),
-    }).parse(await response.json());
-}

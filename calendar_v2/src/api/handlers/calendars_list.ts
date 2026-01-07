@@ -13,7 +13,7 @@ export async function calendars_list(args: Partial<CalendarType>): Promise<{ cal
 
     const response = await fetch(url.toString(), {
         method: "GET",
-        headers: { 
+        headers: {
             "Authorization": `${env.RECALL_API_KEY}`,
             "Content-Type": "application/json",
         },

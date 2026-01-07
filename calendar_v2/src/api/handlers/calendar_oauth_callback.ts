@@ -140,7 +140,7 @@ async function retrieve_google_calendar_oauth_tokens(args: {
 
     // Get the user's email from the OAuth tokens.
     const user_response = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
-        headers: { 
+        headers: {
             "Authorization": `Bearer ${oauth_tokens.access_token}`,
             "Content-Type": "application/json",
         },
