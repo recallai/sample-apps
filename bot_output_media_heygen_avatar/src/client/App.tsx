@@ -1,8 +1,8 @@
 import { SessionState } from "@heygen/liveavatar-web-sdk";
 import { useEffect, useRef, useState } from "react";
 import { useLiveAvatarContext } from "./contexts/LiveAvatarContext";
+import { useLiveAvatarActions } from "./hooks/use-live-avatar-actions";
 import { useSession } from "./hooks/use-session";
-import { useSpeakerActions } from "./hooks/use-speaker-actions";
 
 function App() {
     const videoRef = useRef<HTMLVideoElement>(null);
@@ -10,7 +10,7 @@ function App() {
     const [micError, setMicError] = useState<string | null>(null);
 
     const { isAvatarTalking, sessionError } = useLiveAvatarContext();
-    const { startListening, unmuteMic, isUserTalking } = useSpeakerActions();
+    const { startListening, unmuteMic, isUserTalking } = useLiveAvatarActions();
     const { sessionState, isStreamReady, startSession, attachElement } =
         useSession();
 
