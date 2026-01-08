@@ -1,7 +1,11 @@
 import { useCallback } from "react";
 import { useLiveAvatarContext } from "../contexts/LiveAvatarContext";
 
-export const useSpeakerActions = () => {
+/**
+ * Enables the HeyGen avatar to listen to meeting audio and speak responses.
+ * Call startListening() then unmuteMic() after the session is connected.
+ */
+export const useLiveAvatarActions = () => {
   const { sessionRef, isUserTalking } = useLiveAvatarContext();
 
   const unmuteMic = useCallback(async () => {

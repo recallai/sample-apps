@@ -24,7 +24,7 @@ export async function calendar_events_list(args: {
     const response = await fetch(url.toString(), {
         method: "GET",
         headers: {
-            "Authorization": `${env.RECALL_API_KEY}`,
+            "Authorization": env.RECALL_API_KEY,
             "Content-Type": "application/json",
         },
     });

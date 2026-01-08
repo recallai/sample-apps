@@ -5,7 +5,7 @@ import { heygen_live_avatar_create_session } from "./heygen_live_avatar_create_s
 const server = http.createServer();
 
 /**
- * HTTP server for handling HTTP requests from Recall.ai
+ * HTTP server for handling HTTP requests from the client
  */
 server.on("request", async (req, res) => {
     try {

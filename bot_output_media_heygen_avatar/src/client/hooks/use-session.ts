@@ -1,6 +1,10 @@
 import { useCallback } from "react";
 import { useLiveAvatarContext } from "../contexts/LiveAvatarContext";
 
+/**
+ * Manages the HeyGen avatar session lifecycle.
+ * Call startSession() to connect, then wait for isStreamReady before rendering.
+ */
 export const useSession = () => {
   const { sessionRef, sessionState, isStreamReady, startSession } =
     useLiveAvatarContext();
