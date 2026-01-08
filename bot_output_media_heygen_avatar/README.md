@@ -88,29 +88,28 @@ When the bot's browser loads your webpage:
 
 ### Key Points
 
--   **Output Media**: Recall.ai renders your webpage and uses it as the bot's camera feed
--   **Microphone Access**: The bot's browser auto-accepts microphone permissions, enabling the avatar to hear meeting audio
--   **Real-time Streaming**: HeyGen's WebRTC connection streams avatar video directly to the webpage
--   **Voice Chat**: The avatar processes incoming audio and generates spoken responses
+-   **Output Media**: Recall.ai bot will render your webpage and uses it as the bot's camera feed (or screenshare if preferred)
+-   **Microphone Access**: The bot's browser auto-accepts microphone permissions, allowing the avatar to hear meeting audio
+-   **Real-time Streaming**: HeyGen handles streaming avatar video+audio directly to the webpage
+-   **Voice Chat**: The avatar processes incoming audio from the meeting and generates spoken responses
 
 ## Prerequisites
 
 -   Node.js 18+
 -   [ngrok](https://ngrok.com/) account (for exposing local server to Recall)
 -   Recall.ai API key
--   HeyGen API key and configured Interactive Avatar
+-   HeyGen API key and configured Live Avatar
 
 ## Setup
 
-### 1. Set up HeyGen Interactive Avatar
+### 1. Set up HeyGen Live Avatar
 
-1. Go to [HeyGen Interactive Avatar](https://app.heygen.com/interactive-avatar)
-2. Create or select an avatar
-3. Note down your:
+1. Go to [HeyGen Live Avatar](https://app.liveavatar.com/signin)
+2. Note down your:
     - **Avatar ID**
     - **Voice ID**
     - **Context ID** (the persona/knowledge configuration)
-    - **API Key** (from HeyGen settings)
+    - **API Key** (from developer settings)
 
 ### 2. Install dependencies
 
@@ -180,18 +179,14 @@ curl --request POST \
           "url": "https://YOUR_NGROK_DOMAIN"
         }
       }
+    },
+    "recording_config": {
+      "include_bot_in_recording": {
+        "audio": true
+      }
     }
   }'
 ```
-
-## Using the App
-
-1. Start the dev server (`npm run dev`)
-2. Start ngrok (`ngrok http 5173`)
-3. Update your `.env` with the ngrok domain and meeting URL
-4. Run `./run.sh` to create a bot
-5. Join the meeting - you'll see the avatar as a participant
-6. Speak to the avatar - it will listen and respond
 
 ## API Endpoints
 
