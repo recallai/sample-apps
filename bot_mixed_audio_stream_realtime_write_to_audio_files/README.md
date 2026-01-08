@@ -1,6 +1,6 @@
-# Real-time separate PNG video streams per participant from a meeting bot
+# Real-time mixed audio stream from a meeting bot
 
-This example demonstrates how to receive real-time PNG video streams for each participant in a meeting via WebSocket and save them as separate MP4 video files. Video data is streamed in real-time as the meeting progresses, allowing you to process or store video without waiting for the meeting to end.
+This example demonstrates how to receive a real-time mixed audio stream (all participants combined) from a meeting via WebSocket and save it as an audio file. Audio data is streamed in real-time as the meeting progresses, allowing you to process or store audio without waiting for the meeting to end.
 
 ## Pre-requisites
 
@@ -74,12 +74,11 @@ curl --request POST \
           "type": "websocket",
           "url": "wss://YOUR_NGROK_DOMAIN",
           "events": [
-            "video_separate_png.data"
+            "audio_mixed_raw.data"
           ]
         }
       ],
-      "video_separate_png": {},
-      "video_mixed_layout": "gallery_view_v2"
+      "audio_mixed_raw": {}
     }
   }'
 ```
@@ -91,4 +90,7 @@ curl --request POST \
 
 ### 5. View the output
 
-After the call ends, you can find the video files in the newly-generated `output/` folder, organized by recording and participant ID.
+After the call ends, you can find the audio files in the newly-generated `output/` folder, organized by recording ID. Each recording will have:
+
+-   `mixed.raw` - The raw PCM audio (16-bit, 16kHz, mono)
+-   `mixed.mp3` - The converted MP3 audio file

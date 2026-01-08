@@ -1,12 +1,12 @@
-# Download separate audio streams per participant audio files from a meeting bot
+# Real-time separate audio streams per participant from a meeting bot
 
-This example demonstrates how to receive real-time audio streams for each participant in a meeting and save them as separate audio files.
+This example demonstrates how to receive real-time audio streams for each participant in a meeting via WebSocket and save them as separate audio files. Audio data is streamed in real-time as the meeting progresses, allowing you to process or store audio without waiting for the meeting to end.
 
 ## Pre-requisites
 
-- [ngrok](https://ngrok.com/)
-- [Node.js](https://nodejs.org/en/download)
-- [NPM](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
+-   [ngrok](https://ngrok.com/)
+-   [Node.js](https://nodejs.org/en/download)
+-   [NPM](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
 
 ## Quickstart
 
@@ -85,8 +85,8 @@ curl --request POST \
 
 **Note:**
 
-- Replace `RECALL_REGION`, `RECALL_API_KEY`, and `YOUR_MEETING_URL` with your own values.
-- Replace `YOUR_NGROK_DOMAIN` with your ngrok domain (e.g. `somehash.ngrok-free.app`). Use `wss://` instead of `https://` since this is a WebSocket connection.
+-   Replace `RECALL_REGION`, `RECALL_API_KEY`, and `YOUR_MEETING_URL` with your own values.
+-   Replace `YOUR_NGROK_DOMAIN` with your ngrok domain (e.g. `somehash.ngrok-free.app`). Use `wss://` instead of `https://` since this is a WebSocket connection.
 
 ### 5. View the output
 
