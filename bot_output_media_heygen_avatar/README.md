@@ -1,6 +1,6 @@
 # HeyGen Avatar Output Media Demo
 
-[![Watch Demo](https://img.shields.io/badge/Watch%20Demo-Loom-blueviolet?style=for-the-badge&logo=loom)](https://www.loom.com/share/b1f116686d7c4d009790ee8c1460336c)
+📹 **Demo:** [Watch a 2-minute walkthrough on Loom](https://www.loom.com/share/b1f116686d7c4d009790ee8c1460336c)
 
 A full-stack demo app showing how to use [Recall.ai's Output Media API](https://docs.recall.ai/docs/stream-media) with a [HeyGen Live Avatar](https://www.heygen.com/interactive-avatar) to create an AI-powered meeting participant that can see, hear, and respond to meeting participants in real-time.
 
