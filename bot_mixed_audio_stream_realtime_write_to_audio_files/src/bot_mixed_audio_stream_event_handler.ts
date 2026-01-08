@@ -7,7 +7,7 @@ import { AudioMixedRawDataEventSchema } from "./schemas/AudioMixedRawDataEventSc
 
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
-/* Store the open streams so we can reuse them for the same recording and participant. */
+/* Store the open streams so we can reuse them for the same recording. */
 const audio_stream_passthroughs_raw = new Map<string, PassThrough>();
 const audio_stream_passthroughs_mp3 = new Map<string, PassThrough>();
 
@@ -32,7 +32,7 @@ function get_stream_key(args: { recording_id: string }) {
 }
 
 /**
- * Get the audio passthrough for a given recording and participant raw audio.
+ * Get the audio passthrough for a given recording's raw audio.
  * If the passthrough does not exist, create it.
  */
 function get_audio_passthrough_raw(args: { recording_id: string }) {
@@ -60,7 +60,7 @@ function get_audio_passthrough_raw(args: { recording_id: string }) {
 
 
 /**
- * Get the audio passthrough for a given recording and participant mp3 audio.
+ * Get the audio passthrough for a given recording's mp3 audio.
  * If the passthrough does not exist, create it.
  */
 function get_audio_passthrough_mp3(args: { recording_id: string }) {
@@ -104,7 +104,7 @@ export function bot_mixed_audio_stream_event_handler(args: { msg: Record<string,
     // Convert base64-encoded raw audio to PCM buffer.
     const pcm_buffer_chunk = Buffer.from(msg.data.data.buffer, "base64");
 
-    // Track each participant audio stream's previous chunk end so we only pad the actual silence since the last chunk.
+    // Track the audio stream's previous chunk end so we only pad the actual silence since the last chunk.
     const stream_key = get_stream_key({ recording_id: msg.data.recording.id });
     const chunk_duration = (pcm_buffer_chunk.length / 2) / 16000; // 2 bytes per sample @ 16000 samples per second.
     const current_chunk_start = msg.data.data.timestamp.relative;
