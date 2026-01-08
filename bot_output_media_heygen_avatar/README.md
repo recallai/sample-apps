@@ -212,7 +212,9 @@ bot_output_media_heygen_avatar/
 │   ├── client/                           # React frontend
 │   │   ├── App.tsx                       # Main app (avatar display)
 │   │   ├── contexts/LiveAvatarContext.tsx # HeyGen session management
-│   │   └── hooks/                        # React hooks
+│   │   └── hooks/
+│   │       ├── use-live-avatar-actions.ts # Enable avatar listening/speaking
+│   │       └── use-session.ts            # Session lifecycle
 │   └── schemas/                          # Zod validation schemas
 ├── run.sh                                # Script to create Recall bot
 └── package.json
