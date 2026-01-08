@@ -184,6 +184,12 @@ curl --request POST \
       "include_bot_in_recording": {
         "audio": true
       }
+    },
+    "variant": {
+      "zoom": "web_4_core",
+      "google_meet": "web_4_core",
+      "microsoft_teams": "web_4_core",
+      "webex": "web_4_core"
     }
   }'
 ```
