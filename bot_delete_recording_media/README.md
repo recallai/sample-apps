@@ -4,8 +4,8 @@ This example demonstrates how to bulk delete bot recording media using the Recal
 
 ## Pre-requisites
 
-- [Node.js](https://nodejs.org/en/download)
-- [NPM](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
+-   [Node.js](https://nodejs.org/en/download)
+-   [NPM](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
 
 ## Quickstart
 
@@ -19,8 +19,8 @@ cp .env.sample .env
 
 Then fill out the variables in the `.env` file:
 
-- `RECALL_API_KEY` - Your Recall.ai API key
-- `RECALL_REGION` - Your Recall.ai region (e.g., `us-west-2`)
+-   `RECALL_API_KEY` - Your Recall.ai API key
+-   `RECALL_REGION` - Your Recall.ai region (e.g., `us-west-2`)
 
 ### 2. Install dependencies
 
@@ -35,14 +35,14 @@ npm install
 Delete media for all bots that joined after a given date:
 
 ```bash
-npx tsx src/index.ts \
+npx ts-node src/index.ts \
   --start_date_utc "2025-12-15 00:00:00"
 ```
 
 Delete media for bots within a date range:
 
 ```bash
-npx tsx src/index.ts \
+npx ts-node src/index.ts \
   --start_date_utc "2025-12-15 00:00:00" \
   --end_date_utc "2025-12-31 00:00:00"
 ```
@@ -50,7 +50,7 @@ npx tsx src/index.ts \
 Filter by custom metadata to delete media for only specific customer's bots:
 
 ```bash
-npx tsx src/index.ts \
+npx ts-node src/index.ts \
   --start_date_utc "2025-12-15 00:00:00" \
   --metadata '{"team_id":"1872"}'
 ```

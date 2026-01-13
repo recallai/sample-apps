@@ -7,7 +7,7 @@ async function main() {
 
   if (raw.help) {
     console.log(`
-Usage: npx tsx src/index.ts [options]
+Usage: npx ts-node src/index.ts [options]
 
 Options:
   --start_date_utc      Delete bots scheduled to join after this date (ISO 8601, e.g., "2025-01-01 00:00:00")
@@ -16,12 +16,12 @@ Options:
   --help                Show this help message
 
 Examples:
-  npx tsx src/index.ts \
+  npx ts-node src/index.ts \
     --start_date_utc "2025-12-15 00:00:00" \
     --end_date_utc "2025-12-31 00:00:00" \
     --metadata '{"customer_id":"123"}'
 
-  npx tsx src/index.ts \
+  npx ts-node src/index.ts \
     --start_date_utc "2025-12-15 00:00:00"
         `);
     process.exit(0);
