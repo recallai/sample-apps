@@ -15,11 +15,20 @@ export async function dsdk_delete_recording_media() {
         });
         console.log({ pageCount: page.results.length, nextPage: page.next });
 
-        await Promise.all(page.results.map(async (dsdk_upload) => {
-            await delete_dsdk_upload_media_by_recording_id({ recording_id: dsdk_upload.recording_id });
-            console.log(`Deleted dsdk upload's recording media: ${dsdk_upload.recording_id}`);
+        const deleted = await Promise.all(page.results.map(async (dsdk_upload) => {
+            try {
+                if (!dsdk_upload.recording_id) return 0;
+                if (dsdk_upload.status.code !== "complete") return 0;
+
+                await delete_dsdk_upload_media_by_recording_id({ recording_id: dsdk_upload.recording_id });
+                console.log(`Deleted dsdk upload's recording media: ${dsdk_upload.recording_id}`);
+                return 1;
+            } catch (error) {
+                console.error(`Error deleting dsdk upload's recording media: ${dsdk_upload.recording_id}, error=${error}`);
+                return 0;
+            }
         }));
-        count += page.results.length;
+        count += deleted.filter((v) => v === 1).length;
         next = page.next;
     } while (next);
 
@@ -71,7 +80,7 @@ async function delete_dsdk_upload_media_by_recording_id(args: {
     const { recording_id } = z.object({ recording_id: z.string() }).parse(args);
 
     const response = await fetch_with_retry(`https://${env.RECALL_REGION}.recall.ai/api/v1/recording/${recording_id}/`, {
-        method: "POST",
+        method: "DELETE",
         headers: {
             "Authorization": `${env.RECALL_API_KEY}`,
             "Content-Type": "application/json",
