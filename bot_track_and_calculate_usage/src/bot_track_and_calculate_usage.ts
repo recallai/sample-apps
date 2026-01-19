@@ -7,14 +7,14 @@ import { BotArtifactSchema } from "./schemas/BotArtifactSchema";
  * Retrieve the usage for bots.
  * Pass one or several of the following arguments to filter usage for a specific time period or metadata.
  * For example:
- * - Setting `start_date_utc` will only include bots whose `join_at` is >= the given time.
- * - Setting `end_date_utc` will only include bots whose `join_at` is < the given time.
+ * - Setting `join_at__gte` will only include bots whose `join_at` is >= the given time.
+ * - Setting `join_at__lte` will only include bots whose `join_at` is <= the given time.
  * - Setting `metadata` will only include bots that have the given metadata key-value pair (e.g. for a specific customer).
  */
 export async function bot_track_and_calculate_usage(args: any) {
-    const { start_date_utc, end_date_utc, metadata } = z.object({
-        start_date_utc: z.string().optional(),
-        end_date_utc: z.string().optional(),
+    const { join_at__gte, join_at__lte, metadata } = z.object({
+        join_at__gte: z.string().optional(),
+        join_at__lte: z.string().optional(),
         metadata: z.record(z.string(), z.string()).optional(),
     }).parse(args);
 
@@ -22,8 +22,8 @@ export async function bot_track_and_calculate_usage(args: any) {
     let next: string | null = null;
     do {
         const page = await list_bots({
-            join_at_after: start_date_utc,
-            join_at_before: end_date_utc,
+            join_at_after: join_at__gte,
+            join_at_before: join_at__lte,
             metadata,
             next,
         });
@@ -41,12 +41,11 @@ export async function bot_track_and_calculate_usage(args: any) {
 /**
  * Filters bots by the given arguments.
  * Returns a page of bots and the next page URL to fetch the next page of bots.
- * 
  */
 async function list_bots(args: {
     next?: string | null; // next page URL
     join_at_after?: string; // ISO 8601, e.g. "2025-12-15 00:00:00"
-    join_at_before?: string; // ISO 8601, e.g. "2025-12-15 00:25:00"
+    join_at_before?: string; // ISO 8601, e.g. "2025-12-15 00:00:00"
     metadata?: Record<string, string>; // add one key-value pair
 }) {
     const { next, join_at_after, join_at_before, metadata } = z.object({
