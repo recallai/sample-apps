@@ -35,23 +35,23 @@ npm install
 Track usage for all bots (all time):
 
 ```bash
-npx tsx src/index.ts
+npx ts-node src/index.ts
 ```
 
 Track usage for bots within a date range:
 
 ```bash
-npx tsx src/index.ts \
-  --start_date_utc "2025-11-01 00:00:00" \
-  --end_date_utc "2025-12-01 00:00:00"
+npx ts-node src/index.ts \
+  --join_at__gte "2025-11-01 00:00:00" \
+  --join_at__lte "2025-12-01 00:00:00"
 ```
 
 Filter by custom metadata to track usage for a specific customer. This is useful when you pass custom metadata (e.g., `team_id`, `customer_id`) when creating bots:
 
 ```bash
-npx tsx src/index.ts \
-  --start_date_utc "2025-11-01 00:00:00" \
-  --end_date_utc "2025-12-01 00:00:00" \
+npx ts-node src/index.ts \
+  --join_at__gte "2025-11-01 00:00:00" \
+  --join_at__lte "2025-12-01 00:00:00" \
   --metadata '{"team_id":"1872"}'
 ```
 
@@ -70,9 +70,9 @@ Total bot usage: 2306.6271 hours (8303858 seconds)
 
 ## CLI Options
 
-| Option             | Required | Description                                                                 |
-| ------------------ | -------- | --------------------------------------------------------------------------- |
-| `--start_date_utc` | No       | Include bots with `join_at` >= this date (ISO 8601)                         |
-| `--end_date_utc`   | No       | Include bots with `join_at` < this date (ISO 8601)                          |
-| `--metadata`       | No       | JSON object to filter by custom bot metadata (e.g., `'{"team_id":"1872"}'`) |
-| `--help`           | No       | Show help message                                                           |
+| Option           | Required | Description                                                                 |
+| ---------------- | -------- | --------------------------------------------------------------------------- |
+| `--join_at__gte` | No       | Include bots with `join_at` >= this date (ISO 8601)                         |
+| `--join_at__lte` | No       | Include bots with `join_at` <= this date (ISO 8601)                         |
+| `--metadata`     | No       | JSON object to filter by custom bot metadata (e.g., `'{"team_id":"1872"}'`) |
+| `--help`         | No       | Show help message                                                           |

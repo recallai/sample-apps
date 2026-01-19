@@ -21,7 +21,7 @@ export async function create_async_transcript(args: { recording_id: string }) {
             "Content-Type": "application/json",
         },
         body: JSON.stringify({
-            provider: { recallai_async: {} },
+            provider: { recallai_async: { "language": "auto" } },
             // Enable perfect diarization by default if separate streams are available.
             diarization: { use_separate_streams_when_available: true },
         }),
