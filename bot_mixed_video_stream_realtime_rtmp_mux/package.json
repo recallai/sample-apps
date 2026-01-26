@@ -1,0 +1,20 @@
+{
+    "name": "bot_mixed_video_stream_realtime_rtmp_mux",
+    "version": "1.0.0",
+    "description": "Live stream audio and video from a meeting to a webpage via RTMP through Mux",
+    "main": "index.ts",
+    "scripts": {
+        "dev": "ts-node src/index.ts"
+    },
+    "author": "Gerry Saporito",
+    "license": "MIT",
+    "devDependencies": {
+        "@types/node": "^24.10.1",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.9.3"
+    },
+    "dependencies": {
+        "dotenv": "^17.2.3",
+        "zod": "^4.1.13"
+    }
+}
