@@ -1,7 +1,7 @@
 {
     "name": "bot_mixed_video_stream_realtime_rtmp_mux",
     "version": "1.0.0",
-    "description": "Live stream mixed video from a meeting bot to Mux via RTMP",
+    "description": "Live stream audio and video from a meeting to a webpage via RTMP through Mux",
     "main": "index.ts",
     "scripts": {
         "dev": "ts-node src/index.ts"
