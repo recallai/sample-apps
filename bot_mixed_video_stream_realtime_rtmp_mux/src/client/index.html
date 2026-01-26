@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mux RTMP Live Stream</title>
+    <script src="https://cdn.jsdelivr.net/npm/@mux/mux-player@latest"></script>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        h1 {
+            margin-bottom: 8px;
+        }
+
+        p {
+            color: #666;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 12px;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            background: #0070f3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            background: #ccc;
+        }
+
+        #status {
+            margin: 16px 0;
+            padding: 12px;
+            border-radius: 4px;
+        }
+
+        #status.error {
+            background: #fee;
+            color: #c00;
+        }
+
+        #status.success {
+            background: #efe;
+            color: #060;
+        }
+
+        #status.waiting {
+            background: #fff8e1;
+            color: #f57c00;
+        }
+
+        .banner {
+            background: #e3f2fd;
+            border: 1px solid #90caf9;
+            border-radius: 4px;
+            padding: 12px;
+            margin: 16px 0;
+            font-size: 14px;
+            color: #1565c0;
+            display: none;
+        }
+
+        .player-container {
+            display: none;
+        }
+
+        mux-player {
+            width: 100%;
+            aspect-ratio: 16/9;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Mux RTMP Live Stream</h1>
+    <p>Enter a meeting URL to start streaming video via RTMP to Mux.</p>
+
+    <input type="text" id="meetingUrl" placeholder="Enter meeting URL (e.g., https://zoom.us/j/123456789)">
+    <button id="startBtn" onclick="startStream()">Start Streaming</button>
+    <div id="status"></div>
+
+    <div id="banner" class="banner">
+        <strong>Note:</strong> Using low-latency mode. Stream quality can be increased at the cost of higher latency via
+        Mux settings.
+    </div>
+
+    <!-- Uses the Mux Player SDK to display the live stream. -->
+    <div id="playerContainer" class="player-container">
+        <mux-player id="player" stream-type="live" autoplay></mux-player>
+    </div>
+
+    <script>
+        let checkInterval = null;
+        let waitStartTime = null;
+        const LATENCY_DELAY = 10; // ~10 seconds for low-latency mode
+
+        async function startStream() {
+            const meetingUrl = document.getElementById('meetingUrl').value.trim();
+            const status = document.getElementById('status');
+            const btn = document.getElementById('startBtn');
+
+            if (!meetingUrl) {
+                status.className = 'error';
+                status.textContent = 'Please enter a meeting URL';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Starting...';
+            status.className = '';
+            status.textContent = 'Creating Mux stream and Recall bot...';
+
+            try {
+                const response = await fetch('/api/start', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ meeting_url: meetingUrl })
+                });
+
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || 'Failed to start stream');
+
+                waitForStream(data.playback_id);
+
+                btn.textContent = 'Start Another';
+                btn.disabled = false;
+            } catch (error) {
+                status.className = 'error';
+                status.textContent = error.message;
+                btn.textContent = 'Start Streaming';
+                btn.disabled = false;
+            }
+        }
+
+        function waitForStream(playbackId) {
+            const status = document.getElementById('status');
+            const player = document.getElementById('player');
+            const playerContainer = document.getElementById('playerContainer');
+            const banner = document.getElementById('banner');
+
+            // Clear any existing interval
+            if (checkInterval) clearInterval(checkInterval);
+
+            waitStartTime = Date.now();
+            let streamStartTime = null;
+            let countdownInterval = null;
+
+            // Set up the player
+            player.setAttribute('playback-id', playbackId);
+            playerContainer.style.display = 'block';
+            banner.style.display = 'block';
+
+            // Update waiting status every second
+            function updateWaitingStatus() {
+                const elapsed = Math.floor((Date.now() - waitStartTime) / 1000);
+                status.className = 'waiting';
+                status.innerHTML = `
+                    <strong>Waiting for stream from Mux...</strong><br>
+                    The bot is joining the meeting. Once it starts streaming, video will appear below.<br>
+                    <small>Elapsed: ${elapsed}s (retrying every 15s)</small>
+                `;
+            }
+
+            // Update streaming status with countdown
+            function updateStreamingStatus() {
+                if (!streamStartTime) return;
+                const elapsed = (Date.now() - streamStartTime) / 1000;
+                const remaining = Math.max(0, LATENCY_DELAY - elapsed);
+
+                if (remaining > 0) {
+                    status.className = 'waiting';
+                    status.innerHTML = `
+                        <strong>Stream connected!</strong><br>
+                        Video will appear in ~${remaining.toFixed(1)}s<br>
+                        <small>Buffering live stream...</small>
+                    `;
+                } else {
+                    status.className = 'success';
+                    status.innerHTML = `
+                        <strong>Live stream active!</strong><br>
+                        <small>Low-latency mode enabled.</small>
+                    `;
+                    if (countdownInterval) {
+                        clearInterval(countdownInterval);
+                        countdownInterval = null;
+                    }
+                }
+            }
+
+            updateWaitingStatus();
+
+            // Update waiting status every second
+            const waitingInterval = setInterval(() => {
+                if (!streamStartTime) {
+                    updateWaitingStatus();
+                }
+            }, 1000);
+
+            // Listen for player events
+            player.addEventListener('loadeddata', function onLoaded() {
+                if (!streamStartTime) {
+                    streamStartTime = Date.now();
+                    clearInterval(waitingInterval);
+                    // Start countdown timer with 100ms updates for smooth UX
+                    countdownInterval = setInterval(() => {
+                        updateStreamingStatus();
+                    }, 100);
+                    updateStreamingStatus();
+                }
+                player.removeEventListener('loadeddata', onLoaded);
+            });
+
+            player.addEventListener('playing', function onPlaying() {
+                clearInterval(waitingInterval);
+                if (countdownInterval) clearInterval(countdownInterval);
+                if (checkInterval) clearInterval(checkInterval);
+
+                status.className = 'success';
+                status.innerHTML = `
+                    <strong>Live stream active!</strong><br>
+                    <small>Low-latency mode enabled.</small>
+                `;
+                player.removeEventListener('playing', onPlaying);
+            });
+
+            // Retry checking every 15 seconds
+            checkInterval = setInterval(() => {
+                if (streamStartTime) return; // Already connected
+                // Force player to retry loading
+                const currentPlaybackId = player.getAttribute('playback-id');
+                player.removeAttribute('playback-id');
+                setTimeout(() => {
+                    player.setAttribute('playback-id', currentPlaybackId);
+                }, 100);
+            }, 15000);
+        }
+    </script>
+</body>
+
+</html>
