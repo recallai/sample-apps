@@ -1,9 +1,11 @@
 import http from "http";
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import z from "zod";
 import { env } from "../config/env";
 import { RecordingArtifactEventSchema } from "../schemas/RecordingArtifactEventSchema";
 import { TranscriptArtifactEventSchema } from "../schemas/TranscriptArtifactEventSchema";
 import { create_async_transcript, bot_async_transcription } from "./bot_async_transcription_hybrid_diarization";
+import mcp_server from "./mcp";
 
 const server = http.createServer();
 
@@ -12,6 +14,19 @@ const server = http.createServer();
  */
 server.on("request", async (req, res) => {
     try {
+        if (req.url === "/api/mcp") {
+            const transport = new StreamableHTTPServerTransport({
+                sessionIdGenerator: undefined,
+                enableJsonResponse: true,
+            });
+            res.on("close", async () => {
+                await transport.close();
+            });
+            await mcp_server.connect(transport);
+            await transport.handleRequest(req, res);
+            return;
+        }
+
         if (req.method !== "POST") {
             res.writeHead(405, { "Content-Type": "application/json" });
             res.end(JSON.stringify({ error: "Method not allowed" }));

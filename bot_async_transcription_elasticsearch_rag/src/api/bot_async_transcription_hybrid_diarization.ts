@@ -69,7 +69,7 @@ export async function bot_async_transcription(args: { msg: TranscriptArtifactEve
     const paragraphs = readable_hybrid_transcript_parts.map((p) => p.paragraph);
     console.log(`Creating ${paragraphs.length} embeddings with ollama`);
     const embeddings = await ollama.embed({
-        model: "embeddinggemma",
+        model: env.EMBEDDING_MODEL || "embeddinggemma",
         input: paragraphs,
     });
     console.log(`Created ${embeddings.embeddings.length} embeddings with ollama`);
@@ -87,6 +87,7 @@ export async function bot_async_transcription(args: { msg: TranscriptArtifactEve
                     ...part,
                     recording_id,
                 },
+                new Date(Date.parse(recording.created_at)),
                 embedding,
             );
         } catch (error) {
