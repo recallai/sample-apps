@@ -1,8 +1,8 @@
-# Retranscribe Failed Transcription Jobs
+# Retranscribe Failed Bot Transcription Jobs
 
 This example demonstrates how to bulk retranscribe recordings from bots using the Recall.ai API.
 
-This script lists bots by date range and metadata filters (only bots with status `done` or `analysis_failed`), retrieves their recording IDs, and creates new async transcript jobs for each recording. This is useful for retrying failed transcription jobs or re-transcribing with different settings.
+This script lists bots by date range and metadata filters (only bots with status `done` or `analysis_failed`) and creates new async transcript jobs for each recording. This is useful for retrying failed transcription jobs or re-transcribing with different settings.
 
 ## Pre-requisites
 
@@ -88,13 +88,13 @@ Created 4 transcript jobs (skipped 1 bots with no recordings)
 
 ## CLI Options
 
-| Option               | Required | Description                                                                 |
-| -------------------- | -------- | --------------------------------------------------------------------------- |
-| `--start_date_utc`   | Yes      | Process bots that joined after this date                                    |
-| `--end_date_utc`     | No       | Process bots that joined before this date                                   |
-| `--metadata`         | No       | JSON object to filter by custom bot metadata (e.g., `'{"team_id":"1872"}'`) |
-| `--transcript_config`| Yes      | JSON object with transcript configuration                                   |
-| `--help`             | No       | Show help message                                                           |
+| Option                | Required | Description                                                                 |
+| --------------------- | -------- | --------------------------------------------------------------------------- |
+| `--start_date_utc`    | Yes      | Process bots that joined after this date                                    |
+| `--end_date_utc`      | No       | Process bots that joined before this date                                   |
+| `--metadata`          | No       | JSON object to filter by custom bot metadata (e.g., `'{"team_id":"1872"}'`) |
+| `--transcript_config` | Yes      | JSON object with transcript configuration                                   |
+| `--help`              | No       | Show help message                                                           |
 
 **Note:** The script only processes bots with status `done` or `analysis_failed` (i.e., bots that have completed and have recordings available).
 
@@ -104,34 +104,35 @@ The `--transcript_config` option accepts a JSON object with the following struct
 
 ```json
 {
-  "metadata": { },           // Optional: custom metadata for the transcript
-  "diarization": { },        // Optional: diarization settings
-  "provider": {              // Required: transcription provider config
-    "recallai_async": { },   // OR
-    "assembly_ai_async": { }
-  }
+    "metadata": {}, // Optional: custom metadata for the transcript
+    "diarization": {}, // Optional: diarization settings
+    "provider": {
+        // Required: transcription provider config
+        "recallai_async": {}, // OR
+        "assembly_ai_async": {}
+    }
 }
 ```
 
 ### Recall.ai Async Provider Options
 
-| Option            | Type     | Default | Description                                      |
-| ----------------- | -------- | ------- | ------------------------------------------------ |
-| `language_code`   | string   | "auto"  | Language code (e.g., "en", "es", "fr", "auto")   |
-| `spelling`        | array    | []      | Find/replace text in transcript                  |
-| `key_terms`       | array    | []      | Boost recognition of specific terms              |
-| `filter_profanity`| boolean  | false   | Filter profane words                             |
+| Option             | Type    | Default | Description                                    |
+| ------------------ | ------- | ------- | ---------------------------------------------- |
+| `language_code`    | string  | "auto"  | Language code (e.g., "en", "es", "fr", "auto") |
+| `spelling`         | array   | []      | Find/replace text in transcript                |
+| `key_terms`        | array   | []      | Boost recognition of specific terms            |
+| `filter_profanity` | boolean | false   | Filter profane words                           |
 
 ### AssemblyAI Async Provider Options
 
-| Option            | Type     | Default | Description                                      |
-| ----------------- | -------- | ------- | ------------------------------------------------ |
-| `language_code`   | string   | "en_us" | Language code                                    |
-| `punctuate`       | boolean  | true    | Enable automatic punctuation                     |
-| `format_text`     | boolean  | true    | Enable text formatting                           |
-| `disfluencies`    | boolean  | false   | Include filler words (umm, uh)                   |
+| Option          | Type    | Default | Description                    |
+| --------------- | ------- | ------- | ------------------------------ |
+| `language_code` | string  | "en_us" | Language code                  |
+| `punctuate`     | boolean | true    | Enable automatic punctuation   |
+| `format_text`   | boolean | true    | Enable text formatting         |
+| `disfluencies`  | boolean | false   | Include filler words (umm, uh) |
 
 ## API Reference
 
-- [Create Async Transcript](https://docs.recall.ai/reference/recording_create_transcript_create)
-- [List Bots](https://docs.recall.ai/reference/bot_list)
+-   [Create Async Transcript](https://docs.recall.ai/reference/recording_create_transcript_create)
+-   [List Bots](https://docs.recall.ai/reference/bot_list)
