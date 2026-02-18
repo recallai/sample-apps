@@ -1,8 +1,8 @@
 # Retranscribe Failed Transcription Jobs
 
-This example demonstrates how to bulk retranscribe recordings from bots that had failed transcription jobs using the Recall.ai API.
+This example demonstrates how to bulk retranscribe recordings from bots using the Recall.ai API.
 
-This script lists bots by date range and metadata filters, retrieves their recording IDs, and creates new async transcript jobs for each recording.
+This script lists bots by date range and metadata filters (only bots with status `done` or `analysis_failed`), retrieves their recording IDs, and creates new async transcript jobs for each recording. This is useful for retrying failed transcription jobs or re-transcribing with different settings.
 
 ## Pre-requisites
 
@@ -95,6 +95,8 @@ Created 4 transcript jobs (skipped 1 bots with no recordings)
 | `--metadata`         | No       | JSON object to filter by custom bot metadata (e.g., `'{"team_id":"1872"}'`) |
 | `--transcript_config`| Yes      | JSON object with transcript configuration                                   |
 | `--help`             | No       | Show help message                                                           |
+
+**Note:** The script only processes bots with status `done` or `analysis_failed` (i.e., bots that have completed and have recordings available).
 
 ## Transcript Configuration
 
