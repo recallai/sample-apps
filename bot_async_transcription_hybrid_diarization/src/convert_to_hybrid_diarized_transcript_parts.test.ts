@@ -440,6 +440,179 @@ describe("convert_to_hybrid_diarized_transcript_parts", () => {
         });
     });
 
+    describe("Word Order Preservation", () => {
+        it("should preserve hybrid diarization behavior and keep words in order in a multi-speaker conversation", () => {
+            const transcript_parts: TranscriptPartType[] = [
+                {
+                    participant: {
+                        id: null,
+                        name: "0",
+                        is_host: null,
+                        platform: null,
+                        extra_data: null,
+                        email: null,
+                    },
+                    words: [
+                        {
+                            text: "how",
+                            start_timestamp: { relative: 1, absolute: null },
+                            end_timestamp: { relative: 2, absolute: null },
+                        },
+                        {
+                            text: "is",
+                            start_timestamp: { relative: 2, absolute: null },
+                            end_timestamp: { relative: 3, absolute: null },
+                        },
+                        {
+                            text: "it",
+                            start_timestamp: { relative: 3, absolute: null },
+                            end_timestamp: { relative: 4, absolute: null },
+                        },
+                        {
+                            text: "going",
+                            start_timestamp: { relative: 4, absolute: null },
+                            end_timestamp: { relative: 5, absolute: null },
+                        },
+                        {
+                            text: "today",
+                            start_timestamp: { relative: 5, absolute: null },
+                            end_timestamp: { relative: 6, absolute: null },
+                        },
+                    ],
+                },
+                {
+                    participant: {
+                        id: null,
+                        name: "1",
+                        is_host: null,
+                        platform: null,
+                        extra_data: null,
+                        email: null,
+                    },
+                    words: [
+                        {
+                            text: "it",
+                            start_timestamp: { relative: 10, absolute: null },
+                            end_timestamp: { relative: 11, absolute: null },
+                        },
+                        {
+                            text: "is",
+                            start_timestamp: { relative: 11, absolute: null },
+                            end_timestamp: { relative: 12, absolute: null },
+                        },
+                        {
+                            text: "good",
+                            start_timestamp: { relative: 12, absolute: null },
+                            end_timestamp: { relative: 13, absolute: null },
+                        },
+                    ],
+                },
+                {
+                    participant: {
+                        id: null,
+                        name: "2",
+                        is_host: null,
+                        platform: null,
+                        extra_data: null,
+                        email: null,
+                    },
+                    words: [
+                        {
+                            text: "Actually",
+                            start_timestamp: { relative: 14, absolute: null },
+                            end_timestamp: { relative: 15, absolute: null },
+                        },
+                        {
+                            text: "it",
+                            start_timestamp: { relative: 15, absolute: null },
+                            end_timestamp: { relative: 16, absolute: null },
+                        },
+                        {
+                            text: "is",
+                            start_timestamp: { relative: 16, absolute: null },
+                            end_timestamp: { relative: 17, absolute: null },
+                        },
+                        {
+                            text: "great",
+                            start_timestamp: { relative: 17, absolute: null },
+                            end_timestamp: { relative: 18, absolute: null },
+                        },
+                    ],
+                },
+                {
+                    participant: {
+                        id: null,
+                        name: "0",
+                        is_host: null,
+                        platform: null,
+                        extra_data: null,
+                        email: null,
+                    },
+                    words: [
+                        {
+                            text: "Oh",
+                            start_timestamp: { relative: 22, absolute: null },
+                            end_timestamp: { relative: 23, absolute: null },
+                        },
+                        {
+                            text: "that's",
+                            start_timestamp: { relative: 23, absolute: null },
+                            end_timestamp: { relative: 24, absolute: null },
+                        },
+                        {
+                            text: "great",
+                            start_timestamp: { relative: 24, absolute: null },
+                            end_timestamp: { relative: 25, absolute: null },
+                        },
+                        {
+                            text: "to",
+                            start_timestamp: { relative: 25, absolute: null },
+                            end_timestamp: { relative: 26, absolute: null },
+                        },
+                        {
+                            text: "hear",
+                            start_timestamp: { relative: 26, absolute: null },
+                            end_timestamp: { relative: 27, absolute: null },
+                        },
+                        {
+                            text: "then!",
+                            start_timestamp: { relative: 27, absolute: null },
+                            end_timestamp: { relative: 28, absolute: null },
+                        },
+                    ],
+                },
+            ];
+            const speaker_timeline_data: SpeakerTimelinePartType[] = [
+                create_speaker_event({ participantId: 100, participantName: "Max", startTime: 0, endTime: 8 }),
+                create_speaker_event({ participantId: 200, participantName: "Anon", startTime: 8, endTime: 20 }),
+                create_speaker_event({ participantId: 100, participantName: "Max", startTime: 20, endTime: 35 }),
+            ];
+
+            const result = convert_to_hybrid_diarized_transcript_parts({
+                transcript_parts,
+                speaker_timeline_data,
+            });
+
+            // Hybrid behavior:
+            // - Max maps to participant id=100 in both of his segments
+            // - Shared Device has two anonymous speakers (0 and 1), so neither should be mapped
+            expect(result[0].participant.name).toBe("Max");
+            expect(result[0].participant.id).toBe(100);
+            expect(result[1].participant.name).toBe("1");
+            expect(result[1].participant.id).toBeNull();
+            expect(result[2].participant.name).toBe("2");
+            expect(result[2].participant.id).toBeNull();
+            expect(result[3].participant.name).toBe("Max");
+            expect(result[3].participant.id).toBe(100);
+
+            // Word order should remain chronological within each utterance.
+            expect(result[0].words.map((word) => word.text).join(" ")).toBe("how is it going today");
+            expect(result[1].words.map((word) => word.text).join(" ")).toBe("it is good");
+            expect(result[2].words.map((word) => word.text).join(" ")).toBe("Actually it is great");
+            expect(result[3].words.map((word) => word.text).join(" ")).toBe("Oh that's great to hear then!");
+        });
+    });
+
     describe("Edge Cases - Same Anonymous Speaker for Multiple Participants", () => {
         it("should overwrite mapping when same anonymous speaker appears for different participants", () => {
             // This is a potential issue: if machine diarization assigns same label to different participants
