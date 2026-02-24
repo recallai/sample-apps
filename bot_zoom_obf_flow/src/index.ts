@@ -103,8 +103,6 @@ Server is running on port ${env.PORT}
 
 To get started, open the following URL in your browser: https://${process.env.NGROK_DOMAIN ?? "NGROK_DOMAIN"}/zoom/oauth
         
-After you complete the OAuth flow, you can then create a bot.
-  - Ensure that \`zoom.obf_token_url="https://${process.env.NGROK_DOMAIN ?? "NGROK_DOMAIN"}/zoom/obf"\` is set in the bot's configuration.
-  - You can create a bot using the \`run.sh\` script. See the README for more details.
+After you complete the OAuth flow, you can then create a bot using the \`run.sh\` script. See the README for more details.
     `);
 });
