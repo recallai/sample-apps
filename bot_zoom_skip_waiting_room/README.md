@@ -33,7 +33,7 @@ Copy the domain (e.g. `abc123.ngrok-free.app`).
 
 1. Go to the [Zoom App Marketplace](https://marketplace.zoom.us/develop/create)
 2. Create a **General App** with OAuth
-3. Set the OAuth Redirect URL to: `https://YOUR_NGROK_DOMAIN/zoom/oauth/callback`
+3. Set the OAuth Redirect URL to: `https://YOUR_NGROK_DOMAIN/zoom/oauth/callback` (Note: this will also be used in your .env in step 4)
 4. Add the scope: `meeting:read:local_recording_token` and `user:read:token`
 5. In the **Embed** section, enable **Meeting SDK**
 6. Copy the **Client ID** and **Client Secret**

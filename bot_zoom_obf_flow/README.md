@@ -6,7 +6,7 @@ This example demonstrates how to implement the Zoom OBF token flow to allow Reca
 
 The OBF ties a bot's lifetime in a meeting directly to a specific user in that meeting. The bot can only be in the meeting as long as its "parent" user is. This enables:
 
--   Appearing as your Zoom app via Zoom's native UI
+- Appearing as your Zoom app via Zoom's native UI
 
 > **📘 For complete documentation, see:** [Zoom Native Bots (OBF)](https://docs.recall.ai/docs/zoom-obf-tokens)
 
@@ -70,10 +70,10 @@ The OBF ties a bot's lifetime in a meeting directly to a specific user in that m
 
 ## Prerequisites
 
--   [Zoom General App](https://developers.zoom.us/docs/integrations/create/) with scope: `user:read:token` and **Meeting SDK** enabled
--   [ngrok](https://ngrok.com/) for exposing your local server
--   [Node.js](https://nodejs.org/) 18+
--   Custom SDK credentials enabled in your Recall workspace (contact Recall support to enable)
+- [Zoom General App](https://developers.zoom.us/docs/integrations/create/) with scope: `user:read:token` and **Meeting SDK** enabled
+- [ngrok](https://ngrok.com/) for exposing your local server
+- [Node.js](https://nodejs.org/) 18+
+- Custom SDK credentials enabled in your Recall workspace (contact Recall support to enable)
 
 ## Setup
 
@@ -89,7 +89,7 @@ Copy the domain (e.g. `abc123.ngrok-free.app`).
 
 1. Go to the [Zoom App Marketplace](https://marketplace.zoom.us/develop/create)
 2. Create a **General App** with OAuth
-3. Set the OAuth Redirect URL to: `https://YOUR_NGROK_DOMAIN/zoom/oauth/callback`
+3. Set the OAuth Redirect URL to: `https://YOUR_NGROK_DOMAIN/zoom/oauth/callback` (Note: this will also be used in your .env in step 4)
 4. Add the scope: `user:read:token`
 5. In the **Embed** section, enable **Meeting SDK**
 6. Copy the **Client ID** and **Client Secret**
@@ -99,7 +99,7 @@ Copy the domain (e.g. `abc123.ngrok-free.app`).
 1. Navigate to **Meeting Bot Setup** > **Zoom** in the Recall dashboard
 2. Paste your Zoom app's Client ID and Client Secret
 
-### 3. Set up env variables
+### 4. Set up env variables
 
 ```bash
 cp .env.sample .env
@@ -159,16 +159,16 @@ curl -X POST "https://RECALL_REGION.recall.ai/api/v1/bot/" \
 
 **Note**:
 
--   Replace `RECALL_REGION`, `RECALL_API_KEY`, and `YOUR_MEETING_URL` with your own
-    values.
--   Replace `YOUR_NGROK_DOMAIN` with your ngrok domain (e.g. `somehash.ngrok-free.app`).
--   The bot will join the meeting on behalf of the OAuth user.
+- Replace `RECALL_REGION`, `RECALL_API_KEY`, and `YOUR_MEETING_URL` with your own
+  values.
+- Replace `YOUR_NGROK_DOMAIN` with your ngrok domain (e.g. `somehash.ngrok-free.app`).
+- The bot will join the meeting on behalf of the OAuth user.
 
 ## Important OBF Behavior
 
--   **Short-lived & single-use**: OBF tokens should be minted just-in-time (in the `/zoom/obf` endpoint) when launching a bot
--   **Parent user required**: The bot can't join until the parent user has already joined the meeting
--   **Linked lifetime**: If the parent user leaves, the bot's will also be removed from the call by Zoom
+- **Short-lived & single-use**: OBF tokens should be minted just-in-time (in the `/zoom/obf` endpoint) when launching a bot
+- **Parent user required**: The bot can't join until the parent user has already joined the meeting
+- **Linked lifetime**: If the parent user leaves, the bot's will also be removed from the call by Zoom
 
 ## API Endpoints
 
