@@ -5,12 +5,14 @@ import { z } from "zod";
 import { env } from "../config/env";
 
 /**
- * Generate a Zoom OBF token given a meeting ID.
+ * Generate a Zoom join token for local recording.
+ * This token is meeting-scoped and can be used by the bot to bypass the waiting room
+ * and start local recording when configured in the Zoom Meeting SDK flow.
  */
-export async function zoom_obf(args: { meeting_id: string }): Promise<{ obf_token: string }> {
+export async function zoom_join_token(args: { meeting_id: string }): Promise<{ join_token: string }> {
     const { meeting_id } = z.object({ meeting_id: z.string() }).parse(args);
     const { access_token } = await get_zoom_oauth_access_token();
-    return generate_zoom_obf({ access_token, meeting_id });
+    return generate_zoom_join_token({ access_token, meeting_id });
 }
 
 /**
@@ -45,17 +47,17 @@ export async function get_zoom_oauth_access_token(): Promise<{ access_token: str
 }
 
 /**
- * Generates a Zoom OBF token.
- * This is the token that is used to join a Zoom meeting on behalf of an OAuth user.
+ * Generates a Zoom join token for local recording.
+ * Sets bypass_waiting_room=true so the token can skip waiting-room admission.
  */
-async function generate_zoom_obf(args: { access_token: string, meeting_id: string }): Promise<{ obf_token: string }> {
+async function generate_zoom_join_token(args: { access_token: string, meeting_id: string }): Promise<{ join_token: string }> {
     const { access_token, meeting_id } = z.object({ access_token: z.string(), meeting_id: z.string() }).parse(args);
     const response = await fetch(
-        `https://api.zoom.us/v2/users/me/token?type=onbehalf&meeting_id=${meeting_id}`,
+        `https://api.zoom.us/v2/meetings/${meeting_id}/jointoken/local_recording?bypass_waiting_room=true`,
         { headers: { Authorization: `Bearer ${access_token}` } },
     );
     if (!response.ok) throw new Error(await response.text());
 
     const data = z.object({ token: z.string() }).parse(await response.json());
-    return { obf_token: data.token };
+    return { join_token: data.token };
 }

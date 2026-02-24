@@ -1,0 +1,20 @@
+{
+    "name": "bot_zoom_skip_waiting_room",
+    "version": "1.0.0",
+    "description": "Allow a bot to skip the waiting room of a Zoom meeting using a join token",
+    "main": "index.ts",
+    "scripts": {
+        "dev": "ts-node src/index.ts"
+    },
+    "author": "Gerry Saporito",
+    "license": "MIT",
+    "devDependencies": {
+        "@types/node": "^24.10.1",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.9.3"
+    },
+    "dependencies": {
+        "dotenv": "^17.2.3",
+        "zod": "^4.1.13"
+    }
+}

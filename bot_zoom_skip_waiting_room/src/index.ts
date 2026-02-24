@@ -1,6 +1,7 @@
 import http from "http";
 import dotenv from "dotenv";
 import z from "zod";
+import { zoom_join_token } from "./api/zoom_join_token";
 import { zoom_oauth } from "./api/zoom_oauth";
 import { zoom_oauth_callback } from "./api/zoom_oauth_callback";
 import { zoom_obf } from "./api/zoom_obf";
@@ -40,6 +41,9 @@ body=${JSON.stringify(body)}
         `);
 
         switch (pathname) {
+            /**
+             * Zoom OAuth endpoints for generating a Zoom OAuth access token and refresh token.
+             */
             case "/zoom/oauth": {
                 if (req.method !== "GET") throw new Error(`Method not allowed: ${req.method}`);
 
@@ -62,12 +66,26 @@ body=${JSON.stringify(body)}
                 res.writeHead(200, { "Content-Type": "application/json" });
                 res.end(JSON.stringify({
                     message: "Zoom OAuth callback received",
-                    access_token,
-                    refresh_token,
                 }));
                 return;
             }
-            case "/zoom/obf": {
+            /**
+             * Generate a Zoom join token for local recording which includes permission to bypass the waiting room.
+             */
+            case "/zoom/join-token": {
+                if (req.method !== "GET") throw new Error(`Method not allowed: ${req.method}`);
+
+                const { join_token } = await zoom_join_token(search_params);
+                console.log(`Generated Zoom join token: ${join_token}`);
+
+                res.writeHead(200, { "Content-Type": "text/plain" });
+                res.end(join_token);
+                return;
+            }
+            /**
+             * Generate a Zoom OBF token which is required to authenticate a participant in a Zoom meeting.
+             */
+            case "/zoom/obf-token": {
                 if (req.method !== "GET") throw new Error(`Method not allowed: ${req.method}`);
 
                 const { obf_token } = await zoom_obf(search_params);
