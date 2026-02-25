@@ -4,12 +4,12 @@ A tool for comparing transcription quality and output across multiple third-part
 
 ## What it does
 
-When a meeting recording completes, this tool automatically transcribes the same audio using every configured provider and saves the results side-by-side. This lets you evaluate how each of the transcription providers work for your use case, including:
+When a meeting recording completes, this tool automatically transcribes the same audio using every configured provider and saves the results side-by-side. This lets you compare:
 
 - **Transcription accuracy** across providers with the same source audio
 - **Multilingual support** and code-switching capabilities
 
-This helps you identify which provider works best for your specific use case.
+You can also add your own specific configs to each provider to test out provider-specific features.
 
 ## Output
 
@@ -18,7 +18,7 @@ Results are organized by recording and provider:
 ```
 output/recording-{id}/
 ├── recallai_async/
-│   ├── transcript.json    # Raw transcript data
+│   ├── transcript.json    # Raw transcript data Recall will provide you
 │   ├── readable.txt       # Human-readable format
 │   └── metadata.json      # Provider config and timing
 ├── assembly_ai_async/
@@ -30,9 +30,19 @@ output/recording-{id}/
 
 ## Supported Providers
 
-See the [Third-Party Transcription docs](https://docs.recall.ai/docs/ai-transcription) for the full list of supported providers and their configurations. For multilingual and code-switching support, see the [Multilingual Transcription docs](https://docs.recall.ai/docs/multilingual-transcription).
+Some initial notes:
 
-Configure which providers to compare in `src/config/providers.ts`. Each provider requires an API key configured in the [Recall dashboard](https://us-west-2.recall.ai/dashboard/transcription).
+- For the full list of supported providers and their configurations, see the [Third-Party Transcription docs](https://docs.recall.ai/docs/ai-transcription).
+- For multilingual and code-switching support, see the [Multilingual Transcription docs](https://docs.recall.ai/docs/multilingual-transcription).
+
+You can configure which providers to compare in `src/config/providers.ts`.
+
+Each provider requires an API key configured in the Recall dashboard:
+
+- [`us-east-1` transcription dashboard](https://us-east-1.recall.ai/dashboard/transcription)
+- [`us-west-2` transcription dashboard](https://us-west-2.recall.ai/dashboard/transcription)
+- [`eu-central-1` transcription dashboard](https://eu-central-1.recall.ai/dashboard/transcription)
+- [`ap-northeast-1` transcription dashboard](https://ap-northeast-1.recall.ai/dashboard/transcription)
 
 ## Pre-requisites
 
@@ -81,6 +91,8 @@ export const PROVIDER_CONFIGS = [
     // Uncomment or add more providers as needed
 ];
 ```
+
+These configs are the same as the ones defined in the `provider` field in the [Create Async Transcript API reference](https://docs.recall.ai/reference/recording_create_transcript_create).
 
 ### 4. Add your webhook URL to the Recall dashboard
 
