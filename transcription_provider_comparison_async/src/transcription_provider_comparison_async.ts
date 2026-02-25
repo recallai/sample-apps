@@ -108,6 +108,32 @@ export async function save_provider_transcript(args: { msg: TranscriptArtifactEv
 }
 
 /**
+ * Save failed transcript information to output directory.
+ */
+export async function save_failed_transcript(args: { msg: TranscriptArtifactEventType }) {
+    const { msg } = z.object({ msg: TranscriptArtifactEventSchema }).parse(args);
+
+    const transcript = await retrieve_transcript({ transcript_id: msg.data.transcript.id });
+    const provider_name = get_transcript_provider_name(transcript);
+
+    const output_dir = path.join(
+        process.cwd(),
+        `output/recording-${msg.data.recording.id}/${provider_name}`,
+    );
+    fs.mkdirSync(output_dir, { recursive: true });
+
+    fs.writeFileSync(
+        path.join(output_dir, "error.json"),
+        JSON.stringify({
+            transcript,
+            event: msg,
+        }, null, 2),
+    );
+
+    return { provider_name, error: msg.data.data };
+}
+
+/**
  * Retrieve transcript artifact by ID.
  */
 async function retrieve_transcript(args: { transcript_id: string }) {

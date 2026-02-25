@@ -4,7 +4,7 @@ import { env } from "./config/env";
 import { PROVIDER_CONFIGS, get_provider_name } from "./config/providers";
 import { RecordingArtifactEventSchema } from "./schemas/RecordingArtifactEventSchema";
 import { TranscriptArtifactEventSchema } from "./schemas/TranscriptArtifactEventSchema";
-import { create_async_transcripts_for_all_providers, save_provider_transcript } from "./transcription_provider_comparison_async";
+import { create_async_transcripts_for_all_providers, save_provider_transcript, save_failed_transcript } from "./transcription_provider_comparison_async";
 
 const server = http.createServer();
 
@@ -49,7 +49,8 @@ server.on("request", async (req, res) => {
                 break;
             }
             case "transcript.failed": {
-                console.error(`[Recording=${msg.data.recording.id}] Transcript failed: ${msg.data.data.sub_code}`);
+                const { provider_name, error } = await save_failed_transcript({ msg: body });
+                console.error(`[Recording=${msg.data.recording.id}] Saved ${provider_name} failure: ${error.code} / ${error.sub_code}`);
                 break;
             }
             default: {
