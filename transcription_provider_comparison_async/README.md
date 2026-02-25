@@ -30,19 +30,9 @@ output/recording-{id}/
 
 ## Supported Providers
 
-Configure in `src/config/providers.ts`:
+See the [Third-Party Transcription docs](https://docs.recall.ai/docs/ai-transcription) for the full list of supported providers and their configurations. For multilingual and code-switching support, see the [Multilingual Transcription docs](https://docs.recall.ai/docs/multilingual-transcription).
 
-| Provider             | Code Switching    | Language Detection |
-| -------------------- | ----------------- | ------------------ |
-| `recallai_async`     | ✅                | ✅ auto            |
-| `assembly_ai_async`  | ✅                | ✅ universal model |
-| `deepgram_async`     | ✅                | ✅ nova-3 multi    |
-| `gladia_v2_async`    | ✅                | ✅                 |
-| `speechmatics_async` | 🚧 language pairs | 🚧                 |
-| `rev_async`          | ❌                | ❌                 |
-| `google_cloud_stt`   | ❌                | ❌                 |
-
-> Each provider requires an API key configured in the [Recall dashboard](https://us-west-2.recall.ai/dashboard/transcription).
+Configure which providers to compare in `src/config/providers.ts`. Each provider requires an API key configured in the [Recall dashboard](https://us-west-2.recall.ai/dashboard/transcription).
 
 ## Pre-requisites
 
