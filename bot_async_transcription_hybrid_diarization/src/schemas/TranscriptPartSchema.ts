@@ -1,17 +1,11 @@
 import { z } from "zod";
+import { ParticipantPartSchema } from "./ParticipantPartSchema";
 
 /**
  * Schema for a single transcript part.
  */
 export const TranscriptPartSchema = z.object({
-    participant: z.object({
-        id: z.number().nullable(), // Recall.ai assigned participant id (e.g. 100, 200, 300)
-        name: z.string().nullable(), // Display name from meeting
-        is_host: z.boolean().nullable(), // True if the participant is the host
-        platform: z.string().nullable(), // Meeting platform constant. values: 'desktop', 'dial-in', 'unknown'
-        extra_data: z.any().nullable(), // Extra data about the participant from the meeting platform
-        email: z.string().nullish(), // Email address of the participant if using Recall's calendar integration
-    }),
+    participant: ParticipantPartSchema,
     words: z.object({
         text: z.string(),
         start_timestamp: z.object({
