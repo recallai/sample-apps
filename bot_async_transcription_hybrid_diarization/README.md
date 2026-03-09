@@ -6,17 +6,25 @@ This example demonstrates how to get accurate speaker attribution in your transc
 
 Standard transcription diarization has a tradeoff:
 
+- **Speaker-timeline diarization** (from Recall.ai) uses active speaker events emitted by the meeting platform to know who is in the meeting (using the participant display names), but can't distinguish multiple people speaking from the same participant tile (e.g. calling from the same device/room).
 - **Machine diarization** (from providers like Deepgram) distinguishes different voices, but only gives you anonymous labels like "Speaker 0" and "Speaker 1".
-- **Speaker timeline diarization** (from Recall.ai) uses participant speaker change events from the meeting platform to determine who is speaking but is unable to distinguish participants if they're speaking from the same participant tile (e.g. calling from the same device/room).
 
-**Hybrid diarization combines both approaches.** It uses machine diarization to detect distinct voices, then maps them to real participant names when there's a clear 1-to-1 match. When multiple people share a device, it falls back to anonymous speaker labels.
+**Hybrid diarization combines both approaches.** It uses machine diarization to detect distinct voices per participant, then maps them to real participant names when there's a clear 1-to-1 match. When multiple people share a device (i.e. a participant has more than one anonymous speaker label), it falls back to anonymous speaker labels.
 
 ## How It Works
 
 The server listens for webhook events from Recall.ai:
 
 1. When `recording.done` is received, it triggers async transcript creation via Recall's API
-2. When `transcript.done` is received, it downloads both the transcript and speaker timeline data, then merges them using the hybrid diarization algorithm
+2. When `transcript.done` is received, it downloads both the transcript and the participants list, then merges them using the hybrid diarization algorithm
+
+### Hybrid Diarization Algorithm
+
+Each transcript part has a participant name in the format `{participant_id}-{anonymous_label}` (e.g. `200-0` means participant ID 200, anonymous label 0). The algorithm:
+
+1. Builds a map of `participant_id → Set<anonymous_label>` from all transcript parts
+2. If a participant has **exactly one** anonymous label, we can confidently attribute all their segments to a single speaker — so we replace the anonymous label with the real participant name and metadata
+3. If a participant has **multiple** anonymous labels (e.g. `200-0` and `200-1`), multiple people are sharing that device, so we leave those segments with their anonymous labels
 
 ## Prerequisites
 
@@ -103,5 +111,7 @@ Replace `RECALL_REGION`, `RECALL_API_KEY`, and `YOUR_MEETING_URL` with your own 
 
 After the call ends and the transcript is processed, you'll find the output files in the `output/` folder, organized by recording ID:
 
-- `transcript.json` — The transcript data with hybrid diarization applied
-- `readable.txt` — A human-readable version of the transcript
+- `participants.json` — The list of participants in the meeting
+- `transcript.json` — The raw transcript parts (before hybrid diarization)
+- `hybrid_diarization_transcript.json` — The transcript with hybrid diarization applied
+- `hybrid_diarization_transcript.txt` — A human-readable version of the hybrid diarized transcript

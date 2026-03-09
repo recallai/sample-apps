@@ -1,19 +1,17 @@
 import { describe, it, expect } from "vitest";
 import { convert_to_hybrid_diarized_transcript_parts } from "./convert_to_hybrid_diarized_transcript_parts";
-import type { SpeakerTimelinePartType } from "./schemas/SpeakerTimelinePartSchema";
+import type { ParticipantPartType } from "./schemas/ParticipantPartSchema";
 import type { TranscriptPartType } from "./schemas/TranscriptPartSchema";
 
-// Helper to create a transcript segment
 function create_transcript(opts: {
     speakerName: string | null;
-    speakerId?: number | null;
     startTime: number;
     endTime: number;
     text?: string;
 }): TranscriptPartType {
     return {
         participant: {
-            id: opts.speakerId ?? null,
+            id: null,
             name: opts.speakerName,
             is_host: null,
             platform: null,
@@ -30,43 +28,38 @@ function create_transcript(opts: {
     };
 }
 
-// Helper to create a speaker timeline event
-function create_speaker_event(opts: {
-    participantId: number | null;
-    participantName: string | null;
-    startTime: number;
-    endTime: number | null;
-}): SpeakerTimelinePartType {
+function create_participant(opts: {
+    id: number;
+    name: string | null;
+    is_host?: boolean | null;
+    platform?: string | null;
+    extra_data?: unknown;
+    email?: string | null;
+}): ParticipantPartType {
     return {
-        participant: {
-            id: opts.participantId,
-            name: opts.participantName,
-            is_host: null,
-            platform: null,
-            extra_data: null,
-            email: null,
-        },
-        start_timestamp: { relative: opts.startTime, absolute: null },
-        end_timestamp: opts.endTime !== null
-            ? { relative: opts.endTime, absolute: null }
-            : null,
+        id: opts.id,
+        name: opts.name,
+        is_host: opts.is_host ?? null,
+        platform: opts.platform ?? null,
+        extra_data: opts.extra_data ?? null,
+        email: opts.email ?? null,
     };
 }
 
 describe("convert_to_hybrid_diarized_transcript_parts", () => {
-    describe("Happy Path - Single Speaker Per Participant", () => {
-        it("should map anonymous speaker to real participant when only one speaker exists", () => {
+    describe("Happy Path - Single Anonymous Label Per Participant", () => {
+        it("should map transcript parts to real participant when only one anonymous label exists", () => {
             const transcript_parts: TranscriptPartType[] = [
-                create_transcript({ speakerName: "Speaker A", startTime: 1, endTime: 5 }),
-                create_transcript({ speakerName: "Speaker A", startTime: 6, endTime: 10 }),
+                create_transcript({ speakerName: "100-0", startTime: 1, endTime: 5 }),
+                create_transcript({ speakerName: "100-0", startTime: 6, endTime: 10 }),
             ];
-            const speaker_timeline_data: SpeakerTimelinePartType[] = [
-                create_speaker_event({ participantId: 100, participantName: "John", startTime: 0, endTime: 15 }),
+            const participants: ParticipantPartType[] = [
+                create_participant({ id: 100, name: "John" }),
             ];
 
             const result = convert_to_hybrid_diarized_transcript_parts({
                 transcript_parts,
-                speaker_timeline_data,
+                participants,
             });
 
             expect(result).toHaveLength(2);
@@ -76,141 +69,73 @@ describe("convert_to_hybrid_diarized_transcript_parts", () => {
             expect(result[1].participant.name).toBe("John");
         });
 
-        it("should map multiple participants correctly when each has a unique anonymous speaker", () => {
+        it("should map multiple participants correctly when each has a single anonymous label", () => {
             const transcript_parts: TranscriptPartType[] = [
-                create_transcript({ speakerName: "Speaker A", startTime: 1, endTime: 5 }),
-                create_transcript({ speakerName: "Speaker B", startTime: 16, endTime: 20 }),
+                create_transcript({ speakerName: "100-0", startTime: 1, endTime: 5 }),
+                create_transcript({ speakerName: "200-0", startTime: 6, endTime: 10 }),
             ];
-            const speaker_timeline_data: SpeakerTimelinePartType[] = [
-                create_speaker_event({ participantId: 100, participantName: "John", startTime: 0, endTime: 10 }),
-                create_speaker_event({ participantId: 200, participantName: "Mary", startTime: 15, endTime: 25 }),
+            const participants: ParticipantPartType[] = [
+                create_participant({ id: 100, name: "John" }),
+                create_participant({ id: 200, name: "Mary" }),
             ];
 
             const result = convert_to_hybrid_diarized_transcript_parts({
                 transcript_parts,
-                speaker_timeline_data,
+                participants,
             });
 
             expect(result).toHaveLength(2);
             expect(result[0].participant.name).toBe("John");
+            expect(result[0].participant.id).toBe(100);
             expect(result[1].participant.name).toBe("Mary");
+            expect(result[1].participant.id).toBe(200);
         });
     });
 
-    describe("Multiple Speakers Per Participant - No Mapping", () => {
-        it("should NOT map when participant has multiple anonymous speakers in same segment", () => {
+    describe("Multiple Anonymous Labels Per Participant - No Mapping", () => {
+        it("should NOT map when participant has multiple anonymous labels", () => {
             const transcript_parts: TranscriptPartType[] = [
-                create_transcript({ speakerName: "Speaker A", startTime: 1, endTime: 5 }),
-                create_transcript({ speakerName: "Speaker B", startTime: 6, endTime: 10 }),
+                create_transcript({ speakerName: "100-0", startTime: 1, endTime: 5 }),
+                create_transcript({ speakerName: "100-1", startTime: 6, endTime: 10 }),
             ];
-            const speaker_timeline_data: SpeakerTimelinePartType[] = [
-                create_speaker_event({ participantId: 100, participantName: "John", startTime: 0, endTime: 15 }),
+            const participants: ParticipantPartType[] = [
+                create_participant({ id: 100, name: "John" }),
             ];
 
             const result = convert_to_hybrid_diarized_transcript_parts({
                 transcript_parts,
-                speaker_timeline_data,
+                participants,
             });
 
-            // Should remain unchanged - no mapping applied
-            expect(result[0].participant.name).toBe("Speaker A");
+            expect(result[0].participant.name).toBe("100-0");
             expect(result[0].participant.id).toBeNull();
-            expect(result[1].participant.name).toBe("Speaker B");
+            expect(result[1].participant.name).toBe("100-1");
             expect(result[1].participant.id).toBeNull();
-        });
-
-        it("should NOT map when participant has multiple speakers across different timeline segments", () => {
-            // This is the key edge case: single speaker first, then multiple, then single again
-            const transcript_parts: TranscriptPartType[] = [
-                // Segment 1: Only Speaker A
-                create_transcript({ speakerName: "Speaker A", startTime: 1, endTime: 5 }),
-                // Segment 2: Both Speaker A and Speaker B
-                create_transcript({ speakerName: "Speaker A", startTime: 11, endTime: 13 }),
-                create_transcript({ speakerName: "Speaker B", startTime: 14, endTime: 18 }),
-                // Segment 3: Only Speaker A again
-                create_transcript({ speakerName: "Speaker A", startTime: 21, endTime: 25 }),
-            ];
-            const speaker_timeline_data: SpeakerTimelinePartType[] = [
-                create_speaker_event({ participantId: 100, participantName: "John", startTime: 0, endTime: 10 }),
-                create_speaker_event({ participantId: 100, participantName: "John", startTime: 10, endTime: 20 }),
-                create_speaker_event({ participantId: 100, participantName: "John", startTime: 20, endTime: 30 }),
-            ];
-
-            const result = convert_to_hybrid_diarized_transcript_parts({
-                transcript_parts,
-                speaker_timeline_data,
-            });
-
-            // Because John had both A and B at some point, NONE should be mapped
-            expect(result[0].participant.name).toBe("Speaker A");
-            expect(result[0].participant.id).toBeNull();
-            expect(result[1].participant.name).toBe("Speaker A");
-            expect(result[2].participant.name).toBe("Speaker B");
-            expect(result[3].participant.name).toBe("Speaker A");
-        });
-
-        it("should NOT map when different speakers use same device in separate timeline segments", () => {
-            // Scenario: Two people call in from the same device (John) at different times
-            // Speaker A speaks during John's first segment
-            // Speaker B speaks during John's second segment (different person, same device)
-            // Mary has only Speaker C, so she should be mapped
-            const transcript_parts: TranscriptPartType[] = [
-                // John segment 1: Speaker A
-                create_transcript({ speakerName: "Speaker A", startTime: 1, endTime: 5 }),
-                // Mary segment: Speaker C
-                create_transcript({ speakerName: "Speaker C", startTime: 11, endTime: 14 }),
-                // John segment 2: Speaker B (different person on same device)
-                create_transcript({ speakerName: "Speaker B", startTime: 16, endTime: 20 }),
-            ];
-            const speaker_timeline_data: SpeakerTimelinePartType[] = [
-                create_speaker_event({ participantId: 100, participantName: "John", startTime: 0, endTime: 10 }),
-                create_speaker_event({ participantId: 200, participantName: "Mary", startTime: 10, endTime: 15 }),
-                create_speaker_event({ participantId: 100, participantName: "John", startTime: 15, endTime: 25 }),
-            ];
-
-            const result = convert_to_hybrid_diarized_transcript_parts({
-                transcript_parts,
-                speaker_timeline_data,
-            });
-
-            // John had both A and B across segments - stays anonymous
-            expect(result[0].participant.name).toBe("Speaker A");
-            expect(result[0].participant.id).toBeNull();
-            // Mary had only C - gets mapped
-            expect(result[1].participant.name).toBe("Mary");
-            expect(result[1].participant.id).toBe(200);
-            // John's second segment also stays anonymous
-            expect(result[2].participant.name).toBe("Speaker B");
-            expect(result[2].participant.id).toBeNull();
         });
     });
 
     describe("Mixed Participants - Some Mapped, Some Not", () => {
-        it("should map participant with single speaker but not participant with multiple speakers", () => {
+        it("should map participant with single label but not participant with multiple labels", () => {
             const transcript_parts: TranscriptPartType[] = [
-                // John's segments - has multiple speakers (A and B)
-                create_transcript({ speakerName: "Speaker A", startTime: 1, endTime: 5 }),
-                create_transcript({ speakerName: "Speaker B", startTime: 6, endTime: 9 }),
-                // Mary's segments - has single speaker (C)
-                create_transcript({ speakerName: "Speaker C", startTime: 16, endTime: 20 }),
-                create_transcript({ speakerName: "Speaker C", startTime: 21, endTime: 25 }),
+                create_transcript({ speakerName: "100-0", startTime: 1, endTime: 5 }),
+                create_transcript({ speakerName: "100-1", startTime: 6, endTime: 9 }),
+                create_transcript({ speakerName: "200-0", startTime: 16, endTime: 20 }),
+                create_transcript({ speakerName: "200-0", startTime: 21, endTime: 25 }),
             ];
-            const speaker_timeline_data: SpeakerTimelinePartType[] = [
-                create_speaker_event({ participantId: 100, participantName: "John", startTime: 0, endTime: 10 }),
-                create_speaker_event({ participantId: 200, participantName: "Mary", startTime: 15, endTime: 30 }),
+            const participants: ParticipantPartType[] = [
+                create_participant({ id: 100, name: "John" }),
+                create_participant({ id: 200, name: "Mary" }),
             ];
 
             const result = convert_to_hybrid_diarized_transcript_parts({
                 transcript_parts,
-                speaker_timeline_data,
+                participants,
             });
 
-            // John's segments stay anonymous
-            expect(result[0].participant.name).toBe("Speaker A");
+            expect(result[0].participant.name).toBe("100-0");
             expect(result[0].participant.id).toBeNull();
-            expect(result[1].participant.name).toBe("Speaker B");
+            expect(result[1].participant.name).toBe("100-1");
             expect(result[1].participant.id).toBeNull();
-            // Mary's segments get mapped
             expect(result[2].participant.name).toBe("Mary");
             expect(result[2].participant.id).toBe(200);
             expect(result[3].participant.name).toBe("Mary");
@@ -222,189 +147,118 @@ describe("convert_to_hybrid_diarized_transcript_parts", () => {
         it("should return empty array when transcript_parts is empty", () => {
             const result = convert_to_hybrid_diarized_transcript_parts({
                 transcript_parts: [],
-                speaker_timeline_data: [
-                    create_speaker_event({ participantId: 100, participantName: "John", startTime: 0, endTime: 10 }),
+                participants: [
+                    create_participant({ id: 100, name: "John" }),
                 ],
             });
 
             expect(result).toHaveLength(0);
         });
 
-        it("should return unchanged transcripts when speaker_timeline_data is empty", () => {
+        it("should return unchanged transcripts when participants is empty", () => {
             const transcript_parts: TranscriptPartType[] = [
-                create_transcript({ speakerName: "Speaker A", startTime: 1, endTime: 5 }),
+                create_transcript({ speakerName: "100-0", startTime: 1, endTime: 5 }),
             ];
 
             const result = convert_to_hybrid_diarized_transcript_parts({
                 transcript_parts,
-                speaker_timeline_data: [],
+                participants: [],
             });
 
             expect(result).toHaveLength(1);
-            expect(result[0].participant.name).toBe("Speaker A");
+            expect(result[0].participant.name).toBe("100-0");
             expect(result[0].participant.id).toBeNull();
         });
 
-        it("should skip speaker events with null participant id", () => {
-            const transcript_parts: TranscriptPartType[] = [
-                create_transcript({ speakerName: "Speaker A", startTime: 1, endTime: 5 }),
-            ];
-            const speaker_timeline_data: SpeakerTimelinePartType[] = [
-                create_speaker_event({ participantId: null, participantName: "John", startTime: 0, endTime: 10 }),
-            ];
-
-            const result = convert_to_hybrid_diarized_transcript_parts({
-                transcript_parts,
-                speaker_timeline_data,
-            });
-
-            // No mapping should occur
-            expect(result[0].participant.name).toBe("Speaker A");
-            expect(result[0].participant.id).toBeNull();
-        });
-
-        it("should skip speaker events with null participant name", () => {
-            const transcript_parts: TranscriptPartType[] = [
-                create_transcript({ speakerName: "Speaker A", startTime: 1, endTime: 5 }),
-            ];
-            const speaker_timeline_data: SpeakerTimelinePartType[] = [
-                create_speaker_event({ participantId: 100, participantName: null, startTime: 0, endTime: 10 }),
-            ];
-
-            const result = convert_to_hybrid_diarized_transcript_parts({
-                transcript_parts,
-                speaker_timeline_data,
-            });
-
-            expect(result[0].participant.name).toBe("Speaker A");
-            expect(result[0].participant.id).toBeNull();
-        });
-
-        it("should not add to speaker set when transcript has null participant name", () => {
+        it("should leave transcript unchanged when name is null", () => {
             const transcript_parts: TranscriptPartType[] = [
                 create_transcript({ speakerName: null, startTime: 1, endTime: 5 }),
             ];
-            const speaker_timeline_data: SpeakerTimelinePartType[] = [
-                create_speaker_event({ participantId: 100, participantName: "John", startTime: 0, endTime: 10 }),
+            const participants: ParticipantPartType[] = [
+                create_participant({ id: 100, name: "John" }),
             ];
 
             const result = convert_to_hybrid_diarized_transcript_parts({
                 transcript_parts,
-                speaker_timeline_data,
+                participants,
             });
 
-            // Should remain unchanged
             expect(result[0].participant.name).toBeNull();
             expect(result[0].participant.id).toBeNull();
         });
-    });
 
-    describe("Edge Cases - Timing and Boundaries", () => {
-        it("should only include transcript segments fully contained within speaker event", () => {
+        it("should leave transcript unchanged when name does not match expected format", () => {
             const transcript_parts: TranscriptPartType[] = [
-                // Fully contained - should be included
-                create_transcript({ speakerName: "Speaker A", startTime: 2, endTime: 8 }),
-                // Starts before speaker event - should NOT be included
-                create_transcript({ speakerName: "Speaker B", startTime: -1, endTime: 5 }),
-                // Ends at or after speaker event end - should NOT be included
-                create_transcript({ speakerName: "Speaker C", startTime: 5, endTime: 10 }),
+                create_transcript({ speakerName: "Speaker A", startTime: 1, endTime: 5 }),
             ];
-            const speaker_timeline_data: SpeakerTimelinePartType[] = [
-                create_speaker_event({ participantId: 100, participantName: "John", startTime: 0, endTime: 10 }),
+            const participants: ParticipantPartType[] = [
+                create_participant({ id: 100, name: "John" }),
             ];
 
             const result = convert_to_hybrid_diarized_transcript_parts({
                 transcript_parts,
-                speaker_timeline_data,
-            });
-
-            // Only Speaker A should be mapped to John (only one that was fully contained)
-            expect(result[0].participant.name).toBe("John");
-            expect(result[0].participant.id).toBe(100);
-            // Others remain unchanged
-            expect(result[1].participant.name).toBe("Speaker B");
-            expect(result[2].participant.name).toBe("Speaker C");
-        });
-
-        it("should handle speaker event with null end_timestamp (extends to infinity)", () => {
-            const transcript_parts: TranscriptPartType[] = [
-                create_transcript({ speakerName: "Speaker A", startTime: 100, endTime: 200 }),
-            ];
-            const speaker_timeline_data: SpeakerTimelinePartType[] = [
-                create_speaker_event({ participantId: 100, participantName: "John", startTime: 50, endTime: null }),
-            ];
-
-            const result = convert_to_hybrid_diarized_transcript_parts({
-                transcript_parts,
-                speaker_timeline_data,
-            });
-
-            expect(result[0].participant.name).toBe("John");
-            expect(result[0].participant.id).toBe(100);
-        });
-
-        it("should handle transcript segment with start exactly at speaker event start", () => {
-            const transcript_parts: TranscriptPartType[] = [
-                create_transcript({ speakerName: "Speaker A", startTime: 0, endTime: 5 }),
-            ];
-            const speaker_timeline_data: SpeakerTimelinePartType[] = [
-                create_speaker_event({ participantId: 100, participantName: "John", startTime: 0, endTime: 10 }),
-            ];
-
-            const result = convert_to_hybrid_diarized_transcript_parts({
-                transcript_parts,
-                speaker_timeline_data,
-            });
-
-            expect(result[0].participant.name).toBe("John");
-        });
-
-        it("should NOT include transcript that ends exactly at speaker event end", () => {
-            const transcript_parts: TranscriptPartType[] = [
-                create_transcript({ speakerName: "Speaker A", startTime: 5, endTime: 10 }),
-            ];
-            const speaker_timeline_data: SpeakerTimelinePartType[] = [
-                create_speaker_event({ participantId: 100, participantName: "John", startTime: 0, endTime: 10 }),
-            ];
-
-            const result = convert_to_hybrid_diarized_transcript_parts({
-                transcript_parts,
-                speaker_timeline_data,
-            });
-
-            // Condition is speaker_event_end > end, so 10 > 10 is false - not included
-            expect(result[0].participant.name).toBe("Speaker A");
-        });
-    });
-
-    describe("Edge Cases - Transcript Not Matching Any Speaker Event", () => {
-        it("should leave transcript unchanged when it doesn't fall within any speaker event", () => {
-            const transcript_parts: TranscriptPartType[] = [
-                create_transcript({ speakerName: "Speaker A", startTime: 50, endTime: 60 }),
-            ];
-            const speaker_timeline_data: SpeakerTimelinePartType[] = [
-                create_speaker_event({ participantId: 100, participantName: "John", startTime: 0, endTime: 10 }),
-            ];
-
-            const result = convert_to_hybrid_diarized_transcript_parts({
-                transcript_parts,
-                speaker_timeline_data,
+                participants,
             });
 
             expect(result[0].participant.name).toBe("Speaker A");
             expect(result[0].participant.id).toBeNull();
         });
-    });
 
-    describe("Data Preservation", () => {
-        it("should preserve other transcript fields when mapping participant", () => {
+        it("should leave transcript unchanged when participant_id has no match in participants list", () => {
+            const transcript_parts: TranscriptPartType[] = [
+                create_transcript({ speakerName: "999-0", startTime: 1, endTime: 5 }),
+            ];
+            const participants: ParticipantPartType[] = [
+                create_participant({ id: 100, name: "John" }),
+            ];
+
+            const result = convert_to_hybrid_diarized_transcript_parts({
+                transcript_parts,
+                participants,
+            });
+
+            expect(result[0].participant.name).toBe("999-0");
+            expect(result[0].participant.id).toBeNull();
+        });
+
+        it("should handle transcript with empty words array gracefully", () => {
             const transcript_parts: TranscriptPartType[] = [
                 {
                     participant: {
                         id: null,
-                        name: "Speaker A",
-                        is_host: true,
-                        platform: "desktop",
+                        name: "100-0",
+                        is_host: null,
+                        platform: null,
+                        extra_data: null,
+                        email: null,
+                    },
+                    words: [],
+                },
+            ];
+            const participants: ParticipantPartType[] = [
+                create_participant({ id: 100, name: "John" }),
+            ];
+
+            const result = convert_to_hybrid_diarized_transcript_parts({
+                transcript_parts,
+                participants,
+            });
+
+            expect(result).toHaveLength(1);
+            expect(result[0].participant.name).toBe("John");
+            expect(result[0].participant.id).toBe(100);
+        });
+    });
+
+    describe("Data Preservation", () => {
+        it("should replace participant fields with real participant data when mapping", () => {
+            const transcript_parts: TranscriptPartType[] = [
+                {
+                    participant: {
+                        id: null,
+                        name: "100-0",
+                        is_host: null,
+                        platform: "mobile_app",
                         extra_data: { custom: "data" },
                         email: "original@example.com",
                     },
@@ -417,23 +271,28 @@ describe("convert_to_hybrid_diarized_transcript_parts", () => {
                     ],
                 },
             ];
-            const speaker_timeline_data: SpeakerTimelinePartType[] = [
-                create_speaker_event({ participantId: 100, participantName: "John", startTime: 0, endTime: 10 }),
+            const participants: ParticipantPartType[] = [
+                create_participant({
+                    id: 100,
+                    name: "John",
+                    is_host: true,
+                    platform: "desktop",
+                    extra_data: { zoom: { guest: false } },
+                    email: "john@example.com",
+                }),
             ];
 
             const result = convert_to_hybrid_diarized_transcript_parts({
                 transcript_parts,
-                speaker_timeline_data,
+                participants,
             });
 
-            // Participant fields should be updated
             expect(result[0].participant.id).toBe(100);
             expect(result[0].participant.name).toBe("John");
-            // Other participant fields should be preserved
             expect(result[0].participant.is_host).toBe(true);
             expect(result[0].participant.platform).toBe("desktop");
-            expect(result[0].participant.extra_data).toEqual({ custom: "data" });
-            expect(result[0].participant.email).toBe("original@example.com");
+            expect(result[0].participant.extra_data).toEqual({ zoom: { guest: false } });
+            expect(result[0].participant.email).toBe("john@example.com");
             // Words should be preserved
             expect(result[0].words[0].text).toBe("Hello world");
             expect(result[0].words[0].start_timestamp?.absolute).toBe("2025-01-01T00:00:01Z");
@@ -441,233 +300,39 @@ describe("convert_to_hybrid_diarized_transcript_parts", () => {
     });
 
     describe("Word Order Preservation", () => {
-        it("should preserve hybrid diarization behavior and keep words in order in a multi-speaker conversation", () => {
+        it("should preserve word order in a multi-speaker conversation", () => {
             const transcript_parts: TranscriptPartType[] = [
-                {
-                    participant: {
-                        id: null,
-                        name: "0",
-                        is_host: null,
-                        platform: null,
-                        extra_data: null,
-                        email: null,
-                    },
-                    words: [
-                        {
-                            text: "how",
-                            start_timestamp: { relative: 1, absolute: null },
-                            end_timestamp: { relative: 2, absolute: null },
-                        },
-                        {
-                            text: "is",
-                            start_timestamp: { relative: 2, absolute: null },
-                            end_timestamp: { relative: 3, absolute: null },
-                        },
-                        {
-                            text: "it",
-                            start_timestamp: { relative: 3, absolute: null },
-                            end_timestamp: { relative: 4, absolute: null },
-                        },
-                        {
-                            text: "going",
-                            start_timestamp: { relative: 4, absolute: null },
-                            end_timestamp: { relative: 5, absolute: null },
-                        },
-                        {
-                            text: "today",
-                            start_timestamp: { relative: 5, absolute: null },
-                            end_timestamp: { relative: 6, absolute: null },
-                        },
-                    ],
-                },
-                {
-                    participant: {
-                        id: null,
-                        name: "1",
-                        is_host: null,
-                        platform: null,
-                        extra_data: null,
-                        email: null,
-                    },
-                    words: [
-                        {
-                            text: "it",
-                            start_timestamp: { relative: 10, absolute: null },
-                            end_timestamp: { relative: 11, absolute: null },
-                        },
-                        {
-                            text: "is",
-                            start_timestamp: { relative: 11, absolute: null },
-                            end_timestamp: { relative: 12, absolute: null },
-                        },
-                        {
-                            text: "good",
-                            start_timestamp: { relative: 12, absolute: null },
-                            end_timestamp: { relative: 13, absolute: null },
-                        },
-                    ],
-                },
-                {
-                    participant: {
-                        id: null,
-                        name: "2",
-                        is_host: null,
-                        platform: null,
-                        extra_data: null,
-                        email: null,
-                    },
-                    words: [
-                        {
-                            text: "Actually",
-                            start_timestamp: { relative: 14, absolute: null },
-                            end_timestamp: { relative: 15, absolute: null },
-                        },
-                        {
-                            text: "it",
-                            start_timestamp: { relative: 15, absolute: null },
-                            end_timestamp: { relative: 16, absolute: null },
-                        },
-                        {
-                            text: "is",
-                            start_timestamp: { relative: 16, absolute: null },
-                            end_timestamp: { relative: 17, absolute: null },
-                        },
-                        {
-                            text: "great",
-                            start_timestamp: { relative: 17, absolute: null },
-                            end_timestamp: { relative: 18, absolute: null },
-                        },
-                    ],
-                },
-                {
-                    participant: {
-                        id: null,
-                        name: "0",
-                        is_host: null,
-                        platform: null,
-                        extra_data: null,
-                        email: null,
-                    },
-                    words: [
-                        {
-                            text: "Oh",
-                            start_timestamp: { relative: 22, absolute: null },
-                            end_timestamp: { relative: 23, absolute: null },
-                        },
-                        {
-                            text: "that's",
-                            start_timestamp: { relative: 23, absolute: null },
-                            end_timestamp: { relative: 24, absolute: null },
-                        },
-                        {
-                            text: "great",
-                            start_timestamp: { relative: 24, absolute: null },
-                            end_timestamp: { relative: 25, absolute: null },
-                        },
-                        {
-                            text: "to",
-                            start_timestamp: { relative: 25, absolute: null },
-                            end_timestamp: { relative: 26, absolute: null },
-                        },
-                        {
-                            text: "hear",
-                            start_timestamp: { relative: 26, absolute: null },
-                            end_timestamp: { relative: 27, absolute: null },
-                        },
-                        {
-                            text: "then!",
-                            start_timestamp: { relative: 27, absolute: null },
-                            end_timestamp: { relative: 28, absolute: null },
-                        },
-                    ],
-                },
+                create_transcript({ speakerName: "100-0", startTime: 1, endTime: 6, text: "how is it going today" }),
+                create_transcript({ speakerName: "200-0", startTime: 10, endTime: 13, text: "it is good" }),
+                create_transcript({ speakerName: "200-1", startTime: 14, endTime: 18, text: "Actually it is great" }),
+                create_transcript({ speakerName: "100-0", startTime: 22, endTime: 28, text: "Oh that's great to hear then!" }),
             ];
-            const speaker_timeline_data: SpeakerTimelinePartType[] = [
-                create_speaker_event({ participantId: 100, participantName: "Max", startTime: 0, endTime: 8 }),
-                create_speaker_event({ participantId: 200, participantName: "Anon", startTime: 8, endTime: 20 }),
-                create_speaker_event({ participantId: 100, participantName: "Max", startTime: 20, endTime: 35 }),
+            const participants: ParticipantPartType[] = [
+                create_participant({ id: 100, name: "Max" }),
+                create_participant({ id: 200, name: "Anon" }),
             ];
 
             const result = convert_to_hybrid_diarized_transcript_parts({
                 transcript_parts,
-                speaker_timeline_data,
+                participants,
             });
 
-            // Hybrid behavior:
-            // - Max maps to participant id=100 in both of his segments
-            // - Shared Device has two anonymous speakers (0 and 1), so neither should be mapped
+            // Max (100) has only label "0" → mapped
             expect(result[0].participant.name).toBe("Max");
             expect(result[0].participant.id).toBe(100);
-            expect(result[1].participant.name).toBe("1");
+            // Anon (200) has labels "0" and "1" → NOT mapped
+            expect(result[1].participant.name).toBe("200-0");
             expect(result[1].participant.id).toBeNull();
-            expect(result[2].participant.name).toBe("2");
+            expect(result[2].participant.name).toBe("200-1");
             expect(result[2].participant.id).toBeNull();
+            // Max again
             expect(result[3].participant.name).toBe("Max");
             expect(result[3].participant.id).toBe(100);
 
-            // Word order should remain chronological within each utterance.
-            expect(result[0].words.map((word) => word.text).join(" ")).toBe("how is it going today");
-            expect(result[1].words.map((word) => word.text).join(" ")).toBe("it is good");
-            expect(result[2].words.map((word) => word.text).join(" ")).toBe("Actually it is great");
-            expect(result[3].words.map((word) => word.text).join(" ")).toBe("Oh that's great to hear then!");
-        });
-    });
-
-    describe("Edge Cases - Same Anonymous Speaker for Multiple Participants", () => {
-        it("should overwrite mapping when same anonymous speaker appears for different participants", () => {
-            // This is a potential issue: if machine diarization assigns same label to different participants
-            const transcript_parts: TranscriptPartType[] = [
-                create_transcript({ speakerName: "Speaker A", startTime: 1, endTime: 5 }),
-                create_transcript({ speakerName: "Speaker A", startTime: 16, endTime: 20 }),
-            ];
-            const speaker_timeline_data: SpeakerTimelinePartType[] = [
-                create_speaker_event({ participantId: 100, participantName: "John", startTime: 0, endTime: 10 }),
-                create_speaker_event({ participantId: 200, participantName: "Mary", startTime: 15, endTime: 25 }),
-            ];
-
-            const result = convert_to_hybrid_diarized_transcript_parts({
-                transcript_parts,
-                speaker_timeline_data,
-            });
-
-            // Current behavior: last one wins (Mary overwrites John)
-            // Both get mapped to Mary
-            expect(result[0].participant.name).toBe("Mary");
-            expect(result[1].participant.name).toBe("Mary");
-        });
-    });
-
-    describe("Edge Cases - Empty Words Array", () => {
-        it("should handle transcript with empty words array gracefully", () => {
-            const transcript_parts: TranscriptPartType[] = [
-                {
-                    participant: {
-                        id: null,
-                        name: "Speaker A",
-                        is_host: null,
-                        platform: null,
-                        extra_data: null,
-                        email: null,
-                    },
-                    words: [],
-                },
-            ];
-            const speaker_timeline_data: SpeakerTimelinePartType[] = [
-                create_speaker_event({ participantId: 100, participantName: "John", startTime: 0, endTime: 10 }),
-            ];
-
-            // Should not throw - the optional chaining on words[0]?.start_timestamp should handle this
-            const result = convert_to_hybrid_diarized_transcript_parts({
-                transcript_parts,
-                speaker_timeline_data,
-            });
-
-            expect(result).toHaveLength(1);
-            // With empty words, start defaults to NEGATIVE_INFINITY and end to POSITIVE_INFINITY
-            // So it won't be contained within the speaker event (start must be >= speaker_event_start)
-            // Actually NEGATIVE_INFINITY >= 0 is false, so it won't match
-            expect(result[0].participant.name).toBe("Speaker A");
+            expect(result[0].words[0].text).toBe("how is it going today");
+            expect(result[1].words[0].text).toBe("it is good");
+            expect(result[2].words[0].text).toBe("Actually it is great");
+            expect(result[3].words[0].text).toBe("Oh that's great to hear then!");
         });
     });
 });
-
