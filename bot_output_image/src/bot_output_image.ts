@@ -21,15 +21,23 @@ export async function bot_output_image() {
         "meeting_url": env.MEETING_URL,
     };
     if (BASE64_IN_CALL_NOT_RECORDING) {
+        if (!body.automatic_video_output) {
+            body.automatic_video_output = {};
+        }
         body.automatic_video_output.in_call_not_recording = {
             "kind": "jpeg",
             "b64_data": BASE64_IN_CALL_NOT_RECORDING,
         };
     }
     if (BASE64_IN_CALL_RECORDING) {
+        if (!body.automatic_video_output) {
+            body.automatic_video_output = {};
+        }
         body.automatic_video_output.in_call_recording = {
-            "kind": "jpeg",
-            "b64_data": BASE64_IN_CALL_RECORDING,
+            data: {
+                "kind": "jpeg",
+                "b64_data": BASE64_IN_CALL_RECORDING,
+            },
         };
     }
 
