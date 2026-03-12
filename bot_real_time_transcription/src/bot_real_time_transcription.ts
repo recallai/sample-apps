@@ -38,7 +38,7 @@ export async function bot_real_time_transcription(args: {
     );
     fs.writeFileSync(output_path_events, JSON.stringify(transcript_parts, null, 2), { flag: "w+" });
 
-    // Create the readable transcript from the transcript parts data and write it to a file.
+    // Create the human-readable transcript from the transcript parts data and write it to a file.
     const transcript_readable = convert_to_readable_transcript({ transcript_parts });
     fs.writeFileSync(
         output_path_readable,
@@ -47,5 +47,8 @@ export async function bot_real_time_transcription(args: {
     );
 
     console.log(`Transcript data written to file: ${output_path_events}`);
-    console.log(`Readable transcript written to file: ${output_path_readable}`);
+    console.log(`human-readable transcript written to file: ${output_path_readable}`);
+
+    console.log(`${msg.data.data.participant.name ?? msg.data.data.participant.id}: ${msg.data.data.words.map((w) => w.text).join(" ")}`);
+
 }
