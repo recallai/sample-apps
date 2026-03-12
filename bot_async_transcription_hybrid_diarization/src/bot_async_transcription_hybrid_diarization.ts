@@ -83,7 +83,7 @@ export async function bot_async_transcription(args: { msg: TranscriptArtifactEve
     const output_path_readable = path.join(output_dir, "hybrid_diarization_transcript.txt");
     fs.writeFileSync(output_path_readable, readable_hybrid_transcript_parts.map((t) => t ? `${t.speaker}: ${t.paragraph}` : "").join("\n"), { flag: "w+" });
 
-    // Return the transcript parts and readable transcript.
+    // Return the transcript parts and human-readable transcript.
     return {
         transcript_parts: hybrid_transcript_parts,
         readable_transcript_parts: readable_hybrid_transcript_parts,

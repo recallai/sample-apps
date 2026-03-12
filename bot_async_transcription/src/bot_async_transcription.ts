@@ -47,7 +47,7 @@ export async function bot_async_transcription(args: { msg: TranscriptArtifactEve
     });
     const readable_transcript_parts = convert_to_readable_transcript({ transcript_parts });
 
-    // Write the transcript parts data and readable transcript to files.
+    // Write the transcript parts data and human-readable transcript to files.
     const output_path_events = path.join(
         process.cwd(),
         `output/recording-${msg.data.recording.id}/transcript.json`,
@@ -58,7 +58,7 @@ export async function bot_async_transcription(args: { msg: TranscriptArtifactEve
     }
     fs.writeFileSync(output_path_events, JSON.stringify(transcript_parts, null, 2), { flag: "w+" });
 
-    // Write the readable transcript to a file.
+    // Write the human-readable transcript to a file.
     const output_path_readable = path.join(
         process.cwd(),
         `output/recording-${msg.data.recording.id}/readable.txt`,
@@ -69,7 +69,7 @@ export async function bot_async_transcription(args: { msg: TranscriptArtifactEve
     }
     fs.writeFileSync(output_path_readable, readable_transcript_parts.map((t) => t ? `${t.speaker}: ${t.paragraph}` : "").join("\n"), { flag: "w+" });
 
-    // Return the transcript parts and readable transcript.
+    // Return the transcript parts and human-readable transcript.
     return {
         transcript_parts,
         readable_transcript_parts,
