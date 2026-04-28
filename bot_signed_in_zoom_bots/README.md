@@ -51,7 +51,7 @@ The ZAK (Zoom Access Key) token enables bots to join Zoom meetings with authenti
      │              When bot joins call:                 │
      │ ═════════════════════════════════════════════════ │
      │                │                │                 │
-     │                │ 4. GET /zoom/zak                 │
+     │                │ 4. GET zak_url                 │
      │                │◀─────────────────────────────────│
      │                │                │                 │
      │                │  Refresh access token            │
