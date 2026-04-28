@@ -6,9 +6,9 @@ This example demonstrates how to implement the Zoom ZAK (Zoom Access Key) token 
 
 The ZAK (Zoom Access Key) token enables bots to join Zoom meetings with authenticated access which enables:
 
--   Joining meetings that require signed-in participants
--   Starting instant meetings or scheduled meetings before the host joins
--   Appearing as a named Zoom user rather than a guest
+- Joining meetings that require signed-in participants
+- Starting instant meetings or scheduled meetings before the host joins
+- Appearing as a named Zoom user rather than a guest
 
 > **📘 For complete documentation, see:** [Zoom Signed-in Bots](https://docs.recall.ai/docs/zoom-signed-in-bots)
 
@@ -19,7 +19,7 @@ The ZAK (Zoom Access Key) token enables bots to join Zoom meetings with authenti
 │  Client  │     │  Server  │     │   Zoom   │     │  Recall  │
 └────┬─────┘     └────┬─────┘     └────┬─────┘     └─────┬────┘
      │                │                │                 │
-     │ 1. GET /zoom/oauth              │                 │
+     │ 1. GET Zoom OAuth Authorization URL               │
      │───────────────▶│                │                 │
      │                │                │                 │
      │   Redirect to Zoom OAuth        │                 │
@@ -31,7 +31,7 @@ The ZAK (Zoom Access Key) token enables bots to join Zoom meetings with authenti
      │   Callback with code            │                 │
      │◀────────────────────────────────│                 │
      │                │                │                 │
-     │ 2. GET /zoom/oauth/callback     │                 │
+     │ 2. GET Zoom OAuth callback      │                 │
      │───────────────▶│                │                 │
      │                │  Exchange for tokens             │
      │                │───────────────▶│                 │
@@ -51,7 +51,7 @@ The ZAK (Zoom Access Key) token enables bots to join Zoom meetings with authenti
      │              When bot joins call:                 │
      │ ═════════════════════════════════════════════════ │
      │                │                │                 │
-     │                │ 4. GET /zoom/zak                 │
+     │                │ 4. GET zak_url │                 │
      │                │◀─────────────────────────────────│
      │                │                │                 │
      │                │  Refresh access token            │
@@ -72,9 +72,9 @@ The ZAK (Zoom Access Key) token enables bots to join Zoom meetings with authenti
 
 ## Prerequisites
 
--   [Zoom OAuth App](https://developers.zoom.us/docs/integrations/create/) with scope: `user:read:zak`
--   [ngrok](https://ngrok.com/) for exposing your local server
--   [Node.js](https://nodejs.org/) 18+
+- [Zoom OAuth App](https://developers.zoom.us/docs/integrations/create/) with scope: `user:read:zak`
+- [ngrok](https://ngrok.com/) for exposing your local server
+- [Node.js](https://nodejs.org/) 18+
 
 ## Setup
 
@@ -154,10 +154,10 @@ curl -X POST "https://RECALL_REGION.recall.ai/api/v1/bot/" \
 
 **Note**:
 
--   Replace `RECALL_REGION`, `RECALL_API_KEY`, and `YOUR_MEETING_URL` with your own
-    values.
--   Replace `YOUR_NGROK_DOMAIN` with your ngrok domain (e.g. `somehash.ngrok-free.app`).
--   The bot will join the meeting as a signed-in Zoom user.
+- Replace `RECALL_REGION`, `RECALL_API_KEY`, and `YOUR_MEETING_URL` with your own
+  values.
+- Replace `YOUR_NGROK_DOMAIN` with your ngrok domain (e.g. `somehash.ngrok-free.app`).
+- The bot will join the meeting as a signed-in Zoom user.
 
 ## API Endpoints
 

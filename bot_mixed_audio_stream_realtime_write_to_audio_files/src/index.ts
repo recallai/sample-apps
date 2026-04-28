@@ -21,7 +21,7 @@ wss.on("connection", (socket: WebSocket & { recording_id: string }) => {
 
         // Set the recording id for the socket.
         // This is needed to close the audio pipeline when the socket is closed.
-        if (!msg.data.recording?.id) {
+        if (!msg?.data?.recording?.id) {
             console.log("No recording id found in message");
             return;
         } else if (!socket.recording_id) {
