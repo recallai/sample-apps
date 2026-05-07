@@ -35,7 +35,7 @@ Add the MCP server to `~/.cursor/mcp.json`:
 }
 ```
 
-Replace the URL with the correct Recall.ai region if needed.
+Replace the URL with the correct Recall.ai region.
 
 ### Windsurf
 
@@ -51,7 +51,7 @@ Add the MCP server to `~/.codeium/mcp_config.json`:
 }
 ```
 
-Replace the URL with the correct Recall.ai region if needed.
+Replace the URL with the correct Recall.ai region.
 
 ### Claude Desktop
 
@@ -72,7 +72,7 @@ Run:
 claude mcp add --transport http recall-ai RECALLAI_MCP_URL
 ```
 
-Replace the URL with the correct Recall.ai region if needed.
+Replace the URL with the correct Recall.ai region.
 
 ### Codex
 
@@ -82,7 +82,7 @@ Run:
 codex mcp add recall-ai --url RECALLAI_MCP_URL
 ```
 
-Replace the URL with the correct Recall.ai region if needed.
+Replace the URL with the correct Recall.ai region.
 
 ## Required MCP usage
 
