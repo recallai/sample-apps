@@ -83,7 +83,7 @@ export const PROVIDER_CONFIGS = [
     { recallai_async: { language_code: "auto" } },
     {
         assembly_ai_async: {
-            speech_model: "universal",
+            speech_models: ["universal"],
             language_detection: true,
         },
     },
