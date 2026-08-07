@@ -1,0 +1,56 @@
+{
+    "name": "bot_output_media_livekit_voice_agent",
+    "version": "1.0.0",
+    "private": true,
+    "description": "Bridge Recall.ai Output Media to a LiveKit voice agent",
+    "type": "module",
+    "scripts": {
+        "dev": "concurrently -k -n server,client,agent \"npm:dev:server\" \"npm:dev:client\" \"npm:dev:agent\"",
+        "dev:server": "tsx watch src/server/index.ts",
+        "dev:client": "vite",
+        "dev:agent": "tsx src/agent/main.ts dev",
+        "bot:create": "tsx src/scripts/create_bot.ts",
+        "build": "vite build",
+        "start": "concurrently -k -n server,client,agent \"npm:start:server\" \"npm:start:client\" \"npm:start:agent\"",
+        "start:server": "tsx src/server/index.ts",
+        "start:client": "vite preview --host 0.0.0.0",
+        "start:agent": "tsx src/agent/main.ts start",
+        "typecheck": "tsc --noEmit",
+        "lint": "eslint \"src/**/*.{ts,tsx}\"",
+        "test": "vitest run --root .",
+        "test:watch": "vitest --root ."
+    },
+    "engines": {
+        "node": ">=20.19"
+    },
+    "license": "MIT",
+    "devDependencies": {
+        "@tailwindcss/vite": "^4.3.3",
+        "@types/express": "^5.0.6",
+        "@types/node": "^20.19.43",
+        "@types/react": "^19.2.18",
+        "@types/react-dom": "^19.2.4",
+        "@types/supertest": "^7.2.1",
+        "@vitejs/plugin-react": "^6.0.5",
+        "concurrently": "^10.0.4",
+        "supertest": "^7.2.2",
+        "tailwindcss": "^4.3.3",
+        "tsx": "^4.23.5",
+        "typescript": "^5.9.3",
+        "vite": "^8.2.0",
+        "vitest": "^4.1.10"
+    },
+    "dependencies": {
+        "@livekit/agents": "^1.6.1",
+        "@livekit/protocol": "^1.50.4",
+        "@livekit/rtc-node": "^0.13.33",
+        "dotenv": "^17.4.2",
+        "express": "^5.2.1",
+        "jose": "^6.2.7",
+        "livekit-client": "^2.21.0",
+        "livekit-server-sdk": "^2.17.0",
+        "react": "^19.2.8",
+        "react-dom": "^19.2.8",
+        "zod": "^4.4.3"
+    }
+}
