@@ -1,3 +1,7 @@
+// CORE — Which remote track the bridge may subscribe to.
+// Only the named agent participant's microphone audio is accepted; everything
+// else in the room is ignored so meeting talkback stays clean.
+
 import {
     ParticipantKind,
     Track,

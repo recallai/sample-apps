@@ -1,3 +1,11 @@
+// CORE — Output Media page ↔ LiveKit media path.
+// Connects to the room, publishes Recall meeting audio, subscribes only to the
+// named agent's microphone, and attaches that audio to the page <audio> element
+// so Recall can stream it back into the meeting. Reconnect / agent-restart
+// handling lives here too.
+// Console lifecycle logs are for learning (watch them in Remote DevTools); feel
+// free to change them. The media path above is the part to study and reuse.
+
 import {
     ParticipantKind,
     RemoteAudioTrack,

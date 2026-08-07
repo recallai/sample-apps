@@ -1,3 +1,7 @@
+// REPLACEABLE — Express HTTP surface for this sample.
+// Verifies the Output Media session and returns LiveKit connection details.
+// Keep the verify → create_bridge_token flow; swap Express for any backend you prefer.
+
 import express, { type Express } from "express";
 import { z } from "zod";
 import { verify_session_token } from "../auth/session_token";

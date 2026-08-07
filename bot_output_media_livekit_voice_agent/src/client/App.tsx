@@ -1,3 +1,8 @@
+// REPLACEABLE — Sample Output Media page UI.
+// Recovers the session, fetches LiveKit connection details, mounts BrowserBridge
+// on a hidden <audio> element, and shows connection checkpoints. Swap this UI
+// for your own; keep the audio element + bridge wiring.
+
 import { useEffect, useRef, useState } from "react";
 import {
     INITIAL_BRIDGE_STATUS,

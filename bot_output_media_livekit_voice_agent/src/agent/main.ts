@@ -1,3 +1,8 @@
+// CORE — LiveKit Agent worker entrypoint for this sample.
+// Accepts named-agent jobs, joins with the deterministic voice-agent identity,
+// binds input to the Recall bridge participant only, and runs the voice pipeline
+// (STT / LLM / TTS / turn detection / interruption).
+
 import { fileURLToPath } from "node:url";
 import {
     ServerOptions,

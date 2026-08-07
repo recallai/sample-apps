@@ -1,3 +1,7 @@
+// REPLACEABLE — Browser helper that POSTs the session to /api/livekit-token.
+// Thin client for this sample's Express route; call whatever backend you use
+// instead, as long as it returns LiveKitConnectionDetails.
+
 import { z } from "zod";
 import type { LiveKitConnectionDetails } from "../livekit/create_bridge_token";
 

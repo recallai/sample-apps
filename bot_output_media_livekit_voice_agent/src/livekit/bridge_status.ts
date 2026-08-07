@@ -1,3 +1,7 @@
+// SUPPORTING — Status model for the sample Output Media UI checkpoints.
+// Not required by LiveKit or Recall; replace or drop it if your page tracks
+// connection state differently.
+
 export type BridgePhase =
     | "loading"
     | "connecting"

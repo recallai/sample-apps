@@ -1,3 +1,7 @@
+// CORE — Voice agent persona and instructions used in the meeting.
+// Swap the prompt (and LLM wiring) for your product; keep answers short and
+// speech-friendly so barge-in and Output Media playback stay usable.
+
 import { Agent, type LLM } from "@livekit/agents";
 
 const AGENT_INSTRUCTIONS = `

@@ -1,3 +1,7 @@
+// REPLACEABLE — Pull the signed session off the Output Media URL.
+// Moves `session_token` from the query string into sessionStorage so it is not
+// left visible in the address bar. Use your own session handoff if you prefer.
+
 const SESSION_TOKEN_QUERY_KEY = "session_token";
 const SESSION_TOKEN_STORAGE_KEY = "recall_livekit_session_token";
 

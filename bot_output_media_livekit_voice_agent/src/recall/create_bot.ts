@@ -1,3 +1,7 @@
+// CORE — Build and send the Recall Create Bot request for this sample.
+// Configures Output Media (webpage camera), variant, and related bot fields so
+// the meeting bot loads this sample page as its camera.
+
 import { z } from "zod";
 
 const create_bot_response_schema = z.object({

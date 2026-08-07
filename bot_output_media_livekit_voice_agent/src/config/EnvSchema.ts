@@ -1,3 +1,7 @@
+// SUPPORTING — Zod schemas for this sample's environment variables.
+// Documents required config for the demo processes; not part of the LiveKit
+// or Recall runtime path itself.
+
 import { z } from "zod";
 
 const RecallRegionSchema = z.enum([

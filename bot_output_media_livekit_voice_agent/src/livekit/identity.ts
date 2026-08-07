@@ -1,3 +1,7 @@
+// CORE — Shared room / bridge / agent identity naming for one Output Media session.
+// Token creation, the browser bridge, and the agent worker must agree on these
+// names so the page and agent land in the same LiveKit room.
+
 const ROOM_PREFIX = "recall-livekit-";
 
 export interface SessionIdentity {

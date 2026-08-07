@@ -1,3 +1,7 @@
+// REPLACEABLE — STT / LLM / TTS / turn-detector construction from env descriptors.
+// Defaults use LiveKit Inference; change the descriptor env vars or this file to
+// point at other providers without touching the bridge.
+
 import { inference } from "@livekit/agents";
 
 export interface ModelDescriptors {

@@ -1,3 +1,6 @@
+// SUPPORTING — Process entry that boots the Express token server.
+// Loads env and listens; no Recall / LiveKit integration logic lives here.
+
 import { parse_server_env } from "../config/env";
 import { create_app } from "./app";
 

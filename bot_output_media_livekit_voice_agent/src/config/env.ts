@@ -1,3 +1,6 @@
+// SUPPORTING — Load and parse .env for the server, agent, and bot-create CLI.
+// Sample wiring only; point your own process at the same variables however you like.
+
 import dotenv from "dotenv";
 import {
     AgentEnvSchema,

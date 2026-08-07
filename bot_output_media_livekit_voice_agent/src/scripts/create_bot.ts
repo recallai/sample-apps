@@ -1,8 +1,16 @@
+// SUPPORTING — CLI entry for `npm run bot:create`.
+// Mints a session token, builds the Output Media URL, and calls Create Bot.
+// Handy for running the sample; your product would usually create bots from
+// your own backend instead of this script.
+
 import { randomUUID } from "node:crypto";
 import { sign_session_token } from "../auth/session_token";
 import { parse_create_bot_env } from "../config/env";
 import { create_session_identity } from "../livekit/identity";
-import { create_recall_bot } from "../recall/create_bot";
+import {
+    build_create_bot_payload,
+    create_recall_bot,
+} from "../recall/create_bot";
 
 async function main(): Promise<void> {
     const env = parse_create_bot_env();
@@ -18,6 +26,16 @@ async function main(): Promise<void> {
 
     const output_media_url = new URL(env.PUBLIC_BASE_URL);
     output_media_url.searchParams.set("session_token", session_token);
+
+    const create_bot_url = `https://${env.RECALL_REGION}.recall.ai/api/v1/bot/`;
+    const payload = build_create_bot_payload({
+        meeting_url: env.MEETING_URL,
+        bot_name: env.BOT_NAME,
+        output_media_url: output_media_url.toString(),
+    });
+
+    console.info(`POST ${create_bot_url}`);
+    console.info(JSON.stringify(payload, null, 2));
 
     const bot = await create_recall_bot({
         recall_region: env.RECALL_REGION,

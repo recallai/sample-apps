@@ -1,3 +1,8 @@
+// CORE — Mint the browser LiveKit token for the Output Media bridge.
+// Scopes the participant to one room, microphone publish + subscribe, and an
+// atomic named-agent dispatch. Keep LiveKit API secrets on the server; return
+// only browser-safe connection details.
+
 import {
     RoomAgentDispatch,
     RoomConfiguration,

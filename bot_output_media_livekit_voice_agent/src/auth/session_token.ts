@@ -1,3 +1,8 @@
+// REPLACEABLE — Example app auth for the Output Media page URL.
+// Signs and verifies a short-lived session JWT so the page can mint a LiveKit
+// token without exposing API secrets. Not a LiveKit requirement — use your own
+// session / auth scheme in production.
+
 import { SignJWT, jwtVerify } from "jose";
 import { z } from "zod";
 import {
