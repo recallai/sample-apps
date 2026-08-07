@@ -16,9 +16,7 @@
         "start:client": "vite preview --host 0.0.0.0",
         "start:agent": "tsx src/agent/main.ts start",
         "typecheck": "tsc --noEmit",
-        "lint": "eslint \"src/**/*.{ts,tsx}\"",
-        "test": "vitest run --root .",
-        "test:watch": "vitest --root ."
+        "lint": "eslint \"src/**/*.{ts,tsx}\""
     },
     "engines": {
         "node": ">=20.19"
@@ -30,15 +28,12 @@
         "@types/node": "^20.19.43",
         "@types/react": "^19.2.18",
         "@types/react-dom": "^19.2.4",
-        "@types/supertest": "^7.2.1",
         "@vitejs/plugin-react": "^6.0.5",
         "concurrently": "^10.0.4",
-        "supertest": "^7.2.2",
         "tailwindcss": "^4.3.3",
         "tsx": "^4.23.5",
         "typescript": "^5.9.3",
-        "vite": "^8.2.0",
-        "vitest": "^4.1.10"
+        "vite": "^8.2.0"
     },
     "dependencies": {
         "@livekit/agents": "^1.6.1",

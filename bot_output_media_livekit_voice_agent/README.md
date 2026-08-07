@@ -227,9 +227,8 @@ Run each platform independently and record pass/fail plus notes:
 - Microsoft Teams: repeat the Zoom checks.
 - Cisco Webex: repeat the Zoom checks.
 
-These credentialed platform checks are not run by the automated test suite.
-They require a Recall v1.11 workspace, a LiveKit Cloud project, and live meeting
-credentials.
+These credentialed platform checks require a Recall v1.11 workspace, a LiveKit
+Cloud project, and live meeting credentials.
 
 For each run, record the `elapsed_ms` values emitted for:
 
@@ -243,7 +242,6 @@ For each run, record the `elapsed_ms` values emitted for:
 ## Checks
 
 ```sh
-npm test
 npm run typecheck
 npm run lint
 npm run build
