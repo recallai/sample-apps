@@ -108,8 +108,9 @@ Set `PUBLIC_BASE_URL` to that HTTPS URL, restart the processes after changing
 npm run bot:create
 ```
 
-The command prints only the bot ID. Open Recall Bot Explorer to inspect its
-lifecycle or launch Remote DevTools.
+The command prints the Create Bot `POST` URL and JSON body with
+`session_token` redacted, then the created bot ID. Open Recall Bot Explorer to
+inspect the bot lifecycle or launch Remote DevTools.
 
 When the bot joins, the page should show all four checkpoints:
 
@@ -168,8 +169,11 @@ code.
   verified claims.
 - The LiveKit token is scoped to one room, microphone publication, and
   subscriptions. It cannot publish data or update participant metadata.
-- Logs contain lifecycle names, timings, and error classes, but never URLs,
+- Runtime logs contain lifecycle names, timings, and error classes, but never
   query strings, signed sessions, API secrets, or LiveKit tokens.
+- `npm run bot:create` logs the Create Bot route and payload for the sample,
+  with `session_token` redacted. It still includes `meeting_url` and the Output
+  Media URL shape so you can see the request.
 
 ## Troubleshooting
 
