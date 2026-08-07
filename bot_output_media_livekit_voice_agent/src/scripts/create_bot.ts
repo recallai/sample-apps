@@ -34,8 +34,27 @@ async function main(): Promise<void> {
         output_media_url: output_media_url.toString(),
     });
 
+    // The Output Media URL carries a short-lived session JWT. Log the request
+    // shape for the sample, but redact the token so it is not copied into
+    // screenshots, pastebins, or support threads.
+    const logged_output_media_url = new URL(output_media_url.toString());
+    logged_output_media_url.searchParams.set("session_token", "[redacted]");
+    const logged_payload = {
+        ...payload,
+        output_media: {
+            ...payload.output_media,
+            camera: {
+                ...payload.output_media.camera,
+                config: {
+                    ...payload.output_media.camera.config,
+                    url: logged_output_media_url.toString(),
+                },
+            },
+        },
+    };
+
     console.info(`POST ${create_bot_url}`);
-    console.info(JSON.stringify(payload, null, 2));
+    console.info(JSON.stringify(logged_payload, null, 2));
 
     const bot = await create_recall_bot({
         recall_region: env.RECALL_REGION,
