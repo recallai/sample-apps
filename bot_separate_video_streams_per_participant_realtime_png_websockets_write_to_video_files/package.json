@@ -20,7 +20,6 @@
         "@ffmpeg-installer/ffmpeg": "^1.1.0",
         "dotenv": "^17.2.3",
         "fluent-ffmpeg": "^2.1.3",
-        "http": "^0.0.1-security",
         "pngjs": "^7.0.0",
         "ws": "^8.18.3",
         "zod": "^4.1.13"
