@@ -10,7 +10,8 @@ The ZAK (Zoom Access Key) token enables bots to join Zoom meetings with authenti
 - Starting instant meetings or scheduled meetings before the host joins
 - Appearing as a named Zoom user rather than a guest
 
-> **📘 For complete documentation, see:** [Zoom Signed-in Bots](https://docs.recall.ai/docs/zoom-signed-in-bots)
+Note that:
+- ZAK tokens are short-lived. Mint them **just-in-time** when Recall requests your callback — do not pre-generate and cache them for later joins.
 
 ## How It Works
 
@@ -166,3 +167,34 @@ curl -X POST "https://RECALL_REGION.recall.ai/api/v1/bot/" \
 | `GET /zoom/oauth`          | Initiates Zoom OAuth flow                             |
 | `GET /zoom/oauth/callback` | Handles OAuth callback, stores refresh token          |
 | `GET /zoom/zak`            | Returns a ZAK token (called by Recall when bot joins) |
+
+## FAQs
+
+### Can signed-in bots start a meeting?
+
+Yes, a bot who is signed-in on behalf of the host can start a meeting. Provide a ZAK token from the host to do so.
+
+### Can I use a signed-in Zoom bot to skip the waiting room?
+
+Yes, a bot who is signed-in on behalf of the host can skip the waiting room. Provide a ZAK token from the host to do so.
+
+### Can I allowlist the email domain associated with the signed-in Zoom bot?
+
+Yes, a bot who is signed-in on behalf of a user will also identify using their email domain. Provide a ZAK token from a user who has the allowlisted email domain to let the bot join the meeting
+
+### Can a ZAK token be refetched after a call has started?
+
+A bot may re-fetch a ZAK token while already in the call to refresh its session. The `zoom.zak_url` you provide must be callable throughout the entire duration the bot remains in the meeting.
+
+### Why is my account name showing up instead of `bot_name`?
+
+When a bot joins a call with a ZAK token for a user in the _same organization as the meeting host_, the bot will display the account name of the underlying ZAK. If you want to avoid this, use a different Zoom organization altogether for your signed-in bots.
+
+### Can I have a single Zoom account join multiple meetings at the same time?
+
+Yes, though note that Zoom free accounts have limits on simultaneous meeting joins. Keep this in mind when generating ZAK tokens from a single account.
+
+### Can I have the bot sign-in on behalf of any Zoom account to join sign-in-required meetings?
+
+Yes, the bot can join meetings that have sign-in-required as long as the bot is signed-in. You can use a single Zoom service account to sign-in bots or allow the bot to sign-in on behalf of your users to gain their identity.
+
