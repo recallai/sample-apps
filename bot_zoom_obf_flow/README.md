@@ -8,8 +8,6 @@ The OBF ties a bot's lifetime in a meeting directly to a specific user in that m
 
 - Appearing as your Zoom app via Zoom's native UI
 
-> **📘 For complete documentation, see:** [Zoom Native Bots (OBF)](https://docs.recall.ai/docs/zoom-obf-tokens)
-
 ## How It Works
 
 ```
