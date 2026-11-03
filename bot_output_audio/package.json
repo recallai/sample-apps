@@ -17,7 +17,6 @@
     "dependencies": {
         "dotenv": "^17.2.3",
         "file-type": "^21.1.1",
-        "http": "^0.0.1-security",
         "is-base64": "^1.1.0",
         "zod": "^4.1.13"
     }
